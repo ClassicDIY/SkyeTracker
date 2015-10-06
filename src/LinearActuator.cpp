@@ -14,7 +14,7 @@ namespace SkyeTracker
 		_extendedPosition = 0;
 		_retractedPosition = 0;
 		_requestedAngle = 0;
-		_state = Stopped;
+		_state = ActuatorState_Stopped;
 		_foundExtendedPosition = false;
 	}
 
@@ -33,7 +33,7 @@ namespace SkyeTracker
 		enabled = false;
 		_foundExtendedPosition = false;
 		MoveOut();
-		_state = AcxtuatorInitializing;
+		_state = ActuatorState_Initializing;
 		setInterval(longCheckInterval);
 		enabled = true;
 	}
@@ -42,7 +42,7 @@ namespace SkyeTracker
 	void LinearActuator::run() {
 
 		runned();
-		if (_state == AcxtuatorInitializing)
+		if (_state == ActuatorState_Initializing)
 		{
 			if (IsMoving() == false)
 			{
@@ -53,7 +53,7 @@ namespace SkyeTracker
 					Serial.print("Extended Position: ");
 					Serial.println(_extendedPosition);
 					MoveIn();
-					_state = AcxtuatorInitializing;
+					_state = ActuatorState_Initializing;
 				}
 				else
 				{
@@ -61,6 +61,10 @@ namespace SkyeTracker
 					Serial.print("Retracted Position: ");
 					Serial.println(_retractedPosition);
 					Stop();
+					if (_retractedPosition >= _extendedPosition)
+					{
+						_state = ActuatorState_Error;
+					}
 				}
 			}
 		}
@@ -74,12 +78,12 @@ namespace SkyeTracker
 			}
 			else if (currentAngle < _requestedAngle)
 			{
-				if (_state != MovingOut)
+				if (_state != ActuatorState_MovingOut)
 					MoveOut();
 			}
 			else if (currentAngle > _requestedAngle)
 			{
-				if (_state != MovingIn)
+				if (_state != ActuatorState_MovingIn)
 					MoveIn();
 			}
 		}
@@ -102,6 +106,7 @@ namespace SkyeTracker
 		}
 		sum -= (highest + lowest);
 		float avg = sum / 8;
+		_position = avg;
 		return avg;
 	}
 
@@ -110,14 +115,22 @@ namespace SkyeTracker
 		return _extendedPosition - _retractedPosition;
 	}
 
+	float LinearActuator::CurrentPosition()
+	{
+		return _position;
+	}
+
 	float LinearActuator::CurrentAngle()
 	{
+		if (_state == ActuatorState_Initializing) {
+			return 0;
+		}
 		float delta = _extendedAngle - _retractedAngle;
 		float degreesPerStep = delta / Range();
-		float position = getCurrentPosition() - _retractedPosition;
+		float absolutePosition = getCurrentPosition() - _retractedPosition;
 		float rVal = _retractedAngle;
-		if (position >= 1)
-			rVal = (position * degreesPerStep) + _retractedAngle;
+		if (absolutePosition >= 1)
+			rVal = (absolutePosition * degreesPerStep) + _retractedAngle;
 		return rVal;
 	}
 
@@ -172,7 +185,7 @@ namespace SkyeTracker
 		digitalWrite(_PWMa, false);
 		digitalWrite(_PWMb, true);
 		digitalWrite(_enableActuator, true);
-		_state = MovingIn;
+		_state = ActuatorState_MovingIn;
 	}
 
 	void LinearActuator::MoveOut()
@@ -181,7 +194,7 @@ namespace SkyeTracker
 		digitalWrite(_PWMa, true);
 		digitalWrite(_PWMb, false);
 		digitalWrite(_enableActuator, true);
-		_state = MovingOut;
+		_state = ActuatorState_MovingOut;
 	}
 
 	void LinearActuator::Stop()
@@ -190,7 +203,7 @@ namespace SkyeTracker
 		digitalWrite(_PWMa, false);
 		digitalWrite(_PWMb, false);
 		digitalWrite(_enableActuator, false);
-		_state = Stopped;
+		_state = ActuatorState_Stopped;
 		enabled = false;
 		CurrentAngle();
 	}

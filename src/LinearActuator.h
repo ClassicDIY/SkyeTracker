@@ -16,14 +16,14 @@ namespace SkyeTracker
 	{
 	public:
 		LinearActuator(int8_t positionSensor, int8_t enable, int8_t PWMa, int8_t PWMb);
-		~LinearActuator();
+		virtual ~LinearActuator();
 
 	private:
 		float _lastPosition;
 		float _extendedPosition; // reading from the actuators position sensor when fully extended
 		float _retractedPosition; // reading from the actuators position sensor when fully retracted
 		float _requestedAngle;
-		AcxtuatorState _state;
+		ActuatorState _state;
 		bool _foundExtendedPosition;
 
 		int _extendedAngle; // angle when actuator is fully extended 
@@ -32,7 +32,7 @@ namespace SkyeTracker
 		int _PWMa;
 		int _PWMb;
 		int _positionSensor;
-
+		float _position;
 
 		float Range();
 		bool IsMoving();
@@ -43,8 +43,9 @@ namespace SkyeTracker
 
 	public:
 		void Initialize(int retractedAngle, int extendedAngle);
-		AcxtuatorState getState() { return _state; };
+		ActuatorState getState() { return _state; };
 		float CurrentAngle();
+		float CurrentPosition();
 		void MoveTo(float angle);
 		void Retract();
 		void Extend();

@@ -33,7 +33,7 @@ namespace SkyeTracker
 		_latitude = latitude;
 		_longitude = longitude;
 
-		_zone = zone;
+		_zone = ~zone;
 
 		if ((_latitude >= -90) && (_latitude < -89.8))
 		{

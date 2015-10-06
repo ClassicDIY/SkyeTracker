@@ -17,28 +17,29 @@ namespace SkyeTracker
 		bool _dualAxis;
 		float _latitude;
 		float _longitude;
-		float _eastAzimuth;
-		float _westAzimuth;
-		float _minimumElevation;
-		float _maximumElevation;
-		int _timeZoneOffsetToUTC;
+		int _eastAzimuth;
+		int _westAzimuth;
+		int _minimumElevation;
+		int _maximumElevation;
+		signed char _timeZoneOffsetToUTC;
+		void LoadFactoryDefault();
 
 	public:
 		bool isDual() { return _dualAxis; }
-		float getLat() { return _latitude; }
-		float getLon() { return _longitude; }
-		float getEastAzimuth() { return _eastAzimuth; }
-		float getWestAzimuth() { return _westAzimuth; }
-		float getMinimumElevation() { return _minimumElevation; }
-		float getMaximumElevation() { return _maximumElevation; }
-		int getTimeZoneOffsetToUTC() { return _timeZoneOffsetToUTC; }
+		double getLat() { return _latitude; }
+		double getLon() { return _longitude; }
+		int getEastAzimuth() { return _eastAzimuth; }
+		int getWestAzimuth() { return _westAzimuth; }
+		int getMinimumElevation() { return _minimumElevation; }
+		int getMaximumElevation() { return _maximumElevation; }
+		signed char getTimeZoneOffsetToUTC() { return _timeZoneOffsetToUTC; }
 		void setDual(bool val);
-		void SetLocation(float lat, float lon);
-		void SetLimits(float minAzimuth, float maxAzimuth, float minElevation, float maxElevation);
-		void SetUTCOffset(int val);
+		void SetLocation(double lat, double lon);
+		void SetLimits(int minAzimuth, int maxAzimuth, int minElevation, int maxElevation);
+		void SetUTCOffset(signed char val);
 		void Load();
 		void Save();
-		void PrintJson();
+		void SendConfiguration();
 	};
 
 }

@@ -5,27 +5,36 @@ namespace SkyeTracker
 	enum TrackerState
 	{
 
-		Off,
-		Initializing,
-		Standby,
-		Testing,
-		Tracking,
-		Dark
+		TrackerState_Off,
+		TrackerState_Initializing,
+		TrackerState_Standby,
+		TrackerState_Testing,
+		TrackerState_Tracking
 	};
 
 	enum Direction
 	{
-		East,
-		West,
-		Up,
-		Down
+		Direction_East,
+		Direction_West,
+		Direction_Up,
+		Direction_Down
 	};
 
-	enum AcxtuatorState
+	enum ActuatorState
 	{
-		AcxtuatorInitializing,
-		MovingIn,
-		MovingOut,
-		Stopped
+		ActuatorState_Initializing,
+		ActuatorState_MovingIn,
+		ActuatorState_MovingOut,
+		ActuatorState_Stopped,
+		ActuatorState_Error
+	};
+
+	enum TrackerError
+	{
+		TrackerError_Ok,
+		TrackerError_SerialPort,
+		TrackerError_FailedToAccessRTC,
+		TrackerError_HorizontalActuator,
+		TrackerError_VerticalActuator
 	};
 }

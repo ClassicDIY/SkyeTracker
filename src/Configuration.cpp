@@ -20,13 +20,13 @@ namespace SkyeTracker
 		_dualAxis = val;
 	}
 
-	void Configuration::SetLocation(float lat, float lon)
+	void Configuration::SetLocation(double lat, double lon)
 	{
 		_latitude = lat;
 		_longitude = lon;
 	}
 
-	void Configuration::SetLimits(float minAzimuth, float maxAzimuth, float minElevation, float maxElevation)
+	void Configuration::SetLimits(int minAzimuth, int maxAzimuth, int minElevation, int maxElevation)
 	{
 		_eastAzimuth = minAzimuth;
 		_westAzimuth = maxAzimuth;
@@ -70,7 +70,7 @@ namespace SkyeTracker
 		}
 	}
 
-	void Configuration::SetUTCOffset(int val)
+	void Configuration::SetUTCOffset(signed char val)
 	{
 		_timeZoneOffsetToUTC = val;
 	}
@@ -97,6 +97,17 @@ namespace SkyeTracker
 		_maximumElevation = deserialFloat(&(_buffer[14]));
 		_latitude = deserialFloat(&(_buffer[18]));
 		_longitude = deserialFloat(&(_buffer[22]));
+
+	}
+
+	void Configuration::LoadFactoryDefault()
+	{
+		setDual(true);
+		SetUTCOffset(-4);
+		SetLimits(90, 270, 0, 90);
+		//45.936527, 75.091259 Lac Simon
+		SetLocation(45.936527, 75.091259);
+		Save();
 	}
 
 	void serialFloat(byte * buffer, float f) {
@@ -119,34 +130,45 @@ namespace SkyeTracker
 			_buffer[0] = 1;
 		else
 			_buffer[0] = 0;
-		_buffer[1] = (unsigned char)_timeZoneOffsetToUTC;
+		_buffer[1] = (signed char)_timeZoneOffsetToUTC;
 		serialFloat(&(_buffer[2]), _eastAzimuth);
 		serialFloat(&(_buffer[6]), _westAzimuth);
 		serialFloat(&(_buffer[10]), _minimumElevation);
 		serialFloat(&(_buffer[14]), _maximumElevation);
-		serialFloat(&(_buffer[18]), _latitude);
+		serialFloat(&(_buffer[18]), _latitude);  // arduino nano double is the same as float
 		serialFloat(&(_buffer[22]), _longitude);
 		_rtc->writenvram(0, _buffer, DS1307_RAM_SIZE);
 
-		for (int i = 0; i < DS1307_RAM_SIZE; i++)
-		{
-			Serial.print(_buffer[i], HEX);
-			Serial.print(" ");
-		}
+		//for (int i = 0; i < DS1307_RAM_SIZE; i++)
+		//{
+		//	Serial.print(_buffer[i], HEX);
+		//	Serial.print(" ");
+		//}
 	}
 
+	/*
+	Configuration|{"_dual":true,"_lat":45.936527,"_long":75.091255,"_eastAz":90.0,"_westAz":270.0,"_minElevation":0.0,"_maxElevation":90.0,"_offsetToUTC":-4,"_secondsTime":1444033308}
+	*/
 
-	void Configuration::PrintJson()
+	void Configuration::SendConfiguration()
 	{
-		ConfigTransfer ct;
-		ct._dual = isDual();
-		ct._eastAz = getEastAzimuth();
-		ct._westAz = getWestAzimuth();
-		ct._maxElevation = getMaximumElevation();
-		ct._minElevation = getMinimumElevation();
-		ct._lat = getLat();
-		ct._long = getLon();
-		ct._offsetToUTC = getTimeZoneOffsetToUTC();
-		ct.PrintJson();
+		Serial.print("Cf|{");
+		Serial.print("\"d\":");
+		Serial.print(isDual() ? "true" : "false");
+		Serial.print(",\"a\":");
+		Serial.print(getLat(), 6);
+		Serial.print(",\"o\":");
+		Serial.print(getLon(), 6);
+		Serial.print(",\"e\":");
+		Serial.print(getEastAzimuth());
+		Serial.print(",\"w\":");
+		Serial.print(getWestAzimuth());
+		Serial.print(",\"n\":");
+		Serial.print(getMinimumElevation());
+		Serial.print(",\"x\":");
+		Serial.print(getMaximumElevation());
+		Serial.print(",\"u\":");
+		Serial.print(getTimeZoneOffsetToUTC());
+		Serial.println("}");
 	}
 }

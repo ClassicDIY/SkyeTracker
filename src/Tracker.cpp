@@ -8,6 +8,8 @@ namespace SkyeTracker
 	{
 		_config = config;
 		_rtc = rtc;
+		_errorState = TrackerError_Ok;
+		_broadcastPosition = false;
 	}
 
 	Tracker::~Tracker()
@@ -20,9 +22,12 @@ namespace SkyeTracker
 
 	void Tracker::Initialize(ThreadController* controller)
 	{
-		_trackerState = Initializing;
+		_trackerState = TrackerState_Initializing;
 		Serial.println("Creating the Sun");
-		_sun = new Sun(_config->getLat(), _config->getLon(), _config->getTimeZoneOffsetToUTC());
+		float lon = _config->getLon();
+		_sun = new Sun(_config->getLat(), -lon, _config->getTimeZoneOffsetToUTC());
+		DateTime now = _rtc->now();
+		_sun->calcSun(now.year(), now.month(), now.day(), now.hour(), now.minute(), now.second());
 		Serial.println("Initializing horizontal actuator");
 		_azimuth = new LinearActuator(A1, 7, 2, 3);
 		controller->add(_azimuth);
@@ -34,28 +39,27 @@ namespace SkyeTracker
 			controller->add(_elevation);
 			_elevation->Initialize(_config->getMinimumElevation(), _config->getMaximumElevation());
 		}
-		DateTime now = _rtc->now();
 		Serial.println("Setting up controller");
 		setInterval(POSITION_UPDATE_INTERVAL);
 		controller->add(this);
-		_trackerState = Standby;
+		_trackerState = TrackerState_Standby;
 	}
 
 	void Tracker::Move(Direction dir)
 	{
 		switch (dir)
 		{
-		case SkyeTracker::East:
+		case SkyeTracker::Direction_East:
 			_azimuth->MoveIn();
 			break;
-		case SkyeTracker::West:
+		case SkyeTracker::Direction_West:
 			_azimuth->MoveOut();
 			break;
-		case SkyeTracker::Up:
-			_elevation->MoveIn();
-			break;
-		case SkyeTracker::Down:
+		case SkyeTracker::Direction_Up: // vertical actuator is wired in reverse due to mechanical setup
 			_elevation->MoveOut();
+			break;
+		case SkyeTracker::Direction_Down:
+			_elevation->MoveIn();
 			break;
 		default:
 			break;
@@ -70,7 +74,21 @@ namespace SkyeTracker
 
 	void Tracker::Track()
 	{
-		_trackerState = Tracking;
+		if (_errorState != TrackerError_Ok)
+		{
+			Serial.println("Error detected, Tracker moving to default position");
+			// move array to face south as a default position when an error exists
+			_azimuth->MoveTo(180);
+			if (_config->isDual())
+			{
+				_elevation->MoveTo(45);
+			}
+		}
+		else if (getState() != TrackerState_Initializing && getState() != TrackerState_Off)
+		{
+			_trackerState = TrackerState_Tracking;
+			this->run();
+		}
 	}
 
 	void Tracker::WaitForMorning()
@@ -78,7 +96,7 @@ namespace SkyeTracker
 		_azimuth->Retract(); // wait for morning, full east, lowest elevation
 		if (_config->isDual())
 		{
-			_elevation->Extend();
+			_elevation->Retract();
 		}
 		Serial.println("Waiting For Morning");
 	}
@@ -94,60 +112,72 @@ namespace SkyeTracker
 		}
 		if (_config->isDual())
 		{
-			float invertedAngle = 90 - _sun->elevation();
-			if (abs(invertedAngle - _elevation->CurrentAngle()) > POSITIONINTERVAL)
+			if (abs(_sun->elevation() - _elevation->CurrentAngle()) > POSITIONINTERVAL)
 			{
 				String s = "Move elevation to: ";
 				s = s + _sun->elevation();
 				Serial.println(s);
-				_elevation->MoveTo(invertedAngle);
+				_elevation->MoveTo(_sun->elevation());
 			}
 		}
 	}
 
+
+
 	TrackerState Tracker::getState()
 	{
-		if (_azimuth->getState() == AcxtuatorInitializing)
+		if (_azimuth->getState() == ActuatorState_Initializing)
 		{
-			return Initializing;
+			return TrackerState_Initializing;
 		}
-		if (_config->isDual() && _elevation->getState() == AcxtuatorInitializing)
+		if (_config->isDual() && _elevation->getState() == ActuatorState_Initializing)
 		{
-			return Initializing;
+			return TrackerState_Initializing;
+		}
+		if (_azimuth->getState() == ActuatorState_Error)
+		{
+			_errorState = TrackerError_HorizontalActuator;
+			return TrackerState_Initializing;
+		}
+		if (_config->isDual() && _elevation->getState() == ActuatorState_Error)
+		{
+			_errorState = TrackerError_VerticalActuator;
+			return TrackerState_Initializing;
 		}
 		return _trackerState;
 	}
 
 	void Tracker::run() {
 		runned();
-		if (_trackerState == Tracking || _trackerState == Dark)
+		if (getState() == TrackerState_Tracking)
 		{
 			DateTime now = _rtc->now();
 			_sun->calcSun(now.year(), now.month(), now.day(), now.hour(), now.minute(), now.second());
 			if (_sun->ItsDark())
 			{
-				if (_trackerState == Tracking)
-				{
-					_trackerState = Dark;
-					WaitForMorning();
-				}
+				WaitForMorning();
 			}
 			else
 			{
-				_trackerState = Tracking;
 				TrackToSun();
 			}
 		}
 		
 	};
 
-	void Tracker::ProcessCommand(String input)
+	/// <summary>
+	///  Process commands received from android app
+	/// </summary>
+	/// <param name="input"></param>
+	void Tracker::ProcessCommand(const char* input)
 	{
-		boolean afterDelimiter = false; 
-		String command = "";
-		String data = "";
+		boolean afterDelimiter = false;
+		char command[32];
+		char data[32];
+		int commandIndex = 0;
+		int dataIndex = 0;
 
-		for (int i = 0; i < input.length(); i++)
+		for (int i = 0; i < strlen(input); i++)
 		{
 			if (input[i] == '|')
 			{
@@ -160,84 +190,138 @@ namespace SkyeTracker
 			}
 			if (afterDelimiter == false)
 			{
-				command.concat(input[i]);
+				command[commandIndex++] = input[i];
+				if (commandIndex >= sizeof(command))
+				{
+					Serial.println("Command oveflow");
+				}
 			}
 			else
 			{
-				data.concat(input[i]);
+				data[dataIndex++] = input[i];
+				if (dataIndex >= sizeof(data))
+				{
+					Serial.println("data oveflow");
+				}
 			}
 		}
-		if (command.compareTo("Command") == 0)
-		{
-			ProcessArgument(data);
-		}
-		else if (command.compareTo("SetConfiguration") == 0)
-		{
-			ProcessArgument(data);
-		}
-		else if (command.compareTo("Date") == 0)
-		{
-			ProcessArgument(data);
-		}
-		else if (command.compareTo("Time") == 0)
-		{
-			ProcessArgument(data);
-		}
-		else if (command.compareTo("MoveTo") == 0)
-		{
-			ProcessArgument(data);
-		}
-	}
+		command[commandIndex++] = NULL;
+		data[dataIndex++] = NULL;
 
-	void Tracker::ProcessArgument(String arg)
-	{
-		if (arg.compareTo("Track") == 0)
+		Serial.print(command);
+		Serial.print("|");
+		Serial.println(data);
+
+		if (strcmp(command, "Track") == 0)
 		{
 			Track();
 		}
-		else if (arg.compareTo("Stop") == 0)
+		else if (strcmp(command, "Stop") == 0)
 		{
+			_trackerState = TrackerState_Testing;
 			Stop();
 		}
-		else if (arg.compareTo("East") == 0)
+		else if (strcmp(command, "GetConfiguration") == 0)
 		{
-			Move(East);
+			_config->SendConfiguration();
 		}
-		else if (arg.compareTo("West") == 0)
+		else if (strcmp(command, "GetDateTime") == 0)
 		{
-			Move(West);
+			sendDateTime();
 		}
-		else if (arg.compareTo("Up") == 0)
+		else if (strcmp(command, "BroadcastPosition") == 0)
 		{
-			Move(Up);
+			_broadcastPosition = true;
 		}
-		else if (arg.compareTo("Down") == 0)
+		else if (strcmp(command, "StopBroadcast") == 0)
 		{
-			Move(Down);
+			_broadcastPosition = false;
 		}
-		else if (arg.compareTo("Load") == 0)
+		else if (strcmp(command, "SetC") == 0) // set configuration
 		{
-			_config->Load();
+			StaticJsonBuffer<64> jsonBuffer;
+			JsonObject& root = jsonBuffer.parseObject(data);
+			if (root.success()) {
+				_config->SetLocation(root["a"], root["o"]);
+				_config->Save();
+				delete _sun;
+				float lon = _config->getLon();
+				_sun = new Sun(_config->getLat(), -lon, _config->getTimeZoneOffsetToUTC());
+				run();
+			}
+
 		}
-		else if (arg.compareTo("Save") == 0)
+		else if (strcmp(command, "SetL") == 0) // set limits
 		{
-			_config->Save();
+			StaticJsonBuffer<64> jsonBuffer;
+			JsonObject& root = jsonBuffer.parseObject(data);
+			if (root.success()) {
+				_config->SetLimits(root["e"], root["w"], root["n"], root["x"]);
+				_config->Save();
+				_azimuth->Initialize(_config->getEastAzimuth(), _config->getWestAzimuth());
+				if (_config->isDual())
+				{
+					_elevation->Initialize(_config->getMinimumElevation(), _config->getMaximumElevation());
+				}
+				run();
+			}
 		}
-		else if (arg.compareTo("GetConfiguration") == 0)
+		else if (strcmp(command, "SetO") == 0) // set options
 		{
-			_config->PrintJson();
+			StaticJsonBuffer<64> jsonBuffer;
+			JsonObject& root = jsonBuffer.parseObject(data);
+			if (root.success()) {
+				_config->SetUTCOffset(root["u"]);
+				_config->setDual(root["d"]);
+				_config->Save();
+				run();
+			}
 		}
-		else if (arg.compareTo("GetPosition") == 0)
+		else if (strcmp(command, "SetDateTime") == 0)
 		{
-			Position ap = getTrackerOrientation();
-			SunsPosition sp =  getSunsPosition();
-			PositionTransfer pt;
-			pt._sunAz = sp.Azimuth;
-			pt._sunEl = sp.Elevation;
-			pt._isDark = sp.Dark;
-			pt._arrayAz = ap.Azimuth;
-			pt._arrayEl = ap.Elevation;
-			pt.PrintJson();
+			_rtc->adjust(DateTime(atol(data)));
+		}
+		else if (strcmp(command, "MoveTo") == 0)
+		{
+			MoveTo(data);
+		}
+	}
+
+	void Tracker::MoveTo(char* arg)
+	{
+		_trackerState = TrackerState_Testing;
+		if (strcmp(arg, "East") == 0)
+		{
+			Move(Direction_East);
+		}
+		else if (strcmp(arg, "West") == 0)
+		{
+			Move(Direction_West);
+		}
+		else if (strcmp(arg ,"Up") == 0)
+		{
+			Move(Direction_Up);
+		}
+		else if (strcmp(arg, "Down") == 0)
+		{
+			Move(Direction_Down);
+		}
+	}
+
+	/// <summary>
+	/// Send configuration and position information out on serial port for android app
+	/// Position|{"_isDark":false,"_arrayAz":inf,"_arrayEl":ovf,"_sunAz":0.0,"_sunEl":0.0}
+	/// </summary>
+	void Tracker::BroadcastPosition()
+	{
+		if (_broadcastPosition) { // received broadcast command from android app?
+			Serial.print("Po|{");
+			sendTrackerPosition();
+			Serial.print(",");
+			sendSunsPosition();
+			Serial.print(",");
+			sendState();
+			Serial.println("}");
 		}
 	}
 }

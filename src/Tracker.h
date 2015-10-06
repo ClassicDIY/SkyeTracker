@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Arduino.h"
+#include "ArduinoJson.h"
 #include <ThreadController.h>
 #include <Thread.h>
 #include "RTClib.h"
@@ -9,7 +10,6 @@
 #include "Configuration.h"
 #include "Enumerations.h"
 #include "Position.h"
-#include "PositionTransfer.h"
 #include"ConfigTransfer.h"
 
 #define POSITION_UPDATE_INTERVAL 60000 // Check tracker every minute
@@ -24,28 +24,50 @@ namespace SkyeTracker
 		Tracker(Configuration* config, RTC_DS1307* rtc);
 		~Tracker();
 
+		TrackerError _errorState;
 		void Initialize(ThreadController* controller);
 		void Move(Direction dir);
 		void Stop();
 		void Track();
-		Position getTrackerOrientation()
+		void sendTrackerPosition()
 		{
-			Position p;
-			p.Azimuth = _azimuth->CurrentAngle();
-			p.Elevation = 90 - _elevation->CurrentAngle();
-			return p;
+			Serial.print("\"aZ\":"); // array azimuth
+			Serial.print(_azimuth->CurrentAngle());
+			Serial.print(",\"hP\":"); // horizontal position
+			Serial.print(_azimuth->CurrentPosition());
+			Serial.print(",\"aE\":"); // array elevation
+			Serial.print(_elevation->CurrentAngle());
+			Serial.print(",\"vP\":"); // vertical position
+			Serial.print(_elevation->CurrentPosition());
 		};
-		SunsPosition getSunsPosition()
+		void sendSunsPosition()
 		{
-			SunsPosition p;
-			p.Azimuth = _sun->azimuth();
-			p.Elevation = _sun->elevation();
-			p.Dark = _sun->ItsDark();
-			return p;
+			Serial.print("\"dk\":"); // isDark
+			Serial.print(_sun->ItsDark() ? "true" : "false");
+			Serial.print(",\"sZ\":"); // sun azimuth
+			Serial.print(_sun->azimuth());
+			Serial.print(",\"sE\":"); // sun elevation
+			Serial.print(_sun->elevation());
+		};
+		void sendDateTime()
+		{
+			Serial.print("Dt|{");
+			Serial.print("\"sT\":"); // seconds in unixtime
+			Serial.print(_rtc->now().unixtime());
+			Serial.println("}");
+		};
+		void sendState()
+		{
+			Serial.print("\"tS\":"); // tracker state
+			Serial.print(getState());
+			Serial.print(",\"tE\":"); // tracker status
+			Serial.print(_errorState);
 		};
 		TrackerState getState();
-		void ProcessCommand(String cmd);
-		void ProcessArgument(String arg);
+		void ProcessCommand(const char* input);
+
+		void BroadcastPosition();
+
 
 	protected:
 		void run();
@@ -57,11 +79,12 @@ namespace SkyeTracker
 		LinearActuator* _elevation;
 		RTC_DS1307* _rtc;
 		Sun* _sun;
-
-		TrackerState _trackerState = Off;
+		bool _broadcastPosition;
+		TrackerState _trackerState = TrackerState_Off;
 
 		void WaitForMorning();
 		void TrackToSun();
+		void MoveTo(char* arg);
 	};
 
 }
