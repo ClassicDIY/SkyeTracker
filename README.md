@@ -3,7 +3,14 @@ Dual Axis solar tracker
 
 This is a work in progress, a similar project using the Netduino can be found at http://solartracker.codeplex.com/
 
-This project requires the following libraries;
+Used the following development tools
+
+Visual Studio 2015 with Visual Micro extension for arduino code
+Android Studio for mobile app development
+Diptrace for schematic & pcb
+Sketchup for mechanical drawings
+
+The arduino project requires the following libraries;
 
   https://github.com/bblanchon/ArduinoJson
 
