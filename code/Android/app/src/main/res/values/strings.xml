@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">SkyeTracker</string>
+    <string name="MoveTabTitle">Move</string>
+    <string name="SetupTabTitle">Setup</string>
+    <string name="InfoTabTitle">Info</string>
+    <string name="AboutTabTitle">About</string>
+
+</resources>

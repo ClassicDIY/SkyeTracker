@@ -1,0 +1,205 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context=".MyActivity$PlaceholderFragment">
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+        <LinearLayout
+            style="@style/InfoLayout">
+            <TextView
+                style="@style/InfoLabel"
+                android:text="Tracker State: "/>
+            <TextView
+                android:id="@+id/textTrackerState"
+                style="@style/InfoValue"
+                android:text="-"/>
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/InfoLayout">
+            <TextView
+                style="@style/InfoLabel"
+                android:text="Tracker Status: "/>
+            <TextView
+                android:id="@+id/textTrackerError"
+                style="@style/InfoValue"
+                android:text="-"/>
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/InfoLayout">
+            <TextView
+                style="@style/InfoLabel"
+                android:text="Dual Axis: "/>
+            <TextView
+                android:id="@+id/textDualAxis"
+                style="@style/InfoValue"
+                android:text="-"/>
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/InfoLayout">
+            <TextView
+                style="@style/InfoLabel"
+                android:text="Latitude: "/>
+            <TextView
+                android:id="@+id/textLatitude"
+                style="@style/InfoValue"
+                android:text="-"/>
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/InfoLayout">
+            <TextView
+                style="@style/InfoLabel"
+                android:text="Longitude: "/>
+            <TextView
+                android:id="@+id/textLongitude"
+                style="@style/InfoValue"
+                android:text="-"/>
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/InfoLayout">
+            <TextView
+                style="@style/InfoLabel"
+                android:text="Date/Time: "/>
+            <TextView
+                android:id="@+id/textDateTime"
+                style="@style/InfoValue"
+                android:text="-"/>
+        </LinearLayout>
+        <LinearLayout
+            style="@style/InfoLayout">
+            <TextView
+                style="@style/InfoLabel"
+                android:text="UTC offset: "/>
+            <TextView
+                android:id="@+id/textUtcOffset"
+                style="@style/InfoValue"
+                android:text="-"/>
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/InfoLayout">
+            <TextView
+                style="@style/InfoLabel"
+                android:text="Horizontal Actuator Position: "/>
+            <TextView
+                android:id="@+id/textHorizontalActuatorPosition"
+                style="@style/InfoValue"
+                android:text="-"/>
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/InfoLayout">
+            <TextView
+                style="@style/InfoLabel"
+                android:text="Vertical Actuator Position: "/>
+            <TextView
+                android:id="@+id/textVerticalActuatorPosition"
+                style="@style/InfoValue"
+                android:text="-"/>
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/InfoLayout">
+            <TextView
+                style="@style/InfoLabel"
+                android:text="ArrayAzimuth: "/>
+            <TextView
+                android:id="@+id/textArrayAzimuth"
+                style="@style/InfoValue"
+                android:text="-"/>
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/InfoLayout">
+            <TextView
+                style="@style/InfoLabel"
+                android:text="ArrayElevation: "/>
+            <TextView
+                android:id="@+id/textArrayElevation"
+                style="@style/InfoValue"
+                android:text="-"/>
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/InfoLayout">
+            <TextView
+                style="@style/InfoLabel"
+                android:text="Sun Azimuth: "/>
+            <TextView
+                android:id="@+id/textSunAzimuth"
+                style="@style/InfoValue"
+                android:text="-"/>
+        </LinearLayout>
+
+
+        <LinearLayout
+            style="@style/InfoLayout">
+            <TextView
+                style="@style/InfoLabel"
+                android:text="Sun Elevation: "/>
+            <TextView
+                android:id="@+id/textSunElevation"
+                style="@style/InfoValue"
+                android:text="-"/>
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/InfoLayout">
+            <TextView
+                style="@style/InfoLabel"
+                android:text="East Azimuth: "/>
+            <TextView
+                android:id="@+id/textMinAzimuth"
+                style="@style/InfoValue"
+                android:text="-"/>
+        </LinearLayout>
+        <LinearLayout
+            style="@style/InfoLayout">
+            <TextView
+                style="@style/InfoLabel"
+                android:text="West Azimuth: "/>
+            <TextView
+                android:id="@+id/textMaxAzimuth"
+                style="@style/InfoValue"
+                android:text="-"/>
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/InfoLayout">
+            <TextView
+                style="@style/InfoLabel"
+                android:text="Mininimum Elevation: "/>
+            <TextView
+                android:id="@+id/textMinElevation"
+                style="@style/InfoValue"
+                android:text="-"/>
+        </LinearLayout>
+        <LinearLayout
+            style="@style/InfoLayout">
+            <TextView
+                style="@style/InfoLabel"
+                android:text="Maximum Elevation: "/>
+            <TextView
+                android:id="@+id/textMaxElevation"
+                style="@style/InfoValue"
+                android:text="-"/>
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+
+</FrameLayout><!-- From: file:/C:/Users/Me/Google%20Drive/Dev/SkyeTracker/Android%20App/SkyeTracker/app/src/main/res/layout/info.xml -->
