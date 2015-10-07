@@ -1,14 +1,17 @@
 # SkyeTracker
 Dual Axis solar tracker
 
+
 This is a work in progress, a similar project using the Netduino can be found at http://solartracker.codeplex.com/
 
-Used the following development tools
+Used the following development tools;
 
-Visual Studio 2015 with Visual Micro extension for arduino code
-Android Studio for mobile app development
-Diptrace for schematic & pcb
-Sketchup for mechanical drawings
+<ul>
+  <li>Visual Studio 2015 with Visual Micro extension for arduino code.</li>
+  <li>Android Studio for mobile app development.</li>
+  <li>Diptrace for schematic & pcb.</li>
+  <li>Sketchup for mechanical drawings.</li>
+</ul>
 
 The arduino project requires the following libraries;
 
