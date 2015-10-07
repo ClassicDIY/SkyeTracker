@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Arduino.h"
+#include <Arduino.h>
 #include "RTClib.h"
 #include "ConfigTransfer.h"
 

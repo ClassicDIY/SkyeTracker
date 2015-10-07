@@ -29,3 +29,12 @@ proguard/
 # idea files
 *.iml
 .idea/
+*.user
+*.tlog
+*.obj
+*.idb
+*.pdb
+code/Arduino/__vm/.Arduino.vsarduino.h
+code/Arduino/__vm/Compile.vmps.xml
+code/Arduino/__vm/Configuration.Debug.vmps.xml
+code/Arduino/.vs/SkyeTracker/v14/.suo

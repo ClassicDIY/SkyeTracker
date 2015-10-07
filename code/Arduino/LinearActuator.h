@@ -1,6 +1,5 @@
 #pragma once
-
-#include "Arduino.h"
+#include <Arduino.h>
 #include <ThreadController.h>
 #include <Thread.h>
 #include "Enumerations.h"

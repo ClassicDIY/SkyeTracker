@@ -1,7 +1,6 @@
 #pragma once
-
-#include "Arduino.h"
-#include "ArduinoJson.h"
+#include <Arduino.h>
+#include <ArduinoJson.h>
 #include <ThreadController.h>
 #include <Thread.h>
 #include "RTClib.h"
