@@ -1,9 +1,6 @@
 # SkyeTracker
 Dual Axis solar tracker
 
-
-This is a work in progress, a similar project using the Netduino can be found at http://solartracker.codeplex.com/
-
 Used the following development tools;
 
 <ul>
