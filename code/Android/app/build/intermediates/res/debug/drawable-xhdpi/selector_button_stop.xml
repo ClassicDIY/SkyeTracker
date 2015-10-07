@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@drawable/stop_pressed"
-        android:state_pressed="true" />
-    <item android:drawable="@drawable/stop" />
-</selector><!-- From: file:/C:/Users/Me/Google%20Drive/Dev/SkyeTracker/Android%20App/SkyeTracker/app/src/main/res/drawable-xhdpi/selector_button_stop.xml -->
