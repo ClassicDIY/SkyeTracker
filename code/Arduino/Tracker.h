@@ -12,6 +12,7 @@
 #include"ConfigTransfer.h"
 
 #define POSITION_UPDATE_INTERVAL 60000 // Check tracker every minute
+#define CYCLE_POSITION_UPDATE_INTERVAL 5000 // Check tracker every 5 seconds
 #define POSITIONINTERVAL 5 // Move array when sun moves 5 degrees past current position
 
 
@@ -25,9 +26,15 @@ namespace SkyeTracker
 
 		TrackerError _errorState;
 		void Initialize(ThreadController* controller);
+		void Track();
+		TrackerState getState();
+		void BroadcastPosition();
+		void ProcessCommand(const char* input);
+
+	private:
 		void Move(Direction dir);
 		void Stop();
-		void Track();
+		void Cycle();
 		void sendTrackerPosition()
 		{
 			Serial.print("\"aZ\":"); // array azimuth
@@ -62,16 +69,8 @@ namespace SkyeTracker
 			Serial.print(",\"tE\":"); // tracker status
 			Serial.print(_errorState);
 		};
-		TrackerState getState();
-		void ProcessCommand(const char* input);
 
-		void BroadcastPosition();
-
-
-	protected:
 		void run();
-
-	private:
 
 		Configuration* _config;
 		LinearActuator* _azimuth;
@@ -80,7 +79,7 @@ namespace SkyeTracker
 		Sun* _sun;
 		bool _broadcastPosition;
 		TrackerState _trackerState = TrackerState_Off;
-
+		int cycleHour;
 		void WaitForMorning();
 		void TrackToSun();
 		void MoveTo(char* arg);

@@ -68,7 +68,7 @@ void loop()
 void runWorker()
 {
 	//freeMem("Run");
-	Serial.println("RAM in Run: " + String(freeRam(), DEC));
+	//Serial.println("RAM in Run: " + String(freeRam(), DEC));
 	_tracker.BroadcastPosition();
 }
 

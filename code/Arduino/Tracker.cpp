@@ -72,6 +72,16 @@ namespace SkyeTracker
 		_elevation->Stop();
 	}
 
+	void Tracker::Cycle()
+	{
+		Serial.println("Starting cycle");
+		cycleHour = 0;
+		enabled = true;
+		setInterval(CYCLE_POSITION_UPDATE_INTERVAL);
+		_trackerState = TrackerState_Cycling;
+		this->run();
+	}
+
 	void Tracker::Track()
 	{
 		if (_errorState != TrackerError_Ok)
@@ -83,9 +93,12 @@ namespace SkyeTracker
 			{
 				_elevation->MoveTo(45);
 			}
+			enabled = false; // don't run worker thread when error exists
 		}
 		else if (getState() != TrackerState_Initializing && getState() != TrackerState_Off)
 		{
+			enabled = true;
+			setInterval(POSITION_UPDATE_INTERVAL);
 			_trackerState = TrackerState_Tracking;
 			this->run();
 		}
@@ -122,8 +135,6 @@ namespace SkyeTracker
 		}
 	}
 
-
-
 	TrackerState Tracker::getState()
 	{
 		if (_azimuth->getState() == ActuatorState_Initializing)
@@ -149,18 +160,29 @@ namespace SkyeTracker
 
 	void Tracker::run() {
 		runned();
-		if (getState() == TrackerState_Tracking)
+		TrackerState state = getState();
+		DateTime now = _rtc->now();
+		switch (state)
 		{
-			DateTime now = _rtc->now();
-			_sun->calcSun(now.year(), now.month(), now.day(), now.hour(), now.minute(), now.second());
-			if (_sun->ItsDark())
-			{
-				WaitForMorning();
-			}
-			else
-			{
-				TrackToSun();
-			}
+			case TrackerState_Cycling:
+				cycleHour++;
+				cycleHour %= 24;
+				Serial.println(cycleHour);
+				_sun->calcSun(now.year(), now.month(), now.day(), cycleHour, 0, 0);
+				break;
+			case TrackerState_Tracking:
+				_sun->calcSun(now.year(), now.month(), now.day(), now.hour(), now.minute(), now.second());
+				break;
+			default:
+				return;
+		}
+		if (_sun->ItsDark())
+		{
+			WaitForMorning();
+		}
+		else
+		{
+			TrackToSun();
 		}
 		
 	};
@@ -216,9 +238,13 @@ namespace SkyeTracker
 		{
 			Track();
 		}
+		else if (strcmp(command, "Cycle") == 0)
+		{
+			Cycle();
+		}
 		else if (strcmp(command, "Stop") == 0)
 		{
-			_trackerState = TrackerState_Testing;
+			_trackerState = TrackerState_Moving;
 			Stop();
 		}
 		else if (strcmp(command, "GetConfiguration") == 0)
@@ -289,7 +315,7 @@ namespace SkyeTracker
 
 	void Tracker::MoveTo(char* arg)
 	{
-		_trackerState = TrackerState_Testing;
+		_trackerState = TrackerState_Moving;
 		if (strcmp(arg, "East") == 0)
 		{
 			Move(Direction_East);
