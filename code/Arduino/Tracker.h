@@ -41,10 +41,18 @@ namespace SkyeTracker
 			Serial.print(_azimuth->CurrentAngle());
 			Serial.print(",\"hP\":"); // horizontal position
 			Serial.print(_azimuth->CurrentPosition());
-			Serial.print(",\"aE\":"); // array elevation
-			Serial.print(_elevation->CurrentAngle());
-			Serial.print(",\"vP\":"); // vertical position
-			Serial.print(_elevation->CurrentPosition());
+			
+			if (_config->isDual())
+			{
+				Serial.print(",\"aE\":"); // array elevation
+				Serial.print(_elevation->CurrentAngle());
+				Serial.print(",\"vP\":"); // vertical position
+				Serial.print(_elevation->CurrentPosition());
+			}
+			else
+			{
+				Serial.print(",\"aE\":0,\"vP\":0"); // no elevation
+			}
 		};
 		void sendSunsPosition()
 		{

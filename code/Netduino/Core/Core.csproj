@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <AssemblyName>Core</AssemblyName>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Core</RootNamespace>
+    <ProjectTypeGuids>{b69e3092-b931-443c-abe7-7e7b65f2a37f};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <ProductVersion>9.0.21022</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{EE9F6807-4F3C-49D4-AE88-09A1FBE6D3AE}</ProjectGuid>
+    <TargetFrameworkVersion>v4.2</TargetFrameworkVersion>
+    <NetMfTargetsBaseDir Condition="'$(NetMfTargetsBaseDir)'==''">$(MSBuildExtensionsPath32)\Microsoft\.NET Micro Framework\</NetMfTargetsBaseDir>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
+  <ItemGroup>
+    <Compile Include="Contract.cs" />
+    <Compile Include="DebugLogger.cs" />
+    <Compile Include="Extensions\Activator.cs" />
+    <Compile Include="Extensions\IStringDictionary.cs" />
+    <Compile Include="Extensions\StringBuilder.cs" />
+    <Compile Include="Extensions\StringDictionary.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Extensions\StringReader.cs" />
+    <Compile Include="Hardware\I2C\I2CBusExtension.cs" />
+    <Compile Include="Hardware\Keypad\KeyPad.cs" />
+    <Compile Include="Hardware\LCD\Lcd.cs" />
+    <Compile Include="Hardware\RTC\DS1307.cs" />
+    <Compile Include="Hardware\Watchdog\Watchdog.cs" />
+    <Compile Include="JSON\JsonFormatter.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.SPOT.Hardware" />
+    <Reference Include="Microsoft.SPOT.Native">
+    </Reference>
+    <Reference Include="SecretLabs.NETMF.Hardware.Netduino, Version=4.2.1.0, Culture=neutral, processorArchitecture=MSIL" />
+    <Reference Include="System.IO" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MicroLiquidCrystal\MicroLiquidCrystal.csproj">
+      <Project>{B4B72543-E638-44F1-B096-9BBB6BD4698B}</Project>
+      <Name>MicroLiquidCrystal</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+</Project>
