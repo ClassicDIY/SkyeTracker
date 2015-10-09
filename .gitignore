@@ -39,3 +39,5 @@ code/Arduino/__vm/Compile.vmps.xml
 code/Arduino/__vm/Configuration.Debug.vmps.xml
 code/Arduino/.vs/SkyeTracker/v14/.suo
 code/Arduino/__vm/Upload.vmps.xml
+code/Android/app/app.iml
+code/Android/app/app.iml
