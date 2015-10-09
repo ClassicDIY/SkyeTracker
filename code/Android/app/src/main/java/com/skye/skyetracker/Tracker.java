@@ -13,12 +13,14 @@ import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.UUID;
 
 /**
@@ -99,71 +101,77 @@ public class Tracker extends IntentService {
         boolean rVal = false;
 
         BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
-        String address = "";
+        ArrayList<String> addresses = new ArrayList<String>();
         for (BluetoothDevice d : btAdapter.getBondedDevices()) {
             if (d.getName().equals("HC-06")) {
-                address = d.getAddress();
+                addresses.add(d.getAddress());
+            }
+        }
+        if (addresses.isEmpty()) {
+            Log.d(Constants.TAG, "...Could not find HC-06...");
+        } else {
+            for (String address : addresses) { // find find available HC-06 bluetooth device
+                try {
+
+                    // Set up a pointer to the remote node using it's address.
+                    BluetoothDevice device = btAdapter.getRemoteDevice(address);
+
+                    // Two things are needed to make a connection:
+                    //   A MAC address, which we got above.
+                    //   A Service ID or UUID.  In this case we are using the
+                    //     UUID for SPP.
+                    btSocket = createBluetoothSocket(device);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+
+                // Discovery is resource intensive.  Make sure it isn't going on
+                // when you attempt to connect and pass your message.
+                btAdapter.cancelDiscovery();
+
+                // Establish the connection.  This will block until it connects.
+                Log.d(Constants.TAG, "...Connecting...");
+                try {
+                    btSocket.connect();
+                    Log.d(Constants.TAG, "...Connection ok...");
+                } catch (IOException e) {
+                    Log.d(Constants.TAG, "...Failed to connect...");
+                    try {
+                        btSocket.close();
+                    } catch (IOException e2) {
+                        e2.printStackTrace();
+                    }
+                    continue;
+                }
+                InputStream tmpIn = null;
+                OutputStream tmpOut = null;
+
+                // Get the input and output streams, using temp objects because
+                // member streams are final
+                try {
+                    tmpIn = btSocket.getInputStream();
+                    tmpOut = btSocket.getOutputStream();
+                    rVal = true;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    continue;
+                }
+                bufferedReader = new BufferedReader(new InputStreamReader(tmpIn));
+                mmOutStream = tmpOut;
                 break;
             }
         }
-        if (address.isEmpty()) {
-            Log.d(Constants.TAG, "...Could not find HC-06...");
-        } else {
+        if (rVal) {
+            Write("\n");
             try {
-
-                // Set up a pointer to the remote node using it's address.
-                BluetoothDevice device = btAdapter.getRemoteDevice(address);
-
-                // Two things are needed to make a connection:
-                //   A MAC address, which we got above.
-                //   A Service ID or UUID.  In this case we are using the
-                //     UUID for SPP.
-                btSocket = createBluetoothSocket(device);
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
-
-            // Discovery is resource intensive.  Make sure it isn't going on
-            // when you attempt to connect and pass your message.
-            btAdapter.cancelDiscovery();
-
-            // Establish the connection.  This will block until it connects.
-            Log.d(Constants.TAG, "...Connecting...");
-            try {
-                btSocket.connect();
-                Log.d(Constants.TAG, "...Connection ok...");
-            } catch (IOException e) {
-                Log.d(Constants.TAG, "...Failed to connect...");
-                try {
-                    btSocket.close();
-                } catch (IOException e2) {
-                    e2.printStackTrace();
-                }
-            }
-            InputStream tmpIn = null;
-            OutputStream tmpOut = null;
-
-            // Get the input and output streams, using temp objects because
-            // member streams are final
-            try {
-                tmpIn = btSocket.getInputStream();
-                tmpOut = btSocket.getOutputStream();
-                rVal = true;
-            } catch (IOException e) {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            bufferedReader = new BufferedReader(new InputStreamReader(tmpIn));
-            mmOutStream = tmpOut;
+            Write("\nGetConfiguration\r");
+            Write("\nBroadcastPosition\r");
+            Write("\nGetDateTime\r");
         }
-        Write("\n");
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        Write("\nGetConfiguration\r");
-        Write("\nBroadcastPosition\r");
-        Write("\nGetDateTime\r");
         return rVal;
     }
 
