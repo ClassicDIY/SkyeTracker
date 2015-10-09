@@ -1,9 +1,11 @@
 package com.skye.skyetracker;
 
+import java.io.Serializable;
+
 /**
  * Created by Graham on 09/07/2015.
  */
-public class ConfigTransfer {
+public class ConfigTransfer implements Serializable {
 
     public boolean d; // dual axis
     public float a; // lat

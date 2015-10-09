@@ -6,10 +6,10 @@ android {
 
     defaultConfig {
         applicationId "com.skye.skyetracker"
-        minSdkVersion 14
+        minSdkVersion 21
         targetSdkVersion 21
-        versionCode 1
-        versionName "1.0"
+        versionCode 20
+        versionName "2.0"
     }
 
     signingConfigs {

@@ -1,5 +1,7 @@
 package com.skye.skyetracker;
 
-public class TimeTransfer {
+import java.io.Serializable;
+
+public class TimeTransfer implements Serializable {
     public int sT;
 }

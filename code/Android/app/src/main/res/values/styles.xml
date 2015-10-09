@@ -1,28 +1,35 @@
 <resources>
 
-    <style name="AppTheme" parent="Theme.AppCompat">
-        <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
-        <item name="android:textColorPrimary">@color/text_primary</item>
-        <item name="android:shadowColor">@color/text_primary_inverse</item>
-    </style>
-
-
-    <style name="DrawerArrowStyle" parent="Widget.AppCompat.DrawerArrowToggle">
-        <item name="spinBars">true</item>
-        <item name="color">@android:color/holo_orange_light</item>
+    <style name="AppTheme" parent="android:Theme.Material">
     </style>
 
     <style name="InfoLabel" parent="@android:style/TextAppearance.Medium">
         <item name="android:layout_width">fill_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:gravity">left</item>
-        <item name="android:textColor">@color/White</item>
-        <item name="android:shadowColor">@color/Red</item>
-        <item name="android:textSize">@dimen/abc_text_size_medium_material</item>
-        <item name="android:typeface">monospace</item>
-        <item name="android:shadowDx">1</item>
-        <item name="android:shadowDy">1</item>
-        <item name="android:shadowRadius">1</item>
+        <item name="android:textColor">@color/material_blue_grey_800</item>
+        <item name="android:textSize">@dimen/abc_text_size_small_material</item>
+        <item name="android:typeface">sans</item>
+    </style>
+
+
+    <style name="SetupLabel" parent="@android:style/TextAppearance.Medium">
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">left</item>
+        <item name="android:textColor">@color/material_blue_grey_800</item>
+        <item name="android:textSize">@dimen/abc_text_size_title_material</item>
+        <item name="android:typeface">sans</item>
+    </style>
+
+    <style name="GroupLabel" parent="@android:style/TextAppearance.Medium">
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">left</item>
+        <item name="android:textColor">@color/Gray</item>
+        <item name="android:textSize">@dimen/abc_text_size_small_material</item>
+        <item name="android:typeface">sans</item>
+        <item name="android:paddingTop">5dp</item>
     </style>
 
     <style name="InfoValue" parent="@android:style/TextAppearance.Medium">
@@ -30,8 +37,8 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:gravity">left</item>
         <item name="android:textColor">@color/Black</item>
-        <item name="android:shadowColor">@color/Yellow</item>
-        <item name="android:textSize">@dimen/abc_text_size_large_material</item>
+        <item name="android:shadowColor">@color/WhiteSmoke</item>
+        <item name="android:textSize">@dimen/abc_text_size_body_2_material</item>
         <item name="android:typeface">monospace</item>
         <item name="android:shadowDx">1</item>
         <item name="android:shadowDy">1</item>
@@ -44,7 +51,23 @@
         <item name="android:layout_gravity">left</item>
         <item name="android:gravity">center_horizontal</item>
         <item name="android:orientation">horizontal</item>
-        <item name="android:paddingTop">5dp</item>
+        <item name="android:paddingTop">2dp</item>
     </style>
 
+    <style name="ButtonAppTheme" parent="android:Widget.Material.Button">
+        <item name="android:background">@color/material_deep_teal_500</item>
+    </style>
+
+    <style name="btnStyleGenoa" parent="@android:style/Widget.Button">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:gravity">center</item>
+        <item name="android:shadowColor">#000000</item>
+        <item name="android:shadowDx">1</item>
+        <item name="android:shadowDy">1</item>
+        <item name="android:shadowRadius">0.6</item>
+        <item name="android:background">@drawable/custom_btn_genoa</item>
+        <item name="android:padding">10dip</item>
+    </style>
 </resources>

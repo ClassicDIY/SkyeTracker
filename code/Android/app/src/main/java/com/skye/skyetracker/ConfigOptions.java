@@ -1,6 +1,8 @@
 package com.skye.skyetracker;
 
-public class ConfigOptions {
+import java.io.Serializable;
+
+public class ConfigOptions implements Serializable {
 
     public ConfigOptions(ConfigTransfer cfg) {
         d = cfg.d;

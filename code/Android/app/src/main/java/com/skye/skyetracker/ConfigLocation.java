@@ -1,6 +1,8 @@
 package com.skye.skyetracker;
 
-public class ConfigLocation {
+import java.io.Serializable;
+
+public class ConfigLocation implements Serializable {
 
     public ConfigLocation(ConfigTransfer cfg) {
         a = cfg.a;

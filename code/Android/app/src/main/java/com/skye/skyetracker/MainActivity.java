@@ -1,21 +1,28 @@
 package com.skye.skyetracker;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends Activity {
 
     private Menu mMenu;
     private TabStripAdapter tabStripAdapter;
     private SlidingTabLayout stl;
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        MainApplication.SendCommand("StopBroadcast");
+    }
+
     private ViewPager viewPager;
 
     @Override
@@ -42,7 +49,15 @@ public class MainActivity extends ActionBarActivity {
             // This method will be invoked when a new page becomes selected.
             @Override
             public void onPageSelected(int position) {
-                MainApplication.SendCommand("GetConfiguration");
+                if (position == 0 || position == 2) {
+                    MainApplication.SendCommand("GetConfiguration");
+                }
+                if (position > 0) {
+                    MainApplication.SendCommand("StopBroadcast");
+                }
+                else {
+                    MainApplication.SendCommand("BroadcastPosition");
+                }
             }
 
             @Override

@@ -5,10 +5,19 @@
     android:layout_height="fill_parent"
     tools:context=".CalibratePage">
 
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:weightSum="60">
+
+
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
+            android:layout_height="0dp"
+            android:layout_gravity="top"
+            android:paddingTop="30dp"
+            android:layout_weight="40"
             android:orientation="vertical">
 
             <Button
@@ -62,23 +71,47 @@
                     android:background="@drawable/selector_button_down" />
 
 
-
             </LinearLayout>
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:gravity="center_horizontal|bottom"
-        android:paddingTop="25dp"
-        android:orientation="horizontal">
-            <Button
-                android:id="@+id/btnTrack"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="right"
-                android:background="@drawable/track_button" />
-    </LinearLayout>
-        </LinearLayout>
 
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:paddingTop="15dp">
+
+                <LinearLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:gravity="center_horizontal"
+                    android:orientation="horizontal"
+                    android:paddingTop="5dp"
+                    android:weightSum="60">
+
+                    <Button
+                        android:id="@+id/btnTrack"
+                        style="@style/btnStyleGenoa"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:layout_weight="15"
+                        android:text="Track" />
+
+                    <Button
+                        android:id="@+id/btnTest"
+                        style="@style/btnStyleGenoa"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="20dp"
+                        android:layout_weight="15"
+                        android:text="Test" />
+
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
 
 </FrameLayout>

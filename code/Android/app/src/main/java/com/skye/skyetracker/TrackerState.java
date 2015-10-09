@@ -6,6 +6,7 @@ public enum TrackerState
     TrackerState_Off,
     TrackerState_Initializing,
     TrackerState_Standby,
-    TrackerState_Testing,
+    TrackerState_Moving,
+    TrackerState_Cycling,
     TrackerState_Tracking
 }

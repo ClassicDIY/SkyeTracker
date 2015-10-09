@@ -1,6 +1,5 @@
 package com.skye.skyetracker;
 
-import android.app.Application;
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -11,18 +10,10 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import com.google.gson.Gson;
-
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 /**
@@ -109,8 +100,11 @@ public class InfoTab extends Fragment {
                     case TrackerState_Standby:
                         textTrackerState.setText("Standby");
                         break;
-                    case TrackerState_Testing:
-                        textTrackerState.setText("Testing");
+                    case TrackerState_Moving:
+                        textTrackerState.setText("Moving");
+                        break;
+                    case TrackerState_Cycling:
+                        textTrackerState.setText("Sweep");
                         break;
                     case TrackerState_Tracking:
                         textTrackerState.setText("Tracking");
@@ -157,13 +151,13 @@ public class InfoTab extends Fragment {
             try {
                 ConfigTransfer configTransfer = gson.fromJson(json, ConfigTransfer.class );
                 textDualAxis.setText(configTransfer.d ? "Yes" : "No");
-                textLatitude.setText(String.valueOf(configTransfer.a));
-                textLongitude.setText(String.valueOf(configTransfer.o));
-                textMinAzimuth.setText(String.valueOf(configTransfer.e));
-                textMaxAzimuth.setText(String.valueOf(configTransfer.w));
-                textMinElevation.setText(String.valueOf(configTransfer.n));
-                textMaxElevation.setText(String.valueOf(configTransfer.x));
-                textUtcOffset.setText(String.valueOf(configTransfer.u));
+                textLatitude.setText(String.format("%.6f:", configTransfer.a));
+                textLongitude.setText(String.format("%.6f:", configTransfer.o));
+                textMinAzimuth.setText(String.format("%d:", configTransfer.e));
+                textMaxAzimuth.setText(String.format("%d:", configTransfer.w));
+                textMinElevation.setText(String.format("%d:", configTransfer.n));
+                textMaxElevation.setText(String.format("%d:", configTransfer.x));
+                textUtcOffset.setText(String.format("%d:", configTransfer.u));
             }
             catch (Exception ex) {
                 ex.printStackTrace();

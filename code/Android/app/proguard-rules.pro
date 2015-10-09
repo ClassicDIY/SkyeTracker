@@ -15,3 +15,32 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+-forceprocessing
+-optimizationpasses 5
+
+-keep class * extends android.app.Activity
+
+-assumenosideeffects class android.util.Log {
+public static *** d(...);
+public static *** v(...);
+public static *** i(...);
+}
+
+-keepattributes JavascriptInterface
+
+##---------------Begin: proguard configuration for Gson  ----------
+# Gson uses generic type information stored in a class file when working with fields. Proguard
+# removes such information by default, so configure it to keep all of it.
+-keepattributes Signature
+-keepattributes *Annotation*
+# Gson specific classes
+-keep class sun.misc.Unsafe { *; }
+-keep class com.google.gson.stream.** { *; }
+
+# Application classes that will be serialized/deserialized over Gson
+-keep class com.skye.skyetracker.TimeTransfer { *; }
+-keep class com.skye.skyetracker.PositionTransfer { *; }
+-keep class com.skye.skyetracker.ConfigTransfer { *; }
+
+-keep class com.skye.skyetracker.ConfigOptions { *; }
+-keep class com.skye.skyetracker.ConfigLocation { *; }

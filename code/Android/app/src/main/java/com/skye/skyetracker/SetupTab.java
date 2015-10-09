@@ -58,9 +58,9 @@ public class SetupTab extends Fragment {
 
         LocalBroadcastManager.getInstance(container.getContext()).registerReceiver(mConfigurationReceiver, new IntentFilter("com.skye.skyetracker.configuration"));
         TextView lat = (TextView)rootView.findViewById(R.id.textLatitude);
-        lat.setText(Double.toString(configTransfer.a));
+        lat.setText(String.format("%.6f", configTransfer.a));
         TextView lon = (TextView)rootView.findViewById(R.id.textLongitude);
-        lon.setText(Double.toString(configTransfer.o));
+        lon.setText(String.format("%.6f", configTransfer.o));
         dualAxis = (CheckBox)rootView.findViewById(R.id.checkbox_dualAxis);
         dualAxis.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 

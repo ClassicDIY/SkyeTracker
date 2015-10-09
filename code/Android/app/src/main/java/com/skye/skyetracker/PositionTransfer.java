@@ -1,6 +1,8 @@
 package com.skye.skyetracker;
 
-public class PositionTransfer {
+import java.io.Serializable;
+
+public class PositionTransfer implements Serializable {
     public double hP;
     public double vP;
     public double aZ;
