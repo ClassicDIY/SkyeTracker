@@ -311,5 +311,31 @@ namespace TrackerRTC
             ct.u = TimeZoneOffsetToUTC;
             return ct;
         }
+
+        public void SetLocation(Location t)
+        {
+            Latitude = t.a;
+            Longitude = t.o;
+            Save();
+            return;
+        }
+
+        public void SetLimits(Limits t)
+        {
+            EastAzimuth = t.e;
+            WestAzimuth = t.w;
+            MaximumElevation = t.x;
+            MinimumElevation = t.n;
+            Save();
+            return;
+        }
+
+        public void SetOptions(Options t)
+        {
+            DualAxis = t.d;
+            TimeZoneOffsetToUTC = t.u;
+            Save();
+            return;
+        }
     }
 }

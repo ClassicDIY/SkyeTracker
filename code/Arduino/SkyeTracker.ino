@@ -6,7 +6,7 @@
 #include <SoftwareSerial.h>
 #include "RTClib.h"
 #include "sun.h"
-#include "LinearActuator.h"
+#include "LinearActuatorWithPotentiometer.h"
 #include "Configuration.h"
 #include "Tracker.h"
 

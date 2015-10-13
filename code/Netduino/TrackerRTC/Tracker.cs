@@ -347,7 +347,7 @@ namespace TrackerRTC
                 sb.Append(",\"sE\":");
                 sb.Append(_sunElevation.ToString("f1"));
                 sb.Append(",\"tS\":");
-                sb.Append("0");
+                sb.Append(GetStateCode());
                 sb.Append(",\"tE\":");
                 sb.Append("0");
                 sb.Append("}\r");
@@ -359,6 +359,34 @@ namespace TrackerRTC
             {
                 DebugLogger.TryLog("Worker threw an exception");
             }
+        }
+
+        private string GetStateCode()
+        {
+            String rVal = "0";
+            switch (TrackerState)
+            {
+                case State.InitializingActuator:
+                    rVal = "1";
+                    break;
+
+                case State.Starting:
+                    rVal = "1";
+                    break;
+                case State.Standby:
+                    rVal = "2";
+                    break;
+                case State.Testing:
+                    rVal = "3";
+                    break;
+                case State.Tracking:
+                    rVal = "5";
+                    break;
+                case State.Dark:
+                    rVal = "0";
+                    break;
+            }
+            return rVal;
         }
 
         private void TrackTo(Sun sun)
@@ -770,6 +798,7 @@ namespace TrackerRTC
         }
 
         /*
+         * Commands from android app;
         "Track"
 		"Cycle"
 		"Stop"
@@ -832,10 +861,16 @@ namespace TrackerRTC
                     _broadcastTimer = null;
                     break;
                 case "SetC":
+                    var cf = (Location)json.FromJson(enc.GetBytes(data), typeof(Location));
+                    Configuration.SetLocation(cf);
                     break;
                 case "SetL":
+                    var limits = (Limits)json.FromJson(enc.GetBytes(data), typeof(Limits));
+                    Configuration.SetLimits(limits);
                     break;
                 case "SetO":
+                    var options = (Options)json.FromJson(enc.GetBytes(data), typeof(Options));
+                    Configuration.SetOptions(options);
                     break;
                 case "SetDateTime":
                     var dt = new DateTime(int.Parse(data));
@@ -844,50 +879,6 @@ namespace TrackerRTC
                 case "MoveTo":
                     MoveTo(data);
                     break;
-
-
-
-
-
-                //case "Command":
-                //    if (TrackerState != State.Starting && TrackerState != State.ClockSet && TrackerState != State.InitializingActuator)
-                //    {
-                //        switch (data)
-                //        {
-
-
-                //            case "GetPosition":
-                //                var pos = new PositionTransfer();
-                //                pos.azimuth = ArrayAzimuth;
-                //                pos.elevation = ArrayElevation;
-                //                pos.dark = TrackerState == State.Dark;
-                //                var spos = json.ToJson(pos);
-                //                sb.Append("\n");
-                //                sb.Append("Position|");
-                //                sb.Append(spos);
-                //                sb.Append("\r");
-                //                var pbytes = enc.GetBytes(sb.ToString());
-                //                _netduinoSerialPort.Write(pbytes, 0, pbytes.Length);
-                //                _netduinoSerialPort.Flush();
-                //                break;
-                //        }
-                //    }
-                //    break;
-                //case "SetConfiguration":
-                //    var json2 = new JsonFormatter();
-                //    var enc2 = new UTF8Encoding();
-                //    var ct = (ConfigTransfer)json2.FromJson(enc2.GetBytes(data), typeof(ConfigTransfer));
-                //    Configuration.DualAxis = ct._dual;
-                //    Configuration.EastAzimuth = ct._eastAz;
-                //    Configuration.WestAzimuth = ct._westAz;
-                //    Configuration.Latitude = ct._lat;
-                //    Configuration.Longitude = ct._long;
-                //    Configuration.MaximumElevation = ct._maxElevation;
-                //    Configuration.MinimumElevation = ct._minElevation;
-                //    Configuration.TimeZoneOffsetToUTC = ct._offsetToUTC;
-                //    Configuration.Save();
-                //    PowerState.RebootDevice(false);
-                //    break;
             }
         }
 
@@ -923,161 +914,6 @@ namespace TrackerRTC
                     break;
             }
         }
-
-        //private void DoRead()
-        //{
-        //    //Determine how many bytes to read.
-        //    var bytesToRead = _netduinoSerialPort.BytesToRead;
-        //    if (bytesToRead > 0)
-        //    {
-        //        var buffer = new byte[bytesToRead];
-        //        _netduinoSerialPort.Read(buffer, 0, bytesToRead);
-        //        foreach (char ch in buffer)
-        //        {
-        //            if (ch == 0x0a)
-        //            {
-        //                _index = 0;
-        //                _startCode = true;
-        //            }
-        //            else if (ch == 0x0d)
-        //            {
-        //                if (_startCode == false)
-        //                {
-        //                    _index = 0;
-        //                }
-        //                else
-        //                {
-        //                    _record[_index++] = '\0';
-        //                    _startCode = false;
-        //                    _index = 0;
-        //                    var s = new string(_record);
-        //                    var tuples = s.Split('|');
-        //                    switch (tuples[0])
-        //                    {
-        //                        case "Date":
-        //                            var date = tuples[1].Split('-');
-        //                            var currentTime = DateTime.Now;
-        //                            var dt = new DateTime(int.Parse(date[0]), int.Parse(date[1]), int.Parse(date[2]), currentTime.Hour, currentTime.Minute, currentTime.Second);
-        //                            Utility.SetLocalTime(dt);
-        //                            break;
-        //                        case "Time":
-        //                            var time = tuples[1].Split(':');
-        //                            var currentDate = DateTime.Now;
-        //                            var dt2 = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, int.Parse(time[0]), int.Parse(time[1]), int.Parse(time[2]));
-        //                            DS1307.SetRTCTime(dt2);
-        //                            DS1307.SetNetduinoTimeFromRTC();
-        //                            break;
-        //                        case "MoveTo":
-        //                            var args = tuples[1].Split(',');
-        //                            if (args.Length == 2)
-        //                            {
-        //                                var fakeSun = new Sun();
-        //                                if (double.TryParse(args[0], out fakeSun.azimuth))
-        //                                {
-        //                                    if (double.TryParse(args[1], out fakeSun.azimuth))
-        //                                    {
-        //                                        TrackTo(fakeSun);
-        //                                    }
-        //                                }
-        //                            }
-
-        //                            break;
-        //                        case "Command":
-        //                            if (TrackerState != State.Starting && TrackerState != State.ClockSet && TrackerState != State.InitializingActuator)
-        //                            {
-        //                                var json = new JsonFormatter();
-        //                                var sb = new StringBuilder();
-        //                                var enc = new UTF8Encoding();
-        //                                var command = tuples[1];
-        //                                switch (command)
-        //                                {
-        //                                    case "East":
-        //                                        Move(Direction.East);
-        //                                        break;
-        //                                    case "West":
-        //                                        Move(Direction.West);
-        //                                        break;
-        //                                    case "Up":
-        //                                        if (DualAxis)
-        //                                            Move(Direction.Up);
-        //                                        break;
-        //                                    case "Down":
-        //                                        if (DualAxis)
-        //                                            Move(Direction.Down);
-        //                                        break;
-        //                                    case "Track":
-        //                                        Track();
-        //                                        break;
-        //                                    case "Test":
-        //                                        Test();
-        //                                        break;
-        //                                    case "Stop":
-        //                                        StopTracking();
-        //                                        break;
-        //                                    case "Load":
-        //                                        Configuration.Load();
-        //                                        break;
-        //                                    case "Save":
-        //                                        Configuration.Save();
-        //                                        break;
-        //                                    case "GetConfiguration":
-        //                                        var txfr = Configuration.GetConfigTransfer();
-        //                                        var sconfig = json.ToJson(txfr);
-        //                                        sb.Append("\n");
-        //                                        sb.Append("Configuration|");
-        //                                        sb.Append(sconfig);
-        //                                        sb.Append("\r");
-        //                                        var bytes = enc.GetBytes(sb.ToString());
-        //                                        _netduinoSerialPort.Write(bytes, 0, bytes.Length);
-        //                                        _netduinoSerialPort.Flush();
-        //                                        break;
-        //                                    case "GetPosition":
-        //                                        var pos = new PositionTransfer();
-        //                                        pos.azimuth = ArrayAzimuth;
-        //                                        pos.elevation = ArrayElevation;
-        //                                        pos.dark = TrackerState == State.Dark;
-        //                                        var spos = json.ToJson(pos);
-        //                                        sb.Append("\n");
-        //                                        sb.Append("Position|");
-        //                                        sb.Append(spos);
-        //                                        sb.Append("\r");
-        //                                        var pbytes = enc.GetBytes(sb.ToString());
-        //                                        _netduinoSerialPort.Write(pbytes, 0, pbytes.Length);
-        //                                        _netduinoSerialPort.Flush();
-        //                                        break;
-        //                                }
-        //                            }
-        //                            break;
-        //                        case "SetConfiguration":
-        //                            var json2 = new JsonFormatter();
-        //                            var enc2 = new UTF8Encoding();
-        //                            var ct = (ConfigTransfer)json2.FromJson(enc2.GetBytes(tuples[1]), typeof(ConfigTransfer));
-        //                            Configuration.DualAxis = ct._dual;
-        //                            Configuration.EastAzimuth = ct._eastAz;
-        //                            Configuration.WestAzimuth = ct._westAz;
-        //                            Configuration.Latitude = ct._lat;
-        //                            Configuration.Longitude = ct._long;
-        //                            Configuration.MaximumElevation = ct._maxElevation;
-        //                            Configuration.MinimumElevation = ct._minElevation;
-        //                            Configuration.TimeZoneOffsetToUTC = ct._offsetToUTC;
-        //                            Configuration.Save();
-        //                            PowerState.RebootDevice(false);
-        //                            break;
-        //                    }
-        //                }
-        //            }
-        //            else if (_startCode)
-        //            {
-        //                _record[_index++] = ch;
-        //            }
-        //            if (_index >= _record.Length)
-        //            {
-        //                _index = 0;
-        //                _startCode = false;
-        //            }
-        //        }
-        //    }
-        //}
 
         public string RxBuffer
         {

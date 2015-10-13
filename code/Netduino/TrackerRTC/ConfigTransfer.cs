@@ -2,18 +2,6 @@ using System;
 
 namespace Common
 {
-    [Serializable]
-    public class ConfigTransfer
-    {
-        public bool _dual;
-        public float _lat;
-        public float _long;
-        public int _eastAz;
-        public int _westAz;
-        public int _minElevation;
-        public int _maxElevation;
-        public int _offsetToUTC;
-    }
 
     [Serializable]
     public class Cf // compressed transfer json to match nano tracker
@@ -29,10 +17,26 @@ namespace Common
     }
 
     [Serializable]
-    public class PositionTransfer
+    public class Location 
     {
-        public float azimuth;
-        public float elevation;
-        public bool dark;
+        public float a; // lat
+        public float o; // lon
+
     }
+
+    [Serializable]
+    public class Limits
+    {
+        public int e; // east azimuth
+        public int w; // west azimuth
+        public int n; // mininmum elevation
+        public int x; // maximum elevatio
+    }
+
+    public class Options 
+    {
+        public bool d; // dual axis
+        public int u; // offset to UTC
+    }
+
 }

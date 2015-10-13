@@ -1,5 +1,6 @@
 #include "Tracker.h"
 #include <math.h>
+#include "LinearActuatorWithPotentiometer.h"
 
 namespace SkyeTracker
 {
@@ -29,13 +30,13 @@ namespace SkyeTracker
 		DateTime now = _rtc->now();
 		_sun->calcSun(now.year(), now.month(), now.day(), now.hour(), now.minute(), now.second());
 		Serial.println("Initializing horizontal actuator");
-		_azimuth = new LinearActuator(A1, 7, 2, 3);
+		_azimuth = new LinearActuatorWithPotentiometer(A1, 7, 2, 3);
 		controller->add(_azimuth);
 		_azimuth->Initialize(_config->getEastAzimuth(), _config->getWestAzimuth());
 		if (_config->isDual())
 		{
 			Serial.println("Initializing vertical actuator");
-			_elevation = new LinearActuator(A2, 6, 4, 5);
+			_elevation = new LinearActuatorWithPotentiometer(A2, 6, 4, 5);
 			controller->add(_elevation);
 			_elevation->Initialize(_config->getMinimumElevation(), _config->getMaximumElevation());
 		}
