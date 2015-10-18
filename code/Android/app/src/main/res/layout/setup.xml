@@ -8,6 +8,9 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".MyActivity$PlaceholderFragment">
 
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -34,7 +37,7 @@
                 android:layout_gravity="center"
                 android:gravity="center_horizontal"
                 android:orientation="horizontal"
-                android:paddingTop="15dp">
+                android:paddingTop="10dp">
 
                 <TextView
                     style="@style/SetupLabel"
@@ -69,21 +72,19 @@
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
+                android:layout_gravity="center_horizontal"
                 android:layout_marginTop="12dp"
                 android:baselineAligned="false"
-                android:gravity="center"
                 android:orientation="vertical"
-                android:paddingRight="5dp">
+                android:paddingRight="5dp"
+                android:gravity="center">
 
                 <TextView
-                    android:id="@+id/textView"
                     android:text="Azimuth"
                     style="@style/SetupLabel"
                     android:gravity="center"/>
@@ -100,7 +101,6 @@
                         android:orientation="vertical">
 
                         <TextView
-                            android:id="@+id/textView2"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:gravity="center_horizontal|top"
@@ -128,17 +128,65 @@
                         android:orientation="vertical">
 
                         <TextView
-                            android:id="@+id/textView3"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:labelFor="@+id/maxWest"
-                            android:phoneNumber="false"
                             android:text="Max west"
                             style="@style/SetupLabel"
                             android:textSize="@dimen/abc_text_size_small_material"/>
 
                         <NumberPicker
                             android:id="@+id/maxWest"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentTop="true"
+                            android:layout_centerHorizontal="true"
+                            android:layout_gravity="center|top"
+                            android:baselineAligned="false"
+                            android:orientation="vertical" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="fill_parent"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:labelFor="@+id/horizontalActuatorLength"
+                            android:text="Length"
+                            style="@style/SetupLabel"
+                            android:textSize="@dimen/abc_text_size_small_material"/>
+
+                        <NumberPicker
+                            android:id="@+id/horizontalActuatorLength"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentTop="true"
+                            android:layout_centerHorizontal="true"
+                            android:layout_gravity="center|top"
+                            android:baselineAligned="false"
+                            android:orientation="vertical" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="fill_parent"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:labelFor="@+id/horizontalActuatorSpeed"
+                            android:text="Speed"
+                            style="@style/SetupLabel"
+                            android:textSize="@dimen/abc_text_size_small_material"/>
+
+                        <NumberPicker
+                            android:id="@+id/horizontalActuatorSpeed"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_alignParentTop="true"
@@ -155,7 +203,7 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
+                android:layout_gravity="center_horizontal"
                 android:layout_marginTop="12dp"
                 android:baselineAligned="false"
                 android:gravity="center"
@@ -163,7 +211,6 @@
                 android:paddingLeft="5dp">
 
                 <TextView
-                    android:id="@+id/textView_e1"
                     android:text="Elevation"
                     style="@style/SetupLabel"
                     android:gravity="center"/>
@@ -180,12 +227,11 @@
                         android:orientation="vertical">
 
                         <TextView
-                            android:id="@+id/textView_e2"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:gravity="center_horizontal|top"
                             android:labelFor="@+id/minElevation"
-                            android:text="Minimum"
+                            android:text="Min"
                             style="@style/SetupLabel"
                             android:textSize="@dimen/abc_text_size_small_material"/>
 
@@ -208,17 +254,66 @@
                         android:orientation="vertical">
 
                         <TextView
-                            android:id="@+id/textView_e3"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:labelFor="@+id/maxElevation"
                             android:phoneNumber="false"
-                            android:text="Maximum"
+                            android:text="Max"
                             style="@style/SetupLabel"
                             android:textSize="@dimen/abc_text_size_small_material"/>
 
                         <NumberPicker
                             android:id="@+id/maxElevation"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentTop="true"
+                            android:layout_centerHorizontal="true"
+                            android:layout_gravity="center|top"
+                            android:baselineAligned="false"
+                            android:orientation="vertical" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="fill_parent"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:labelFor="@+id/verticalActuatorLength"
+                            android:text="Length"
+                            style="@style/SetupLabel"
+                            android:textSize="@dimen/abc_text_size_small_material"/>
+
+                        <NumberPicker
+                            android:id="@+id/verticalActuatorLength"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentTop="true"
+                            android:layout_centerHorizontal="true"
+                            android:layout_gravity="center|top"
+                            android:baselineAligned="false"
+                            android:orientation="vertical" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="fill_parent"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:labelFor="@+id/verticalActuatorSpeed"
+                            android:text="Speed"
+                            style="@style/SetupLabel"
+                            android:textSize="@dimen/abc_text_size_small_material"/>
+
+                        <NumberPicker
+                            android:id="@+id/verticalActuatorSpeed"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_alignParentTop="true"
@@ -274,5 +369,5 @@
 
         </LinearLayout>
     </LinearLayout>
-
+    </ScrollView>
 </FrameLayout>

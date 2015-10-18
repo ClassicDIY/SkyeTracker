@@ -1,6 +1,7 @@
 #include "Tracker.h"
 #include <math.h>
 #include "LinearActuatorWithPotentiometer.h"
+#include "LinearActuatorNoPot.h"
 
 namespace SkyeTracker
 {
@@ -11,11 +12,11 @@ namespace SkyeTracker
 		_rtc = rtc;
 		_errorState = TrackerError_Ok;
 		_broadcastPosition = false;
+		_waitingForMorning = false;
 	}
 
 	Tracker::~Tracker()
 	{
-		Serial.println("Clean up tracker");
 		delete _sun;
 		delete _azimuth;
 		delete _elevation;
@@ -24,23 +25,31 @@ namespace SkyeTracker
 	void Tracker::Initialize(ThreadController* controller)
 	{
 		_trackerState = TrackerState_Initializing;
-		Serial.println("Creating the Sun");
 		float lon = _config->getLon();
 		_sun = new Sun(_config->getLat(), -lon, _config->getTimeZoneOffsetToUTC());
 		DateTime now = _rtc->now();
 		_sun->calcSun(now.year(), now.month(), now.day(), now.hour(), now.minute(), now.second());
-		Serial.println("Initializing horizontal actuator");
+		
+
+#if defined(NOPOT)
+		_azimuth = new LinearActuatorNoPot(_rtc, 7, 2, 3);
+#else
+		Serial.println("Initializing horizontal actuator (WithPotentiometer)");
 		_azimuth = new LinearActuatorWithPotentiometer(A1, 7, 2, 3);
+#endif
 		controller->add(_azimuth);
-		_azimuth->Initialize(_config->getEastAzimuth(), _config->getWestAzimuth());
+		_azimuth->Initialize(_config->getEastAzimuth(), _config->getWestAzimuth(), _config->getHorizontalLength(), _config->getHorizontalSpeed());
+
+#if defined(NOPOT)
+		_elevation = new LinearActuatorNoPot(_rtc, 6, 4, 5);
+#else
+		_elevation = new LinearActuatorWithPotentiometer(A2, 6, 4, 5);
+#endif
+		controller->add(_elevation);
 		if (_config->isDual())
 		{
-			Serial.println("Initializing vertical actuator");
-			_elevation = new LinearActuatorWithPotentiometer(A2, 6, 4, 5);
-			controller->add(_elevation);
-			_elevation->Initialize(_config->getMinimumElevation(), _config->getMaximumElevation());
+			_elevation->Initialize(_config->getMinimumElevation(), _config->getMaximumElevation(), _config->getVerticalLength(), _config->getVerticalSpeed());
 		}
-		Serial.println("Setting up controller");
 		setInterval(POSITION_UPDATE_INTERVAL);
 		controller->add(this);
 		_trackerState = TrackerState_Standby;
@@ -75,7 +84,6 @@ namespace SkyeTracker
 
 	void Tracker::Cycle()
 	{
-		Serial.println("Starting cycle");
 		cycleHour = 0;
 		enabled = true;
 		setInterval(CYCLE_POSITION_UPDATE_INTERVAL);
@@ -87,7 +95,7 @@ namespace SkyeTracker
 	{
 		if (_errorState != TrackerError_Ok)
 		{
-			Serial.println("Error detected, Tracker moving to default position");
+			Serial.println(F("Error detected, Tracker moving to default position"));
 			// move array to face south as a default position when an error exists
 			_azimuth->MoveTo(180);
 			if (_config->isDual())
@@ -107,30 +115,34 @@ namespace SkyeTracker
 
 	void Tracker::WaitForMorning()
 	{
-		_azimuth->Retract(); // wait for morning, full east, lowest elevation
-		if (_config->isDual())
+		if (_waitingForMorning == false)
 		{
-			_elevation->Retract();
+			_azimuth->Retract(); // wait for morning, full east, lowest elevation
+			if (_config->isDual())
+			{
+				_elevation->Retract();
+			}
+			_waitingForMorning = true;
+			Serial.println(F("Waiting For Morning"));
 		}
-		Serial.println("Waiting For Morning");
+
 	}
 
 	void Tracker::TrackToSun()
 	{
+		Serial.println(F("TrackToSun "));
 		if (abs(_sun->azimuth() - _azimuth->CurrentAngle()) > POSITIONINTERVAL)
 		{
-			String s = "Move azimuth to: ";
-			s = s + _sun->azimuth();
-			Serial.println(s);
+			Serial.print(F("Move azimuth to: "));
+			Serial.println(_sun->azimuth());
 			_azimuth->MoveTo(_sun->azimuth());
 		}
 		if (_config->isDual())
 		{
 			if (abs(_sun->elevation() - _elevation->CurrentAngle()) > POSITIONINTERVAL)
 			{
-				String s = "Move elevation to: ";
-				s = s + _sun->elevation();
-				Serial.println(s);
+				Serial.print(F("Move elevation to: "));
+				Serial.println(_sun->elevation());
 				_elevation->MoveTo(_sun->elevation());
 			}
 		}
@@ -161,10 +173,26 @@ namespace SkyeTracker
 
 	void Tracker::run() {
 		runned();
-		TrackerState state = getState();
-		DateTime now = _rtc->now();
-		switch (state)
+		if (_config->isDirty())
 		{
+			_config->Save();
+			delete _sun;
+			float lon = _config->getLon();
+			_sun = new Sun(_config->getLat(), -lon, _config->getTimeZoneOffsetToUTC());
+			_azimuth->Initialize(_config->getEastAzimuth(), _config->getWestAzimuth(), _config->getHorizontalLength(), _config->getHorizontalSpeed());
+			if (_config->isDual())
+			{
+				_elevation->Initialize(_config->getMinimumElevation(), _config->getMaximumElevation(), _config->getVerticalLength(), _config->getVerticalSpeed());
+			}
+			setInterval(POSITION_UPDATE_INTERVAL);
+			_trackerState = TrackerState_Standby;
+		}
+		else
+		{
+			TrackerState state = getState();
+			DateTime now = _rtc->now();
+			switch (state)
+			{
 			case TrackerState_Cycling:
 				cycleHour++;
 				cycleHour %= 24;
@@ -176,16 +204,17 @@ namespace SkyeTracker
 				break;
 			default:
 				return;
+			}
+			if (_sun->ItsDark())
+			{
+				WaitForMorning();
+			}
+			else
+			{
+				_waitingForMorning = false;
+				TrackToSun();
+			}
 		}
-		if (_sun->ItsDark())
-		{
-			WaitForMorning();
-		}
-		else
-		{
-			TrackToSun();
-		}
-		
 	};
 
 	/// <summary>
@@ -195,8 +224,9 @@ namespace SkyeTracker
 	void Tracker::ProcessCommand(const char* input)
 	{
 		boolean afterDelimiter = false;
+		
 		char command[32];
-		char data[32];
+		char data[64];
 		int commandIndex = 0;
 		int dataIndex = 0;
 
@@ -216,7 +246,7 @@ namespace SkyeTracker
 				command[commandIndex++] = input[i];
 				if (commandIndex >= sizeof(command))
 				{
-					Serial.println("Command oveflow");
+					Serial.println(F("Command overflow!"));
 				}
 			}
 			else
@@ -224,91 +254,86 @@ namespace SkyeTracker
 				data[dataIndex++] = input[i];
 				if (dataIndex >= sizeof(data))
 				{
-					Serial.println("data oveflow");
+					Serial.println(F("data overflow!"));
 				}
 			}
 		}
 		command[commandIndex++] = NULL;
 		data[dataIndex++] = NULL;
-
 		Serial.print(command);
 		Serial.print("|");
 		Serial.println(data);
-
-		if (strcmp(command, "Track") == 0)
+		if (strcmp(command, c_Track) == 0)
 		{
 			Track();
 		}
-		else if (strcmp(command, "Cycle") == 0)
+		else if (strcmp(command, c_Cycle) == 0)
 		{
 			Cycle();
 		}
-		else if (strcmp(command, "Stop") == 0)
+		else if (strcmp(command, c_Stop) == 0)
 		{
 			_trackerState = TrackerState_Moving;
 			Stop();
 		}
-		else if (strcmp(command, "GetConfiguration") == 0)
+		else if (strcmp(command, c_GetConfiguration) == 0)
 		{
 			_config->SendConfiguration();
 		}
-		else if (strcmp(command, "GetDateTime") == 0)
+		else if (strcmp(command, c_GetDateTime) == 0)
 		{
 			sendDateTime();
 		}
-		else if (strcmp(command, "BroadcastPosition") == 0)
+		else if (strcmp(command, c_BroadcastPosition) == 0)
 		{
 			_broadcastPosition = true;
 		}
-		else if (strcmp(command, "StopBroadcast") == 0)
+		else if (strcmp(command, c_StopBroadcast) == 0)
 		{
 			_broadcastPosition = false;
 		}
-		else if (strcmp(command, "SetC") == 0) // set configuration
+		else if (strcmp(command, c_SetC) == 0) // set configuration
 		{
 			StaticJsonBuffer<64> jsonBuffer;
 			JsonObject& root = jsonBuffer.parseObject(data);
 			if (root.success()) {
 				_config->SetLocation(root["a"], root["o"]);
-				_config->Save();
-				delete _sun;
-				float lon = _config->getLon();
-				_sun = new Sun(_config->getLat(), -lon, _config->getTimeZoneOffsetToUTC());
-				run();
+				setInterval(PENDING_RESET);
 			}
-
 		}
-		else if (strcmp(command, "SetL") == 0) // set limits
+		else if (strcmp(command, c_SetA) == 0) // set actuator size/speed
+		{
+			StaticJsonBuffer<64> jsonBuffer;
+			JsonObject& root = jsonBuffer.parseObject(data);
+			if (root.success()) {
+				_config->SetActuatorParameters(root["lh"], root["lv"], root["sh"], root["sv"]);
+				setInterval(PENDING_RESET);
+			}
+		}
+		else if (strcmp(command, c_SetL) == 0) // set limits
 		{
 			StaticJsonBuffer<64> jsonBuffer;
 			JsonObject& root = jsonBuffer.parseObject(data);
 			if (root.success()) {
 				_config->SetLimits(root["e"], root["w"], root["n"], root["x"]);
-				_config->Save();
-				_azimuth->Initialize(_config->getEastAzimuth(), _config->getWestAzimuth());
-				if (_config->isDual())
-				{
-					_elevation->Initialize(_config->getMinimumElevation(), _config->getMaximumElevation());
-				}
-				run();
+				setInterval(PENDING_RESET);
 			}
 		}
-		else if (strcmp(command, "SetO") == 0) // set options
+		else if (strcmp(command, c_SetO) == 0) // set options
 		{
 			StaticJsonBuffer<64> jsonBuffer;
 			JsonObject& root = jsonBuffer.parseObject(data);
 			if (root.success()) {
 				_config->SetUTCOffset(root["u"]);
 				_config->setDual(root["d"]);
-				_config->Save();
-				run();
+				setInterval(PENDING_RESET);
 			}
 		}
-		else if (strcmp(command, "SetDateTime") == 0)
+		else if (strcmp(command, c_SetDateTime) == 0)
 		{
 			_rtc->adjust(DateTime(atol(data)));
 		}
-		else if (strcmp(command, "MoveTo") == 0)
+		else if (strcmp(command, c_MoveTo) == 0)
 		{
 			MoveTo(data);
 		}
@@ -317,19 +342,19 @@ namespace SkyeTracker
 	void Tracker::MoveTo(char* arg)
 	{
 		_trackerState = TrackerState_Moving;
-		if (strcmp(arg, "East") == 0)
+		if (strcmp(arg, c_East) == 0)
 		{
 			Move(Direction_East);
 		}
-		else if (strcmp(arg, "West") == 0)
+		else if (strcmp(arg, c_West) == 0)
 		{
 			Move(Direction_West);
 		}
-		else if (strcmp(arg ,"Up") == 0)
+		else if (strcmp(arg, c_Up) == 0)
 		{
 			Move(Direction_Up);
 		}
-		else if (strcmp(arg, "Down") == 0)
+		else if (strcmp(arg, c_Down) == 0)
 		{
 			Move(Direction_Down);
 		}

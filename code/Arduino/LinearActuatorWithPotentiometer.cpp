@@ -1,13 +1,18 @@
-
+#if !defined(NOPOT)
 #include "LinearActuatorWithPotentiometer.h"
-#include "LinearActuator.h"
 
 namespace SkyeTracker
 {
 
+
 	LinearActuatorWithPotentiometer::LinearActuatorWithPotentiometer(int8_t positionSensor, int8_t enableActuator, int8_t PWMa, int8_t PWMb)
-		:LinearActuator(enableActuator, PWMa, PWMb)
 	{
+		_enableActuator = enableActuator;
+		_PWMa = PWMa;
+		_PWMb = PWMb;
+		_requestedAngle = 0;
+		_state = ActuatorState_Stopped;
+		enabled = false;
 		_positionSensor = positionSensor;
 		_lastPosition = 0;
 		_extendedPosition = 0;
@@ -21,8 +26,12 @@ namespace SkyeTracker
 
 	void LinearActuatorWithPotentiometer::Initialize(int retractedAngle, int extendedAngle)
 	{
-		
-		LinearActuator::InitializeBase(retractedAngle, extendedAngle);
+		pinMode(_enableActuator, OUTPUT);
+		pinMode(_PWMa, OUTPUT);
+		pinMode(_PWMb, OUTPUT);
+		_extendedAngle = extendedAngle;
+		_retractedAngle = retractedAngle;
+		_state = ActuatorState_Initializing;
 		pinMode(_positionSensor, INPUT);
 		_foundExtendedPosition = false;
 		// move out (no state change)
@@ -33,7 +42,6 @@ namespace SkyeTracker
 		setInterval(longCheckInterval);
 		enabled = true;
 	}
-
 
 	void LinearActuatorWithPotentiometer::run() {
 
@@ -48,7 +56,7 @@ namespace SkyeTracker
 				{
 					_extendedPosition = _lastPosition;
 					_foundExtendedPosition = true;
-					Serial.print("Extended Position: ");
+					Serial.print(F("Extended Position: "));
 					Serial.println(_extendedPosition);
 					MoveIn();
 					_state = ActuatorState_Initializing;
@@ -56,7 +64,7 @@ namespace SkyeTracker
 				else
 				{
 					_retractedPosition = _lastPosition;
-					Serial.print("Retracted Position: ");
+					Serial.print(F("Retracted Position: "));
 					Serial.println(_retractedPosition);
 					Stop();
 					if (_retractedPosition >= _extendedPosition)
@@ -133,7 +141,12 @@ namespace SkyeTracker
 		return rVal;
 	}
 
-	
+	void LinearActuatorWithPotentiometer::Retract()
+	{
+		setInterval(longCheckInterval);
+		_requestedAngle = _retractedAngle;
+		enabled = true;
+	}
 
 	bool LinearActuatorWithPotentiometer::IsMoving()
 	{
@@ -180,4 +193,19 @@ namespace SkyeTracker
 		CurrentAngle();
 	}
 
+	void LinearActuatorWithPotentiometer::MoveTo(float angle)
+	{
+		if (angle > _extendedAngle)
+		{
+			angle = _extendedAngle;
+		}
+		else if (angle < _retractedAngle)
+		{
+			angle = _retractedAngle;
+		}
+		setInterval(shortCheckInterval);
+		_requestedAngle = angle;
+		enabled = true;
+	}
 }
+#endif

@@ -1,6 +1,7 @@
 #include "Configuration.h"
+#include <util/crc16.h>
 
-#define DS1307_RAM_SIZE 56
+#define DS1307_RAM_SIZE 30
 
 namespace SkyeTracker
 {
@@ -8,6 +9,7 @@ namespace SkyeTracker
 	Configuration::Configuration(RTC_DS1307* rtc)
 	{
 		_rtc = rtc;
+		_isDirty = false;
 	}
 
 
@@ -18,12 +20,14 @@ namespace SkyeTracker
 	void Configuration::setDual(bool val)
 	{
 		_dualAxis = val;
+		_isDirty = true;
 	}
 
 	void Configuration::SetLocation(double lat, double lon)
 	{
 		_latitude = lat;
 		_longitude = lon;
+		_isDirty = true;
 	}
 
 	void Configuration::SetLimits(int minAzimuth, int maxAzimuth, int minElevation, int maxElevation)
@@ -68,11 +72,22 @@ namespace SkyeTracker
 		{
 			_westAzimuth = 315;
 		}
+		_isDirty = true;
+	}
+
+	void Configuration::SetActuatorParameters(int horizontalLength, int verticalLength, int horizontalSpeed, int verticalSpeed)
+	{
+		_horizontalLength = horizontalLength;
+		_verticalLength = verticalLength;
+		_horizontalSpeed = horizontalSpeed;
+		_verticalSpeed = verticalSpeed;
+		_isDirty = true;
 	}
 
 	void Configuration::SetUTCOffset(signed char val)
 	{
 		_timeZoneOffsetToUTC = val;
+		_isDirty = true;
 	}
 
 	float deserialFloat(byte* buffer) {
@@ -85,19 +100,43 @@ namespace SkyeTracker
 		return f;
 	}
 
+	int deserialInt(byte* buffer) {
+		int i = 0;
+		byte * b = (byte *)&i;
+		b[0] = buffer[0];
+		b[1] = buffer[1];
+		return i;
+	}
+
 	void Configuration::Load()
 	{
 		byte _buffer[DS1307_RAM_SIZE+1];
 		_rtc->readnvram(_buffer, DS1307_RAM_SIZE, 0);
-		_dualAxis = _buffer[0];
-		_timeZoneOffsetToUTC = _buffer[1];
-		_eastAzimuth = deserialFloat(&(_buffer[2]));
-		_westAzimuth = deserialFloat(&(_buffer[6]));
-		_minimumElevation = deserialFloat(&(_buffer[10]));
-		_maximumElevation = deserialFloat(&(_buffer[14]));
-		_latitude = deserialFloat(&(_buffer[18]));
-		_longitude = deserialFloat(&(_buffer[22]));
-
+		if (CalcChecksum(_buffer) == 0)
+		{
+			Serial.println(F("Checksum passed, loading saved settings"));
+			if (_buffer[0] == 1)
+				_dualAxis = true;
+			else
+				_dualAxis = false;
+			_timeZoneOffsetToUTC = _buffer[1];
+			_eastAzimuth = deserialInt(&(_buffer[2]));
+			_westAzimuth = deserialInt(&(_buffer[4]));
+			_minimumElevation = deserialInt(&(_buffer[6]));
+			_maximumElevation = deserialInt(&(_buffer[8]));
+			_latitude = deserialFloat(&(_buffer[10]));
+			_longitude = deserialFloat(&(_buffer[14]));
+			_horizontalLength = deserialInt(&(_buffer[18]));
+			_verticalLength = deserialInt(&(_buffer[20]));
+			_horizontalSpeed = deserialInt(&(_buffer[22]));
+			_verticalSpeed = deserialInt(&(_buffer[24]));
+			_isDirty = false;
+		}
+		else
+		{
+			Serial.println(F("Checksum failed, loading default settings"));
+			LoadFactoryDefault();
+		}
 	}
 
 	void Configuration::LoadFactoryDefault()
@@ -105,8 +144,9 @@ namespace SkyeTracker
 		setDual(true);
 		SetUTCOffset(-4);
 		SetLimits(90, 270, 0, 90);
-		//45.936527, 75.091259 Lac Simon
-		SetLocation(45.936527, 75.091259);
+		SetActuatorParameters(12, 8, 31, 31);
+		//45.936527, -75.091259 Lac Simon
+		SetLocation(45.936527, -75.091259);
 		Save();
 	}
 
@@ -118,32 +158,60 @@ namespace SkyeTracker
 		buffer[3] = b[3];
 	}
 
+	void serialInt(byte * buffer, int f) {
+		byte * b = (byte *)&f;
+		buffer[0] = b[0];
+		buffer[1] = b[1];
+	}
+
 
 	void Configuration::Save()
 	{
 		byte _buffer[DS1307_RAM_SIZE+1];
 		for (int i = 0; i < DS1307_RAM_SIZE; i++)
 		{
-			_buffer[i] = NULL;
+			_buffer[i] = 0x00;
 		}
 		if (_dualAxis)
 			_buffer[0] = 1;
 		else
 			_buffer[0] = 0;
 		_buffer[1] = (signed char)_timeZoneOffsetToUTC;
-		serialFloat(&(_buffer[2]), _eastAzimuth);
-		serialFloat(&(_buffer[6]), _westAzimuth);
-		serialFloat(&(_buffer[10]), _minimumElevation);
-		serialFloat(&(_buffer[14]), _maximumElevation);
-		serialFloat(&(_buffer[18]), _latitude);  // arduino nano double is the same as float
-		serialFloat(&(_buffer[22]), _longitude);
-		_rtc->writenvram(0, _buffer, DS1307_RAM_SIZE);
+		serialInt(&(_buffer[2]), _eastAzimuth);
+		serialInt(&(_buffer[4]), _westAzimuth);
+		serialInt(&(_buffer[6]), _minimumElevation);
+		serialInt(&(_buffer[8]), _maximumElevation);
+		serialFloat(&(_buffer[10]), _latitude);  // arduino nano double is the same as float
+		serialFloat(&(_buffer[14]), _longitude);
 
+		serialInt(&(_buffer[18]), _horizontalLength);
+		serialInt(&(_buffer[20]), _verticalLength);
+		serialInt(&(_buffer[22]), _horizontalSpeed);
+		serialInt(&(_buffer[24]), _verticalSpeed);
+		_buffer[26] = CalcChecksum(_buffer);
+		_rtc->writenvram(0, _buffer, DS1307_RAM_SIZE);
+		_isDirty = false;
+		Serial.println(F("Saved settings"));
 		//for (int i = 0; i < DS1307_RAM_SIZE; i++)
 		//{
+		//	Serial.print(i);
+		//	Serial.print(":");
 		//	Serial.print(_buffer[i], HEX);
 		//	Serial.print(" ");
 		//}
+
+		//CalcChecksum(_buffer);
+	}
+
+	byte Configuration::CalcChecksum(byte _buffer[])
+	{
+		byte crc = 0, i;
+		for (int i = 0; i < DS1307_RAM_SIZE; i++)
+			crc += _buffer[i];
+		crc = -crc;
+		//Serial.print(F("Checksum cal: "));
+		//Serial.println(crc, HEX);
+		return crc;
 	}
 
 	/*
@@ -152,23 +220,31 @@ namespace SkyeTracker
 
 	void Configuration::SendConfiguration()
 	{
-		Serial.print("Cf|{");
-		Serial.print("\"d\":");
-		Serial.print(isDual() ? "true" : "false");
-		Serial.print(",\"a\":");
+		Serial.print(F("Cf|{"));
+		Serial.print(F("\"d\":"));
+		Serial.print(isDual() ? F("true") : F("false"));
+		Serial.print(F(",\"a\":"));
 		Serial.print(getLat(), 6);
-		Serial.print(",\"o\":");
+		Serial.print(F(",\"o\":"));
 		Serial.print(getLon(), 6);
-		Serial.print(",\"e\":");
+		Serial.print(F(",\"e\":"));
 		Serial.print(getEastAzimuth());
-		Serial.print(",\"w\":");
+		Serial.print(F(",\"w\":"));
 		Serial.print(getWestAzimuth());
-		Serial.print(",\"n\":");
+		Serial.print(F(",\"n\":"));
 		Serial.print(getMinimumElevation());
-		Serial.print(",\"x\":");
+		Serial.print(F(",\"x\":"));
 		Serial.print(getMaximumElevation());
-		Serial.print(",\"u\":");
+		Serial.print(F(",\"u\":"));
 		Serial.print(getTimeZoneOffsetToUTC());
-		Serial.println("}");
+		Serial.print(F(",\"lh\":"));
+		Serial.print(getHorizontalLength());
+		Serial.print(F(",\"lv\":"));
+		Serial.print(getVerticalLength());
+		Serial.print(F(",\"sh\":"));
+		Serial.print(getHorizontalSpeed());
+		Serial.print(F(",\"sv\":"));
+		Serial.print(getVerticalSpeed());
+		Serial.println(F("}"));
 	}
 }

@@ -4,11 +4,9 @@
 
     <item android:id="@+id/action_connect"
         android:title="Connect"
-        android:orderInCategory="300"
-        android:showAsAction="never" />
+        android:orderInCategory="300"/>
 
     <item android:id="@+id/action_disconnect"
         android:title="Disconnect"
-        android:orderInCategory="400"
-        android:showAsAction="never" />
+        android:orderInCategory="400" />
 </menu>

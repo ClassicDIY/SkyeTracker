@@ -7,4 +7,14 @@
     <string name="InfoTabTitle">Info</string>
     <string name="AboutTabTitle">About</string>
 
+
+    <string-array name="actuator_length_spinner_item">
+        <item>4\"</item>
+        <item>8\"</item>
+        <item>12\"</item>
+        <item>16\"</item>
+        <item>24\"</item>
+        <item>36\"</item>
+    </string-array>
+
 </resources>

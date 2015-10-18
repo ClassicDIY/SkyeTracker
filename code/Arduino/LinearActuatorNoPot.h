@@ -1,28 +1,27 @@
 #pragma once
-
-#if !defined(NOPOT)
+#if defined(NOPOT)
 
 #include <Arduino.h>
 #include <ThreadController.h>
 #include <Thread.h>
 #include "Enumerations.h"
-#include "LinearActuator.h"
-
-
+#include "RTClib.h"
 
 #define noise 2
 #define histeresis 2
 #define shortCheckInterval 250
 #define longCheckInterval 5000
 
+
+
 namespace SkyeTracker
 {
 
-	class LinearActuatorWithPotentiometer : public Thread
+	class LinearActuatorNoPot : public Thread
 	{
 	public:
-		LinearActuatorWithPotentiometer(int8_t positionSensor, int8_t enable, int8_t PWMa, int8_t PWMb);
-		virtual ~LinearActuatorWithPotentiometer();
+		LinearActuatorNoPot(RTC_DS1307* rtc, int8_t enable, int8_t PWMa, int8_t PWMb);
+		virtual ~LinearActuatorNoPot();
 
 	private:
 		float _requestedAngle;
@@ -32,22 +31,19 @@ namespace SkyeTracker
 		int _enableActuator;
 		int _PWMa;
 		int _PWMb;
-		float _lastPosition;
-		float _extendedPosition; // reading from the actuators position sensor when fully extended
-		float _retractedPosition; // reading from the actuators position sensor when fully retracted
-		bool _foundExtendedPosition;
-		int _positionSensor;
-		float _position;
+		RTC_DS1307* _rtc;
+		float _inchesPerSecond;
+		float _currentPosition;
+		long _lastTime;
+		long _runTime;
+		long _actuatorLength;
 
-		bool IsMoving();
-		float getCurrentPosition();
-		
 	protected:
 		void run();
 		float Range();
 
 	public:
-		void Initialize(int retractedAngle, int extendedAngle);
+		void Initialize(int retractedAngle, int extendedAngle, int actuatorLength, int actuatorSpeed);
 		ActuatorState getState() { return _state; };
 		void MoveTo(float angle);
 		float CurrentPosition();

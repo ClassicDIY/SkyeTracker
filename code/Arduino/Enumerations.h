@@ -4,7 +4,6 @@ namespace SkyeTracker
 {
 	enum TrackerState
 	{
-
 		TrackerState_Off,
 		TrackerState_Initializing,
 		TrackerState_Standby,

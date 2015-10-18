@@ -1,6 +1,7 @@
 <resources>
 
-    <style name="AppTheme" parent="android:Theme.Material">
+    <style name="AppTheme" parent="Theme.AppCompat">
+        <item name="android:spinnerDropDownItemStyle">@style/mySpinnerItemStyle</item>
     </style>
 
     <style name="InfoLabel" parent="@android:style/TextAppearance.Medium">
@@ -54,9 +55,9 @@
         <item name="android:paddingTop">2dp</item>
     </style>
 
-    <style name="ButtonAppTheme" parent="android:Widget.Material.Button">
-        <item name="android:background">@color/material_deep_teal_500</item>
-    </style>
+    <!--<style name="ButtonAppTheme" parent="android:Widget.Material.Button">-->
+        <!--<item name="android:background">@color/material_deep_teal_500</item>-->
+    <!--</style>-->
 
     <style name="btnStyleGenoa" parent="@android:style/Widget.Button">
         <item name="android:textSize">15sp</item>
@@ -70,4 +71,10 @@
         <item name="android:background">@drawable/custom_btn_genoa</item>
         <item name="android:padding">10dip</item>
     </style>
+
+
+    <style name="mySpinnerItemStyle" parent="@android:style/Widget.Holo.DropDownItem.Spinner">
+        <item name="android:textColor">@color/Black</item>
+    </style>
+
 </resources>

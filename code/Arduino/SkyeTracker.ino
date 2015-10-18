@@ -12,7 +12,7 @@
 
 using namespace SkyeTracker;
 
-#define RECEIVE_BUFFER 64
+#define RECEIVE_BUFFER 200
 
 RTC_DS1307 _rtc;
 Configuration _config(&_rtc);
@@ -25,34 +25,36 @@ int _receiveIndex = 0;
 void setup()
 {
 	Serial.begin(9600);
-	delay(1000);
+	while (!Serial) {
+		; // wait for serial port to connect.
+	}
 	//freeMem("At start of setup");
-	Serial.println("RAM At start of setup: " + String(freeRam(), DEC));
+	Serial.print(F("RAM At start of setup: "));
+	Serial.println(String(freeRam(), DEC));
 	Wire.begin();
 	_rtc.begin();
 	if (!_rtc.isrunning()) {
-		Serial.println("RTC not running!");
+		Serial.println(F("RTC not running!"));
 		_rtc.adjust(DateTime(2015, 9, 30, 11, 00, 0));
 		_tracker._errorState = TrackerError_FailedToAccessRTC;
 	}
 	String d = "";
 	DateTime now = _rtc.now();
-
 	d = d + now.year() + "/" + now.month() + "/" + now.day() + " " + now.hour() + ":" + now.minute() + ":" + now.second() + "    ";
 	Serial.println(d);
-	Serial.println("Loading configuration");
+	Serial.println(F("Loading configuration"));
 	_config.Load();
 	// Configure main worker thread
 	_workerThread->onRun(runWorker);
 	_workerThread->setInterval(2000);
 	_controller.add(_workerThread);
-	Serial.println("Initializing tracker");
+	Serial.println(F("Initializing tracker"));
 	_tracker.Initialize(&_controller);
 	_tracker.Track();
-	Serial.println("Completing setup");
 	_receiveBuffer = (char*)malloc(RECEIVE_BUFFER);
 	//freeMem("At end of setup");
-	Serial.println("RAM Completing setup: " + String(freeRam(), DEC));
+	Serial.print(F("RAM Completing setup: ") );
+	Serial.println(String(freeRam(), DEC));
 }
 
 void loop()
@@ -68,7 +70,8 @@ void loop()
 void runWorker()
 {
 	//freeMem("Run");
-	//Serial.println("RAM in Run: " + String(freeRam(), DEC));
+	//Serial.print(F("RAM in Run: "));
+	//Serial.println(String(freeRam(), DEC));
 	_tracker.BroadcastPosition();
 }
 
@@ -79,7 +82,7 @@ void serialEvent() {
 		_receiveBuffer[_receiveIndex++] = inChar;
 		if (_receiveIndex >= RECEIVE_BUFFER)
 		{
-			Serial.println("receive buffer overflow!");
+			Serial.print(F("receive buffer overflow!: "));
 			_receiveIndex = 0;
 		}
 		else if (inChar == '\r') {
@@ -92,15 +95,15 @@ void serialEvent() {
 }
 
 // Debug helper functions
-
-void printHexString(String txt)
-{
-	for (int i = 0; i < txt.length(); i++)
-	{
-		Serial.print(txt[i], HEX);
-	}
-	Serial.println("");
-}
+//
+//void printHexString(String txt)
+//{
+//	for (int i = 0; i < txt.length(); i++)
+//	{
+//		Serial.print(txt[i], HEX);
+//	}
+//	Serial.println("");
+//}
 
 
 //Code to print out the free memory
