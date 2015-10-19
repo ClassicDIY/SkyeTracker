@@ -6,9 +6,9 @@
 namespace SkyeTracker
 {
 
-	LinearActuatorNoPot::LinearActuatorNoPot(RTC_DS1307* rtc, int8_t enableActuator, int8_t PWMa, int8_t PWMb)
+	LinearActuatorNoPot::LinearActuatorNoPot(String name, int8_t enableActuator, int8_t PWMa, int8_t PWMb)
 	{
-		_rtc = rtc;
+		_name = name;
 		_enableActuator = enableActuator;
 		_PWMa = PWMa;
 		_PWMb = PWMb;
@@ -43,40 +43,39 @@ namespace SkyeTracker
 
 		if (_state == ActuatorState_Initializing)
 		{
-			
-			_runTime = _rtc->now().secondstime() - _lastTime;
-			float travel = _runTime * _inchesPerSecond;
-			Serial.print(F("LinearActuatorNoPot::Initializing: "));
-			Serial.println(travel);
-			if (travel > _actuatorLength)
+			_runTime = millis() - _lastTime;
+			if (Travel() > _actuatorLength)
 			{
 				enabled = false;
 				_currentPosition = 0;
 				Stop();
+				Serial.println(_name + F(" actuator retracted and initialized"));
 			}
 		}
 		else
 		{
 			float currentAngle = CurrentAngle();
 			float delta = abs(currentAngle - _requestedAngle);
-			Serial.print(F("LinearActuatorNoPot::run: tracking: "));
+			Serial.print(_name + F(" tracking currentAngle: "));
 			Serial.print(currentAngle);
 			Serial.print(F(" _requestedAngle: "));
 			Serial.print(_requestedAngle);
 			Serial.print(F(" delta: "));
-			Serial.println(delta);
+			Serial.print(delta);
+			Serial.print(F(" _currentPosition: "));
+			Serial.println(_currentPosition);
 			if (delta <= histeresis)
 			{
 				Stop();
-				//Serial.println(F("LinearActuatorNoPot::run: Stop "));
+				Serial.println(_name + F(" actuator tracking complete "));
 			}
 			else if (currentAngle < _requestedAngle)
 			{
 				if (_state != ActuatorState_MovingOut)
 				{
 					MoveOut();
-					_lastTime = _rtc->now().secondstime();
-					Serial.println(F("LinearActuatorNoPot::run: MoveOut "));
+					_lastTime = millis();
+					Serial.println(_name + F(" actuator MoveOut "));
 				}
 			}
 			else if (currentAngle > _requestedAngle)
@@ -84,27 +83,33 @@ namespace SkyeTracker
 				if (_state != ActuatorState_MovingIn)
 				{
 					MoveIn();
-					_lastTime = _rtc->now().secondstime();
-					Serial.println(F("LinearActuatorNoPot::run: MoveIn "));
+					_lastTime = millis();
+					Serial.println(_name + F(" actuator MoveIn "));
 				}
 			}
-			long now = _rtc->now().secondstime();
+			long now = millis();
 			_runTime = now - _lastTime;
 			_lastTime = now;
 			if (_state == ActuatorState_MovingOut)
 			{
-				_currentPosition += _runTime * _inchesPerSecond * 10; // tenth of an inch step
+				_currentPosition += Travel(); // inch step ((time in millis * 1000)  * speed
 			}
 			else if (_state == ActuatorState_MovingIn)
 			{
-				_currentPosition -= _runTime * _inchesPerSecond * 10; // tenth of an inch step
+				_currentPosition -= Travel(); // inch step ((time in millis * 1000)  * speed
 			}
 		}
 	}
 
-	float LinearActuatorNoPot::CurrentPosition() // tenth of an inch from retracted position
+	float LinearActuatorNoPot::CurrentPosition() // inches from retracted position
 	{
 		return _currentPosition;
+	}
+
+	float LinearActuatorNoPot::Travel() // inches travelled during runtime (now - _lastTime)
+	{
+		float seconds = _runTime / 1000.0;
+		return seconds * _inchesPerSecond;
 	}
 
 	float LinearActuatorNoPot::CurrentAngle()
@@ -113,11 +118,8 @@ namespace SkyeTracker
 			return 0;
 		}
 		float delta = _extendedAngle - _retractedAngle;
-		float degreesPerStep = delta / (_actuatorLength * 10); // tenth of an inch step
-		float rVal = _retractedAngle;
-		if (_currentPosition >= 1)
-			rVal = (_currentPosition * degreesPerStep) + _retractedAngle;
-		return rVal;
+		float degreesPerStep = delta / _actuatorLength; 
+		return (_currentPosition * degreesPerStep) + _retractedAngle;
 	}
 
 	void LinearActuatorNoPot::Retract()
@@ -126,7 +128,7 @@ namespace SkyeTracker
 		setInterval(longCheckInterval);
 		digitalWrite(_PWMa, false);
 		digitalWrite(_PWMb, true);
-		_lastTime = _rtc->now().secondstime();
+		_lastTime = millis();
 		digitalWrite(_enableActuator, true);
 		_state = ActuatorState_Initializing;
 		enabled = true;

@@ -84,13 +84,14 @@ public class InfoTab extends Fragment {
                     textSunElevation.setText("");
                 }
                 else {
-                    textSunAzimuth.setText(String.valueOf(positionTransfer.sZ));
-                    textSunElevation.setText(String.valueOf(positionTransfer.sE));
+                    textSunAzimuth.setText(String.format("%.2f", positionTransfer.sZ)+ (char) 0x00B0);
+                    textSunElevation.setText(String.format("%.2f", positionTransfer.sE)+ (char) 0x00B0);
                 }
-                textHorizontalActuatorPosition.setText(String.valueOf(positionTransfer.hP));
-                textVerticalActuatorPosition.setText(String.valueOf(positionTransfer.vP));
-                textArrayAzimuth.setText(String.valueOf(positionTransfer.aZ));
-                textArrayElevation.setText(String.valueOf(positionTransfer.aE));
+
+                textHorizontalActuatorPosition.setText(String.format("%.2f", positionTransfer.hP) + "\"");
+                textVerticalActuatorPosition.setText(String.format("%.2f", positionTransfer.vP) + "\"");
+                textArrayAzimuth.setText(String.format("%.2f", positionTransfer.aZ)+ (char) 0x00B0);
+                textArrayElevation.setText(String.format("%.2f", positionTransfer.aE)+ (char) 0x00B0);
                 TrackerState trackerState = TrackerState.values()[positionTransfer.tS];
                 switch (trackerState){
 
@@ -151,13 +152,13 @@ public class InfoTab extends Fragment {
             try {
                 ConfigTransfer configTransfer = gson.fromJson(json, ConfigTransfer.class );
                 textDualAxis.setText(configTransfer.d ? "Yes" : "No");
-                textLatitude.setText(String.format("%.6f:", configTransfer.a));
-                textLongitude.setText(String.format("%.6f:", configTransfer.o));
-                textMinAzimuth.setText(String.format("%d:", configTransfer.e));
-                textMaxAzimuth.setText(String.format("%d:", configTransfer.w));
-                textMinElevation.setText(String.format("%d:", configTransfer.n));
-                textMaxElevation.setText(String.format("%d:", configTransfer.x));
-                textUtcOffset.setText(String.format("%d:", configTransfer.u));
+                textLatitude.setText(String.format("%.6f", configTransfer.a)+ (char) 0x00B0);
+                textLongitude.setText(String.format("%.6f", configTransfer.o)+ (char) 0x00B0);
+                textMinAzimuth.setText(String.format("%d", configTransfer.e)+ (char) 0x00B0);
+                textMaxAzimuth.setText(String.format("%d", configTransfer.w)+ (char) 0x00B0);
+                textMinElevation.setText(String.format("%d", configTransfer.n)+ (char) 0x00B0);
+                textMaxElevation.setText(String.format("%d", configTransfer.x)+ (char) 0x00B0);
+                textUtcOffset.setText(String.format("%d", configTransfer.u));
             }
             catch (Exception ex) {
                 ex.printStackTrace();

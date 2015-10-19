@@ -25,29 +25,8 @@
 
             <CheckBox
                 android:id="@+id/checkbox_dualAxis"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:text="Dual Axis"
-                android:theme="@android:style/Theme.Holo.Light"
-                style="@style/SetupLabel"/>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="fill_parent"
-                android:layout_gravity="center"
-                android:gravity="center_horizontal"
-                android:orientation="horizontal"
-                android:paddingTop="10dp">
-
-                <TextView
-                    style="@style/SetupLabel"
-                    android:text="Latitude: " />
-
-                <TextView
-                    android:id="@+id/textLatitude"
-                    style="@style/InfoValue"
-                    android:text="45.1234" />
-            </LinearLayout>
+                style="@style/CheckBoxLabel"/>
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -58,9 +37,16 @@
                 android:paddingTop="5dp">
 
                 <TextView
-                    style="@style/SetupLabel"
-                    android:text="Longitude: " />
+                    style="@style/InfoLabel"
+                    android:text="Lat/Lon: " />
 
+                <TextView
+                    android:id="@+id/textLatitude"
+                    style="@style/InfoValue"
+                    android:text="45.1234" />
+                <TextView
+                    style="@style/InfoLabel"
+                    android:text=" " />
                 <TextView
                     android:id="@+id/textLongitude"
                     style="@style/InfoValue"
@@ -78,7 +64,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="5dp"
                 android:baselineAligned="false"
                 android:orientation="vertical"
                 android:paddingRight="5dp"
@@ -111,14 +97,7 @@
 
                         <NumberPicker
                             android:id="@+id/maxEast"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentTop="true"
-                            android:layout_centerHorizontal="true"
-                            android:layout_gravity="center|top"
-                            android:baselineAligned="false"
-                            android:gravity="center_horizontal|bottom"
-                            android:orientation="vertical" />
+                            style="@style/NumberPickerLayout"/>
                     </LinearLayout>
 
                     <LinearLayout
@@ -137,13 +116,7 @@
 
                         <NumberPicker
                             android:id="@+id/maxWest"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentTop="true"
-                            android:layout_centerHorizontal="true"
-                            android:layout_gravity="center|top"
-                            android:baselineAligned="false"
-                            android:orientation="vertical" />
+                            style="@style/NumberPickerLayout"/>
                     </LinearLayout>
 
                     <LinearLayout
@@ -162,13 +135,7 @@
 
                         <NumberPicker
                             android:id="@+id/horizontalActuatorLength"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentTop="true"
-                            android:layout_centerHorizontal="true"
-                            android:layout_gravity="center|top"
-                            android:baselineAligned="false"
-                            android:orientation="vertical" />
+                            style="@style/NumberPickerLayout"/>
                     </LinearLayout>
 
                     <LinearLayout
@@ -187,13 +154,7 @@
 
                         <NumberPicker
                             android:id="@+id/horizontalActuatorSpeed"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentTop="true"
-                            android:layout_centerHorizontal="true"
-                            android:layout_gravity="center|top"
-                            android:baselineAligned="false"
-                            android:orientation="vertical" />
+                            style="@style/NumberPickerLayout"/>
                     </LinearLayout>
 
                 </LinearLayout>
@@ -204,7 +165,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="5dp"
                 android:baselineAligned="false"
                 android:gravity="center"
                 android:orientation="vertical"
@@ -237,14 +198,7 @@
 
                         <NumberPicker
                             android:id="@+id/minElevation"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentTop="true"
-                            android:layout_centerHorizontal="true"
-                            android:layout_gravity="center|top"
-                            android:baselineAligned="false"
-                            android:gravity="center_horizontal|bottom"
-                            android:orientation="vertical" />
+                            style="@style/NumberPickerLayout"/>
                     </LinearLayout>
 
                     <LinearLayout
@@ -264,13 +218,7 @@
 
                         <NumberPicker
                             android:id="@+id/maxElevation"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentTop="true"
-                            android:layout_centerHorizontal="true"
-                            android:layout_gravity="center|top"
-                            android:baselineAligned="false"
-                            android:orientation="vertical" />
+                            style="@style/NumberPickerLayout"/>
                     </LinearLayout>
 
                     <LinearLayout
@@ -289,13 +237,7 @@
 
                         <NumberPicker
                             android:id="@+id/verticalActuatorLength"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentTop="true"
-                            android:layout_centerHorizontal="true"
-                            android:layout_gravity="center|top"
-                            android:baselineAligned="false"
-                            android:orientation="vertical" />
+                            style="@style/NumberPickerLayout"/>
                     </LinearLayout>
 
                     <LinearLayout
@@ -314,13 +256,7 @@
 
                         <NumberPicker
                             android:id="@+id/verticalActuatorSpeed"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentTop="true"
-                            android:layout_centerHorizontal="true"
-                            android:layout_gravity="center|top"
-                            android:baselineAligned="false"
-                            android:orientation="vertical" />
+                            style="@style/NumberPickerLayout"/>
                     </LinearLayout>
 
                 </LinearLayout>
@@ -334,7 +270,7 @@
             android:layout_gravity="center"
             android:gravity="center_horizontal"
             android:orientation="vertical"
-            android:paddingTop="15dp">
+            android:paddingTop="5dp">
 
 
             <LinearLayout
@@ -343,7 +279,6 @@
                 android:layout_gravity="bottom"
                 android:gravity="center_horizontal"
                 android:orientation="horizontal"
-                android:paddingTop="5dp"
                 android:weightSum="60">
 
                 <Button

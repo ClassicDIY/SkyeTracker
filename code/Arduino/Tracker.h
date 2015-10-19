@@ -18,7 +18,7 @@
 
 #define POSITION_UPDATE_INTERVAL 60000 // Check tracker every minute
 #define PENDING_RESET 3000 // Configuration changed, reset countdown
-#define CYCLE_POSITION_UPDATE_INTERVAL 5000 // Check tracker every 5 seconds
+#define CYCLE_POSITION_UPDATE_INTERVAL 10000 // Check tracker every 5 seconds
 #define POSITIONINTERVAL 5 // Move array when sun moves 5 degrees past current position
 
 
@@ -53,12 +53,13 @@ namespace SkyeTracker
 		void Initialize(ThreadController* controller);
 		void Track();
 		TrackerState getState();
+		void setState(TrackerState state);
 		void BroadcastPosition();
 		void ProcessCommand(const char* input);
 
 	private:
 
-
+		void InitializeActuators();
 		void Move(Direction dir);
 		void Stop();
 		void Cycle();

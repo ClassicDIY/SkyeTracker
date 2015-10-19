@@ -1,8 +1,5 @@
 <resources>
 
-    <style name="AppTheme" parent="Theme.AppCompat">
-        <item name="android:spinnerDropDownItemStyle">@style/mySpinnerItemStyle</item>
-    </style>
 
     <style name="InfoLabel" parent="@android:style/TextAppearance.Medium">
         <item name="android:layout_width">fill_parent</item>
@@ -19,6 +16,17 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:gravity">left</item>
         <item name="android:textColor">@color/material_blue_grey_800</item>
+        <item name="android:textSize">@dimen/abc_text_size_title_material</item>
+        <item name="android:typeface">sans</item>
+    </style>
+
+
+    <style name="CheckBoxLabel" parent="@android:style/TextAppearance.Medium">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:textColor">@color/material_blue_grey_800</item>
+        <item name="android:theme">@android:style/Theme.Holo.Light</item>
         <item name="android:textSize">@dimen/abc_text_size_title_material</item>
         <item name="android:typeface">sans</item>
     </style>
@@ -55,6 +63,18 @@
         <item name="android:paddingTop">2dp</item>
     </style>
 
+
+    <style name="NumberPickerLayout" parent="Platform.AppCompat">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">110dp</item>
+        <item name="android:layout_alignParentTop">true</item>
+        <item name="android:layout_centerHorizontal">true</item>
+        <item name="android:layout_gravity">center|top</item>
+        <item name="android:baselineAligned">false</item>
+        <item name="android:gravity">center_horizontal|bottom</item>
+        <item name="android:orientation">vertical</item>
+    </style>
+
     <!--<style name="ButtonAppTheme" parent="android:Widget.Material.Button">-->
         <!--<item name="android:background">@color/material_deep_teal_500</item>-->
     <!--</style>-->
@@ -70,11 +90,6 @@
         <item name="android:shadowRadius">0.6</item>
         <item name="android:background">@drawable/custom_btn_genoa</item>
         <item name="android:padding">10dip</item>
-    </style>
-
-
-    <style name="mySpinnerItemStyle" parent="@android:style/Widget.Holo.DropDownItem.Spinner">
-        <item name="android:textColor">@color/Black</item>
     </style>
 
 </resources>

@@ -35,7 +35,7 @@ void setup()
 	_rtc.begin();
 	if (!_rtc.isrunning()) {
 		Serial.println(F("RTC not running!"));
-		_rtc.adjust(DateTime(2015, 9, 30, 11, 00, 0));
+		_rtc.adjust(DateTime(2015, 6, 21, 12, 00, 0));
 		_tracker._errorState = TrackerError_FailedToAccessRTC;
 	}
 	String d = "";

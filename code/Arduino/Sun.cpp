@@ -33,7 +33,7 @@ namespace SkyeTracker
 		_latitude = latitude;
 		_longitude = longitude;
 
-		_zone = ~zone;
+		_zone = zone;
 
 		if ((_latitude >= -90) && (_latitude < -89.8))
 		{
@@ -80,11 +80,12 @@ namespace SkyeTracker
 		monthDays = 30.6001* (month + 1);    // days until 1st month
 		JulianResult = leapDays + day + monthDays + yearDays - 1524.5;
 
-		fltMins = ((float)minute / 60) / 24;
-		fltHrs = (float)hour / 24;
+		fltMins = ((float)minute / 60.0) / 24.0;
+		fltHrs = (float)hour / 24.0;
+		//fltHrs += (float)_zone / 24.0;
 		fltDayDecimal = fltHrs + fltMins;
 		JulianDay = (double)JulianResult + fltDayDecimal;
-		JulianCentury = (JulianDay - 2451545) / 36525;
+		JulianCentury = (JulianDay - 2451545) / 36525.0;
 
 		//double jd = JD(dateTime.AddHours(zone));
 		//double jc = JulianCent(jd);
@@ -92,10 +93,10 @@ namespace SkyeTracker
 		double etime = EquationOfTime(JulianCentury);
 		double eqTime = etime;
 		double solarDec = theta; // in degrees
-		_eqTime = (floor(100 * eqTime)) / 100;
-		_solarDec = (floor(100 * (solarDec))) / 100;
-		double solarTimeFix = eqTime - 4.0*_longitude + 60.0*_zone;
-		double trueSolarTime = hour * 60 + minute + second / 60 + solarTimeFix;
+		_eqTime = (floor(100 * eqTime)) / 100.0;
+		_solarDec = (floor(100 * (solarDec))) / 100.0;
+		double solarTimeFix = (eqTime + 4.0*_longitude) - 60.0*_zone;
+		double trueSolarTime = hour * 60 + minute + second / 60.0 + solarTimeFix;
 		while (trueSolarTime > 1440)
 		{
 			trueSolarTime -= 1440;
@@ -384,6 +385,5 @@ namespace SkyeTracker
 		double Etime = y*sin2l0 - 2.0*e*sinm + 4.0*e*y*sinm*cos2l0 - 0.5*y*y*sin4l0 - 1.25*e*e*sin2m;
 		return RadianToDegree(Etime)*4.0; // in minutes of time
 	}
-
 
 }

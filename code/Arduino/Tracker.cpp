@@ -24,35 +24,26 @@ namespace SkyeTracker
 
 	void Tracker::Initialize(ThreadController* controller)
 	{
-		_trackerState = TrackerState_Initializing;
-		float lon = _config->getLon();
-		_sun = new Sun(_config->getLat(), -lon, _config->getTimeZoneOffsetToUTC());
+		setState(TrackerState_Initializing);
+		_sun = new Sun(_config->getLat(), _config->getLon(), _config->getTimeZoneOffsetToUTC());
 		DateTime now = _rtc->now();
 		_sun->calcSun(now.year(), now.month(), now.day(), now.hour(), now.minute(), now.second());
-		
-
 #if defined(NOPOT)
-		_azimuth = new LinearActuatorNoPot(_rtc, 7, 2, 3);
+		_azimuth = new LinearActuatorNoPot("Horizontal", 7, 2, 3);
 #else
 		Serial.println("Initializing horizontal actuator (WithPotentiometer)");
 		_azimuth = new LinearActuatorWithPotentiometer(A1, 7, 2, 3);
 #endif
 		controller->add(_azimuth);
-		_azimuth->Initialize(_config->getEastAzimuth(), _config->getWestAzimuth(), _config->getHorizontalLength(), _config->getHorizontalSpeed());
 
 #if defined(NOPOT)
-		_elevation = new LinearActuatorNoPot(_rtc, 6, 4, 5);
+		_elevation = new LinearActuatorNoPot("Vertical", 6, 4, 5);
 #else
 		_elevation = new LinearActuatorWithPotentiometer(A2, 6, 4, 5);
 #endif
 		controller->add(_elevation);
-		if (_config->isDual())
-		{
-			_elevation->Initialize(_config->getMinimumElevation(), _config->getMaximumElevation(), _config->getVerticalLength(), _config->getVerticalSpeed());
-		}
-		setInterval(POSITION_UPDATE_INTERVAL);
 		controller->add(this);
-		_trackerState = TrackerState_Standby;
+		InitializeActuators();
 	}
 
 	void Tracker::Move(Direction dir)
@@ -87,7 +78,7 @@ namespace SkyeTracker
 		cycleHour = 0;
 		enabled = true;
 		setInterval(CYCLE_POSITION_UPDATE_INTERVAL);
-		_trackerState = TrackerState_Cycling;
+		setState(TrackerState_Cycling);
 		this->run();
 	}
 
@@ -106,9 +97,14 @@ namespace SkyeTracker
 		}
 		else if (getState() != TrackerState_Initializing && getState() != TrackerState_Off)
 		{
+			if (getState() == TrackerState_Moving || getState() == TrackerState_Cycling)
+			{
+				// re-initialize actuators if moved
+				InitializeActuators();
+			}
 			enabled = true;
 			setInterval(POSITION_UPDATE_INTERVAL);
-			_trackerState = TrackerState_Tracking;
+			setState(TrackerState_Tracking);
 			this->run();
 		}
 	}
@@ -125,7 +121,6 @@ namespace SkyeTracker
 			_waitingForMorning = true;
 			Serial.println(F("Waiting For Morning"));
 		}
-
 	}
 
 	void Tracker::TrackToSun()
@@ -171,6 +166,25 @@ namespace SkyeTracker
 		return _trackerState;
 	}
 
+	void Tracker::setState(TrackerState state)
+	{
+		if (_trackerState != state) {
+			_trackerState = state;
+			_config->SendConfiguration();
+		}
+		return;
+	}
+
+	void Tracker::InitializeActuators() {
+		_azimuth->Initialize(_config->getEastAzimuth(), _config->getWestAzimuth(), _config->getHorizontalLength(), _config->getHorizontalSpeed());
+		if (_config->isDual())
+		{
+			_elevation->Initialize(_config->getMinimumElevation(), _config->getMaximumElevation(), _config->getVerticalLength(), _config->getVerticalSpeed());
+		}
+		setInterval(POSITION_UPDATE_INTERVAL);
+		setState(TrackerState_Standby);
+	}
+
 	void Tracker::run() {
 		runned();
 		if (_config->isDirty())
@@ -179,13 +193,7 @@ namespace SkyeTracker
 			delete _sun;
 			float lon = _config->getLon();
 			_sun = new Sun(_config->getLat(), -lon, _config->getTimeZoneOffsetToUTC());
-			_azimuth->Initialize(_config->getEastAzimuth(), _config->getWestAzimuth(), _config->getHorizontalLength(), _config->getHorizontalSpeed());
-			if (_config->isDual())
-			{
-				_elevation->Initialize(_config->getMinimumElevation(), _config->getMaximumElevation(), _config->getVerticalLength(), _config->getVerticalSpeed());
-			}
-			setInterval(POSITION_UPDATE_INTERVAL);
-			_trackerState = TrackerState_Standby;
+			InitializeActuators();
 		}
 		else
 		{
@@ -224,12 +232,10 @@ namespace SkyeTracker
 	void Tracker::ProcessCommand(const char* input)
 	{
 		boolean afterDelimiter = false;
-		
 		char command[32];
 		char data[64];
 		int commandIndex = 0;
 		int dataIndex = 0;
-
 		for (int i = 0; i < strlen(input); i++)
 		{
 			if (input[i] == '|')
@@ -273,7 +279,7 @@ namespace SkyeTracker
 		}
 		else if (strcmp(command, c_Stop) == 0)
 		{
-			_trackerState = TrackerState_Moving;
+			setState(TrackerState_Moving);
 			Stop();
 		}
 		else if (strcmp(command, c_GetConfiguration) == 0)
@@ -341,7 +347,7 @@ namespace SkyeTracker
 
 	void Tracker::MoveTo(char* arg)
 	{
-		_trackerState = TrackerState_Moving;
+		setState(TrackerState_Moving);
 		if (strcmp(arg, c_East) == 0)
 		{
 			Move(Direction_East);
