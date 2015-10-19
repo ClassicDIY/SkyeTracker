@@ -77,9 +77,6 @@ namespace TrackerRTC
             var solarDec = theta; // in degrees
             result.eqTime = (Math.Floor(100*eqTime))/100;
             result.solarDec = (Math.Floor(100*(solarDec)))/100;
-
-            //double solarTimeFix = (eqTime + 4.0 * _longitude) - 60.0 * _zone;
-
             var solarTimeFix = (eqTime + 4.0*longitude) - 60.0*zone;
             var trueSolarTime = dateTime.TimeOfDay.Hours*60 + dateTime.TimeOfDay.Minutes + dateTime.TimeOfDay.Seconds/60 + solarTimeFix;
             while (trueSolarTime > 1440)
