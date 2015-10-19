@@ -3,10 +3,8 @@
 #include <ThreadController.h>
 #include <Thread.h>
 #include <Wire.h> 
-#include <SoftwareSerial.h>
 #include "RTClib.h"
 #include "sun.h"
-#include "LinearActuatorWithPotentiometer.h"
 #include "Configuration.h"
 #include "Tracker.h"
 
