@@ -73,8 +73,8 @@ public class SetupTab extends Fragment {
             }
         });
         horizontalSpeed = (NumberPicker) rootView.findViewById(R.id.horizontalActuatorSpeed);
-        horizontalSpeed.setMinValue(20);
-        horizontalSpeed.setMaxValue(80);
+        horizontalSpeed.setMinValue(01);
+        horizontalSpeed.setMaxValue(99);
         horizontalSpeed.setWrapSelectorWheel(true);
         horizontalSpeed.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
         horizontalSpeed.setFormatter(new NumberPicker.Formatter() {
@@ -93,8 +93,8 @@ public class SetupTab extends Fragment {
             }
         });
         verticalSpeed = (NumberPicker) rootView.findViewById(R.id.verticalActuatorSpeed);
-        verticalSpeed.setMinValue(20);
-        verticalSpeed.setMaxValue(80);
+        verticalSpeed.setMinValue(01);
+        verticalSpeed.setMaxValue(99);
         verticalSpeed.setWrapSelectorWheel(true);
         verticalSpeed.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
         verticalSpeed.setFormatter(new NumberPicker.Formatter() {

@@ -32,7 +32,7 @@ namespace SkyeTracker
 		_extendedAngle = extendedAngle;
 		_retractedAngle = retractedAngle;
 		_state = ActuatorState_Initializing;
-		int actuatorLengthLookup[] = {4, 8, 12, 16, 24, 36};
+		int actuatorLengthLookup[] = {4, 8, 12, 18, 24, 36};
 		_actuatorLength = actuatorLengthLookup[actuatorLength];
 		_inchesPerSecond = actuatorSpeed / 100.0;
 		Retract();
