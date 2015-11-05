@@ -194,6 +194,11 @@ namespace SkyeTracker
 		{
 			_dark = true;
 		}
+		//String d = "Sun: ";
+		//String dd = _dark ? " dark " : " daylight";
+		//d = d + year + "/" + month + "/" + day + " " + hour + ":" + minute + ":" + second + " Lat:" + _latitude + " Lon:" + _longitude + " zone:" + _zone + " azimuth:" + _azimuth + " elevation:" + _elevation + dd;
+		//Serial.println(d);
+
 		return;
 	}
 
