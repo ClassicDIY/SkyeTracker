@@ -136,7 +136,6 @@
   <ItemGroup>
     <ClCompile Include="Configuration.cpp" />
     <ClCompile Include="LinearActuatorNoPot.cpp" />
-    <ClCompile Include="LinearActuatorWithPotentiometer.cpp" />
     <ClCompile Include="Sun.cpp" />
     <ClCompile Include="Tracker.cpp" />
   </ItemGroup>
@@ -144,9 +143,6 @@
     <ClInclude Include="Configuration.h" />
     <ClInclude Include="LinearActuatorNoPot.h" />
     <ClInclude Include="Enumerations.h" />
-    <ClInclude Include="LinearActuatorWithPotentiometer.h">
-      <FileType>CppCode</FileType>
-    </ClInclude>
     <ClInclude Include="Position.h" />
     <ClInclude Include="Sun.h" />
     <ClInclude Include="Tracker.h" />

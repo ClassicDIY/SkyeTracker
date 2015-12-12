@@ -1,5 +1,4 @@
 #pragma once
-#if defined(NOPOT)
 
 #include <Arduino.h>
 #include <ThreadController.h>
@@ -60,5 +59,3 @@ namespace SkyeTracker
 
 
 }
-
-#endif

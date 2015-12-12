@@ -30,9 +30,6 @@
     <ClCompile Include="LinearActuatorNoPot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LinearActuatorWithPotentiometer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sun.h">
@@ -54,9 +51,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="__vm\.Arduino.vsarduino.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LinearActuatorWithPotentiometer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

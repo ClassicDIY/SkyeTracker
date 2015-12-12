@@ -1,7 +1,5 @@
-#if defined(NOPOT)
+
 #include "LinearActuatorNoPot.h"
-
-
 
 namespace SkyeTracker
 {
@@ -196,5 +194,3 @@ namespace SkyeTracker
 	}
 
 }
-
-#endif

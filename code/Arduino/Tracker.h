@@ -5,16 +5,11 @@
 #include <Thread.h>
 #include "RTClib.h"
 #include "sun.h"
-
 #include "Configuration.h"
 #include "Enumerations.h"
 #include "Position.h"
-
-#if defined(NOPOT)
 #include "LinearActuatorNoPot.h";
-#else
-#include "LinearActuatorWithPotentiometer.h"
-#endif
+
 
 #define POSITION_UPDATE_INTERVAL 60000 // Check tracker every minute
 #define PENDING_RESET 3000 // Configuration changed, reset countdown
@@ -114,13 +109,9 @@ namespace SkyeTracker
 		void run();
 
 		Configuration* _config;
-#if defined(NOPOT)
+
 		LinearActuatorNoPot* _azimuth;
 		LinearActuatorNoPot* _elevation;
-#else
-		LinearActuatorWithPotentiometer* _azimuth;
-		LinearActuatorWithPotentiometer* _elevation;
-#endif
 
 		RTC_DS1307* _rtc;
 		Sun* _sun;
