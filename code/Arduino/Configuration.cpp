@@ -46,31 +46,31 @@ namespace SkyeTracker
 			_maximumElevation = 45;
 		}
 
-		if (_minimumElevation > 45)
+		if (_minimumElevation > 44)
 		{
-			_minimumElevation = 45;
+			_minimumElevation = 44;
 		}
 		if (_minimumElevation < 0)
 		{
 			_minimumElevation = 0;
 		}
 
-		if (_eastAzimuth < 45)
+		if (_eastAzimuth < 0)
 		{
-			_eastAzimuth = 45;
+			_eastAzimuth = 0;
 		}
-		if (_eastAzimuth > 135)
+		if (_eastAzimuth > 180)
 		{
-			_eastAzimuth = 135;
+			_eastAzimuth = 180;
 		}
 
-		if (_westAzimuth < 225)
+		if (_westAzimuth < 182)
 		{
-			_westAzimuth = 225;
+			_westAzimuth = 182;
 		}
-		if (_westAzimuth > 315)
+		if (_westAzimuth > 359)
 		{
-			_westAzimuth = 315;
+			_westAzimuth = 359;
 		}
 		_isDirty = true;
 	}

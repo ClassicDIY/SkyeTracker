@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="battery_voltage_values">
+        <item>20</item>
+        <item>40</item>
+        <item>80</item>
+        <item>160</item>
+    </string-array>
+
+
+</resources>

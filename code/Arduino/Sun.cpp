@@ -31,9 +31,8 @@ namespace SkyeTracker
 	Sun::Sun(double latitude, double longitude, int zone)
 	{
 		_latitude = latitude;
-		_longitude = longitude;
-
-		_zone = zone;
+		_longitude = -longitude;
+		_zone = -zone;
 
 		if ((_latitude >= -90) && (_latitude < -89.8))
 		{
@@ -95,7 +94,7 @@ namespace SkyeTracker
 		double solarDec = theta; // in degrees
 		_eqTime = (floor(100 * eqTime)) / 100.0;
 		_solarDec = (floor(100 * (solarDec))) / 100.0;
-		double solarTimeFix = (eqTime + 4.0*_longitude) - 60.0*_zone;
+		double solarTimeFix = eqTime - 4.0*_longitude + 60.0*_zone;
 		double trueSolarTime = hour * 60 + minute + second / 60.0 + solarTimeFix;
 		while (trueSolarTime > 1440)
 		{

@@ -31,7 +31,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         stl = (SlidingTabLayout) findViewById(R.id.sliding_tabs);
         stl.setDividerColors(Color.RED);
-        stl.setSelectedIndicatorColors(Color.GREEN, Color.MAGENTA, Color.YELLOW, Color.WHITE);
+        stl.setSelectedIndicatorColors(Color.GREEN, Color.MAGENTA, Color.YELLOW, Color.WHITE, Color.CYAN);
         viewPager = (ViewPager) findViewById(R.id.pager);
         setupActionBar();
         checkBTState();
@@ -49,9 +49,6 @@ public class MainActivity extends Activity {
             // This method will be invoked when a new page becomes selected.
             @Override
             public void onPageSelected(int position) {
-                if (position == 0 || position == 2) {
-                    MainApplication.SendCommand("GetConfiguration");
-                }
                 if (position > 0) {
                     MainApplication.SendCommand("StopBroadcast");
                 }
@@ -67,7 +64,9 @@ public class MainActivity extends Activity {
         });
         tabStripAdapter.addTab(R.string.InfoTabTitle, InfoTab.class, null);
         tabStripAdapter.addTab(R.string.MoveTabTitle, MoveTab.class, null);
-        tabStripAdapter.addTab(R.string.SetupTabTitle, SetupTab.class, null);
+        tabStripAdapter.addTab(R.string.SetupTabTitle, LimitsTab.class, null);
+        tabStripAdapter.addTab(R.string.LocationTabTitle, LocationTab.class, null);
+        tabStripAdapter.addTab(R.string.TimeTabTitle, DateTimeTab.class, null);
         tabStripAdapter.addTab(R.string.AboutTabTitle, AboutTab.class, null);
         tabStripAdapter.notifyTabsChanged();
 

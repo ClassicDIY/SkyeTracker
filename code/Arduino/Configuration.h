@@ -51,7 +51,6 @@ namespace SkyeTracker
 		void Load();
 		void Save();
 		void SendConfiguration();
-		float InchesPerSecond() { return 0.31; } // todo
 	};
 
 }

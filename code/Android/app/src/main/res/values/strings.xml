@@ -3,8 +3,10 @@
 
     <string name="app_name">SkyeTracker</string>
     <string name="MoveTabTitle">Move</string>
-    <string name="SetupTabTitle">Setup</string>
+    <string name="SetupTabTitle">Limits</string>
+    <string name="LocationTabTitle">Location</string>
     <string name="InfoTabTitle">Info</string>
+    <string name="TimeTabTitle">Date/Time</string>
     <string name="AboutTabTitle">About</string>
 
 
@@ -16,5 +18,6 @@
         <item>24\"</item>
         <item>36\"</item>
     </string-array>
+    <string name="title_activity_maps">Map</string>
 
 </resources>

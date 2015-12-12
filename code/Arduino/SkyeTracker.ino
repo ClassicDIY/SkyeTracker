@@ -22,7 +22,7 @@ int _receiveIndex = 0;
 
 void setup()
 {
-	Serial.begin(9600);
+	Serial.begin(9600); // HC-06 default baud rate
 	while (!Serial) {
 		; // wait for serial port to connect.
 	}

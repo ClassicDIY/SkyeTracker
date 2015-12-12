@@ -18,9 +18,7 @@
 
 #define POSITION_UPDATE_INTERVAL 60000 // Check tracker every minute
 #define PENDING_RESET 3000 // Configuration changed, reset countdown
-#define CYCLE_POSITION_UPDATE_INTERVAL 10000 // Check tracker every 5 seconds
-#define POSITIONINTERVAL 5 // Move array when sun moves 5 degrees past current position
-
+#define CYCLE_POSITION_UPDATE_INTERVAL 5000 // Sweep through the day one hour at this interval
 
 const char c_Track[] = "Track";
 const char c_Cycle[] = "Cycle";
@@ -95,7 +93,14 @@ namespace SkyeTracker
 		{
 			Serial.print("Dt|{");
 			Serial.print("\"sT\":"); // seconds in unixtime
-			Serial.print(_rtc->now().unixtime());
+			if (_trackerState == TrackerState_Cycling) {
+				DateTime now = _rtc->now();
+				uint32_t d = DateTime((uint16_t)now.year(), (uint8_t)now.month(), (uint8_t)now.day(), (uint8_t)cycleHour).unixtime();
+				Serial.print(d);
+			}
+			else {
+				Serial.print(_rtc->now().unixtime());
+			}
 			Serial.println("}");
 		};
 		void sendState()

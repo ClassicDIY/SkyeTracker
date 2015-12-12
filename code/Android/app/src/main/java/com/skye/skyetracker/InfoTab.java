@@ -25,10 +25,12 @@ public class InfoTab extends Fragment {
     TextView textDualAxis;
     TextView textLatitude, textDateTime, textUtcOffset, textLongitude, textArrayAzimuth, textArrayElevation, textSunAzimuth;
     TextView textSunElevation, textMinAzimuth, textMaxAzimuth, textMinElevation, textMaxElevation, textTrackerState, textTrackerError, textHorizontalActuatorPosition, textVerticalActuatorPosition;
+    Context context;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        context = container.getContext();
         View rootView = inflater.inflate(R.layout.info, container, false);
         configTransfer = new ConfigTransfer();
 
@@ -49,12 +51,21 @@ public class InfoTab extends Fragment {
         textTrackerError = (TextView) rootView.findViewById(R.id.textTrackerError);
         textHorizontalActuatorPosition = (TextView) rootView.findViewById(R.id.textHorizontalActuatorPosition);
         textVerticalActuatorPosition = (TextView) rootView.findViewById(R.id.textVerticalActuatorPosition);
-        LocalBroadcastManager.getInstance(container.getContext()).registerReceiver(mPositionReceiver, new IntentFilter("com.skye.skyetracker.position"));
-        LocalBroadcastManager.getInstance(container.getContext()).registerReceiver(mConfigurationReceiver, new IntentFilter("com.skye.skyetracker.configuration"));
-        LocalBroadcastManager.getInstance(container.getContext()).registerReceiver(mDateTimeReceiver, new IntentFilter("com.skye.skyetracker.datetime"));
+        LocalBroadcastManager.getInstance(context).registerReceiver(mPositionReceiver, new IntentFilter("com.skye.skyetracker.position"));
+        LocalBroadcastManager.getInstance(context).registerReceiver(mConfigurationReceiver, new IntentFilter("com.skye.skyetracker.configuration"));
+        LocalBroadcastManager.getInstance(context).registerReceiver(mDateTimeReceiver, new IntentFilter("com.skye.skyetracker.datetime"));
 
         return rootView;
     }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        LocalBroadcastManager.getInstance(context).unregisterReceiver(mPositionReceiver);
+        LocalBroadcastManager.getInstance(context).unregisterReceiver(mConfigurationReceiver);
+        LocalBroadcastManager.getInstance(context).unregisterReceiver(mDateTimeReceiver);
+    }
+
 
     @Override
     public void onStart() {
@@ -184,12 +195,4 @@ public class InfoTab extends Fragment {
             }
         }
     };
-
-/*                long dv = Long.valueOf(configTransfer._secondsTime)*1000;// its need to be in milisecond
-                TimeZone tz = TimeZone.getDefault();
-                Date df = new java.util.Date(dv - tz.getOffset(dv));
-
-                String vv = new SimpleDateFormat("MM dd, yyyy hh:mma").format(df);
-                textDateTime.setText(vv);
-                */
 }

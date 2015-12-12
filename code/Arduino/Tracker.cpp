@@ -126,20 +126,10 @@ namespace SkyeTracker
 	void Tracker::TrackToSun()
 	{
 		Serial.println(F("TrackToSun "));
-		if (abs(_sun->azimuth() - _azimuth->CurrentAngle()) > POSITIONINTERVAL)
-		{
-			Serial.print(F("Move azimuth to: "));
-			Serial.println(_sun->azimuth());
-			_azimuth->MoveTo(_sun->azimuth());
-		}
+		_azimuth->MoveTo(_sun->azimuth());
 		if (_config->isDual())
 		{
-			if (abs(_sun->elevation() - _elevation->CurrentAngle()) > POSITIONINTERVAL)
-			{
-				Serial.print(F("Move elevation to: "));
-				Serial.println(_sun->elevation());
-				_elevation->MoveTo(_sun->elevation());
-			}
+			_elevation->MoveTo(_sun->elevation());
 		}
 	}
 
@@ -176,7 +166,7 @@ namespace SkyeTracker
 	}
 
 	void Tracker::InitializeActuators() {
-		_azimuth->Initialize(_config->getEastAzimuth(), _config->getWestAzimuth(), _config->getHorizontalLength(), _config->getHorizontalSpeed());
+		_azimuth->Initialize(_config->getEastAzimuth(), _config->getWestAzimuth(), _config->getHorizontalLength(), _config->getHorizontalSpeed(), _config->getLat() < 0);
 		if (_config->isDual())
 		{
 			_elevation->Initialize(_config->getMinimumElevation(), _config->getMaximumElevation(), _config->getVerticalLength(), _config->getVerticalSpeed());
@@ -191,8 +181,7 @@ namespace SkyeTracker
 		{
 			_config->Save();
 			delete _sun;
-			float lon = _config->getLon();
-			_sun = new Sun(_config->getLat(), -lon, _config->getTimeZoneOffsetToUTC());
+			_sun = new Sun(_config->getLat(), _config->getLon(), _config->getTimeZoneOffsetToUTC());
 			InitializeActuators();
 		}
 		else
@@ -202,10 +191,12 @@ namespace SkyeTracker
 			switch (state)
 			{
 			case TrackerState_Cycling:
-				cycleHour++;
-				cycleHour %= 24;
-				Serial.println(cycleHour);
-				_sun->calcSun(now.year(), now.month(), now.day(), cycleHour, 0, 0);
+				if (_azimuth->getState() == ActuatorState_Stopped && _elevation->getState() == ActuatorState_Stopped) {
+					cycleHour++;
+					cycleHour %= 24;
+					Serial.println(cycleHour);
+					_sun->calcSun(now.year(), now.month(), now.day(), cycleHour, 0, 0);
+				}
 				break;
 			case TrackerState_Tracking:
 				_sun->calcSun(now.year(), now.month(), now.day(), now.hour(), now.minute(), now.second());
@@ -380,6 +371,9 @@ namespace SkyeTracker
 			Serial.print(",");
 			sendState();
 			Serial.println("}");
+			if (_trackerState == TrackerState_Cycling) {
+				sendDateTime();
+			}
 		}
 	}
 }

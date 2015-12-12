@@ -10,6 +10,23 @@
         <item name="android:typeface">sans</item>
     </style>
 
+    <style name="HeaderLabel" parent="@android:style/TextAppearance.Medium">
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@color/material_blue_grey_800</item>
+        <item name="android:textSize">@dimen/abc_text_size_large_material</item>
+        <item name="android:typeface">sans</item>
+    </style>
+
+    <style name="MapInfo" parent="@android:style/TextAppearance.Medium">
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@color/material_blue_grey_800</item>
+        <item name="android:textSize">@dimen/abc_text_size_medium_material</item>
+        <item name="android:typeface">sans</item>
+    </style>
 
     <style name="SetupLabel" parent="@android:style/TextAppearance.Medium">
         <item name="android:layout_width">fill_parent</item>
@@ -75,6 +92,17 @@
         <item name="android:orientation">vertical</item>
     </style>
 
+    <style name="CenterLayout" parent="Platform.AppCompat">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">120dp</item>
+        <item name="android:layout_alignParentTop">true</item>
+        <item name="android:layout_centerHorizontal">true</item>
+        <item name="android:layout_gravity">center|top</item>
+        <item name="android:baselineAligned">false</item>
+        <item name="android:gravity">center_horizontal|bottom</item>
+        <item name="android:orientation">vertical</item>
+    </style>
+
     <!--<style name="ButtonAppTheme" parent="android:Widget.Material.Button">-->
         <!--<item name="android:background">@color/material_deep_teal_500</item>-->
     <!--</style>-->
@@ -89,6 +117,16 @@
         <item name="android:shadowDy">1</item>
         <item name="android:shadowRadius">0.6</item>
         <item name="android:background">@drawable/custom_btn_genoa</item>
+        <item name="android:padding">10dip</item>
+    </style>
+
+    <style name="SmallButton"  parent="@android:style/Widget.Button">
+        <item name="android:textSize">10dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/Black</item>
+        <item name="android:gravity">center</item>
         <item name="android:padding">10dip</item>
     </style>
 

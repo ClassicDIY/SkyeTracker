@@ -27,10 +27,10 @@
     <ClCompile Include="Tracker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LinearActuatorWithPotentiometer.cpp">
+    <ClCompile Include="LinearActuatorNoPot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LinearActuatorNoPot.cpp">
+    <ClCompile Include="LinearActuatorWithPotentiometer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -50,13 +50,13 @@
     <ClInclude Include="Position.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LinearActuatorWithPotentiometer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="LinearActuatorNoPot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="__vm\.Arduino.vsarduino.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LinearActuatorWithPotentiometer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

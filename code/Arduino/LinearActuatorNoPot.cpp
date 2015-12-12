@@ -18,19 +18,26 @@ namespace SkyeTracker
 		_currentPosition = 0;
 		_lastTime = 0;
 		_runTime = 0;
+		_southernHemisphere = false;
 	}
 
 	LinearActuatorNoPot::~LinearActuatorNoPot()
 	{
 	}
 
-	void LinearActuatorNoPot::Initialize(int retractedAngle, int extendedAngle, int actuatorLength, int actuatorSpeed)
+	float LinearActuatorNoPot::FlipAngle(float angle)
+	{
+		return _southernHemisphere ?  180 - ((angle > 180) ? angle - 360 : angle) : angle;
+	}
+
+	void LinearActuatorNoPot::Initialize(int retractedAngle, int extendedAngle, int actuatorLength, int actuatorSpeed, bool southernHemisphere)
 	{
 		pinMode(_enableActuator, OUTPUT);
 		pinMode(_PWMa, OUTPUT);
 		pinMode(_PWMb, OUTPUT);
-		_extendedAngle = extendedAngle;
-		_retractedAngle = retractedAngle;
+		_southernHemisphere = southernHemisphere;
+		_extendedAngle = FlipAngle(extendedAngle);
+		_retractedAngle = FlipAngle(retractedAngle);
 		_state = ActuatorState_Initializing;
 		int actuatorLengthLookup[] = {4, 8, 12, 18, 24, 36};
 		_actuatorLength = actuatorLengthLookup[actuatorLength];
@@ -54,7 +61,7 @@ namespace SkyeTracker
 		}
 		else
 		{
-			float currentAngle = CurrentAngle();
+			float currentAngle = CurrentAngleFlipped();
 			float delta = abs(currentAngle - _requestedAngle);
 			Serial.print(_name + F(" tracking currentAngle: "));
 			Serial.print(currentAngle);
@@ -112,14 +119,19 @@ namespace SkyeTracker
 		return seconds * _inchesPerSecond;
 	}
 
-	float LinearActuatorNoPot::CurrentAngle()
+	float LinearActuatorNoPot::CurrentAngleFlipped()
 	{
 		if (_state == ActuatorState_Initializing) {
 			return 0;
 		}
 		float delta = _extendedAngle - _retractedAngle;
-		float degreesPerStep = delta / _actuatorLength; 
+		float degreesPerStep = delta / _actuatorLength;
 		return (_currentPosition * degreesPerStep) + _retractedAngle;
+	}
+
+	float LinearActuatorNoPot::CurrentAngle()
+	{
+		return  FlipAngle(CurrentAngleFlipped());  // facing north in southern hemisphere?
 	}
 
 	void LinearActuatorNoPot::Retract()
@@ -157,26 +169,32 @@ namespace SkyeTracker
 		digitalWrite(_enableActuator, false);
 		_state = ActuatorState_Stopped;
 		enabled = false;
-		//Serial.print("LinearActuatorNoPot::Stop: ");
-		//Serial.println(CurrentAngle());
-		CurrentAngle();
 	}
 
 
 	void LinearActuatorNoPot::MoveTo(float angle)
 	{
-		if (angle > _extendedAngle)
+		angle = FlipAngle(angle);
+		if (abs(angle - CurrentAngleFlipped()) > POSITIONINTERVAL)
 		{
-			angle = _extendedAngle;
+			Serial.print(F("Move "));
+			Serial.print(_name);
+			Serial.print(F(" to: "));
+			Serial.println(angle);
+			if (angle > _extendedAngle)
+			{
+				angle = _extendedAngle;
+			}
+			else if (angle < _retractedAngle)
+			{
+				angle = _retractedAngle;
+			}
+			setInterval(shortCheckInterval);
+			_requestedAngle = angle;
+			enabled = true;
 		}
-		else if (angle < _retractedAngle)
-		{
-			angle = _retractedAngle;
-		}
-		setInterval(shortCheckInterval);
-		_requestedAngle = angle;
-		enabled = true;
 	}
+
 }
 
 #endif

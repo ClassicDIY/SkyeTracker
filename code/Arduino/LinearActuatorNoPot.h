@@ -11,8 +11,7 @@
 #define histeresis 2
 #define shortCheckInterval 100
 #define longCheckInterval 5000
-
-
+#define POSITIONINTERVAL 5 // Move array when sun moves 5 degrees past current position
 
 namespace SkyeTracker
 {
@@ -38,14 +37,17 @@ namespace SkyeTracker
 		long _runTime;
 		long _actuatorLength;
 		String _name;
+		bool _southernHemisphere;
 
 	protected:
 		void run();
 		float Range();
 		float Travel();
+		float FlipAngle(float angle);
+		float CurrentAngleFlipped();
 
 	public:
-		void Initialize(int retractedAngle, int extendedAngle, int actuatorLength, int actuatorSpeed);
+		void Initialize(int retractedAngle, int extendedAngle, int actuatorLength, int actuatorSpeed, bool southernHemisphere = false);
 		ActuatorState getState() { return _state; };
 		void MoveTo(float angle);
 		float CurrentPosition();

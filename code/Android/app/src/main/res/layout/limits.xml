@@ -28,30 +28,6 @@
                 android:text="Dual Axis"
                 style="@style/CheckBoxLabel"/>
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="fill_parent"
-                android:layout_gravity="center"
-                android:gravity="center_horizontal"
-                android:orientation="horizontal"
-                android:paddingTop="5dp">
-
-                <TextView
-                    style="@style/InfoLabel"
-                    android:text="Lat/Lon: " />
-
-                <TextView
-                    android:id="@+id/textLatitude"
-                    style="@style/InfoValue"
-                    android:text="45.1234" />
-                <TextView
-                    style="@style/InfoLabel"
-                    android:text=" " />
-                <TextView
-                    android:id="@+id/textLongitude"
-                    style="@style/InfoValue"
-                    android:text="75.1234" />
-            </LinearLayout>
 
         </LinearLayout>
 
@@ -273,34 +249,15 @@
             android:paddingTop="5dp">
 
 
-            <LinearLayout
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:gravity="center_horizontal"
-                android:orientation="horizontal"
-                android:weightSum="60">
-
-                <Button
-                    android:id="@+id/btnSyncTime"
-                    style="@style/btnStyleGenoa"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:layout_weight="20"
-                    android:text="Set Date/Time" />
-
                 <Button
                     android:id="@+id/btnSetLimits"
                     style="@style/btnStyleGenoa"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_gravity="center"
                     android:layout_weight="20"
                     android:layout_marginLeft="20dp"
                     android:text="Upload Settings" />
-
-            </LinearLayout>
 
         </LinearLayout>
     </LinearLayout>
