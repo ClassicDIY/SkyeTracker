@@ -38,6 +38,7 @@ public class LocationTab extends Fragment implements OnMapReadyCallback, GoogleM
     TextView lat, lon;
     Button btnLocation;
     Context context;
+    BaseJsonHttpResponseHandler<GoogleTimeZone> httpHandler;
 
     @Override
     public void onDestroyView() {
@@ -54,24 +55,59 @@ public class LocationTab extends Fragment implements OnMapReadyCallback, GoogleM
         mapView.getMapAsync(this);
         mapView.onCreate(savedInstanceState);
         configTransfer = new ConfigTransfer();
-        lat = (TextView)rootView.findViewById(R.id.textLatitude);
-        lon = (TextView)rootView.findViewById(R.id.textLongitude);
+        lat = (TextView) rootView.findViewById(R.id.textLatitude);
+        lon = (TextView) rootView.findViewById(R.id.textLongitude);
         LocalBroadcastManager.getInstance(container.getContext()).registerReceiver(mConfigurationReceiver, new IntentFilter("com.skye.skyetracker.configuration"));
         btnLocation = (Button) rootView.findViewById(R.id.btnSetLocation);
         btnLocation.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-
                 Gson gson = new Gson();
-                ConfigLocation configLocation = new ConfigLocation(map.getMyLocation());
+                Location ll = map.getMyLocation();
+                ConfigLocation configLocation = new ConfigLocation(ll);
                 String json = "SetC|" + gson.toJson(configLocation);
                 MainApplication.SendCommand(json);
-                ConfigOptions configOptions = new ConfigOptions(configTransfer);
-                json = "SetO|" + gson.toJson(configOptions);
-                MainApplication.SendCommand(json);
+                GetTimeZone(ll);
             }
         });
-        mapView.onResume();// needed to get the map to display immediately
+        httpHandler = new BaseJsonHttpResponseHandler<GoogleTimeZone>() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, String rawJsonResponse, GoogleTimeZone response) {
 
+                try {
+                    if (response != null && response.status != null) {
+                        if (response.status.compareTo("OK") == 0) {
+                            configTransfer.u = (response.rawOffset + response.dstOffset) / 3600;
+                            ConfigOptions configOptions = new ConfigOptions(configTransfer);
+                            Gson gson = new Gson();
+                            String json = "SetO|" + gson.toJson(configOptions);
+                            MainApplication.SendCommand(json);
+                        }
+                        else {
+                            Toast.makeText(context, String.format("Failed to get time zone from google api response.status: %s", response.status), Toast.LENGTH_LONG).show();
+                        }
+                    }
+                    else {
+                        Toast.makeText(context, String.format("Failed to get time zone from google api response.status is null"), Toast.LENGTH_LONG).show();
+                    }
+                }
+                catch (Exception ex) {
+                    Toast.makeText(context, String.format("Failed to get time zone from google api exception: %s", ex.getMessage()), Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, String rawJsonData, GoogleTimeZone errorResponse) {
+                Toast.makeText(context, String.format("Failed to get time zone from google api: onFailure: %s code: %d throwable: %s", rawJsonData, statusCode, throwable.getMessage()), Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            protected GoogleTimeZone parseResponse(String rawJsonData, boolean isFailure) throws Throwable {
+                Gson gson = new Gson();
+                return gson.fromJson(rawJsonData, GoogleTimeZone.class);
+            }
+
+        };
+        mapView.onResume();// needed to get the map to display immediately
         try {
             MapsInitializer.initialize(getActivity().getApplicationContext());
         } catch (Exception e) {
@@ -108,7 +144,7 @@ public class LocationTab extends Fragment implements OnMapReadyCallback, GoogleM
         }
 
         @Override
-        public void onMapLongClick(LatLng point) {
+        public void onMapLongClick(final LatLng point) {
             if (mListener != null && !mPaused) {
                 android.location.Location location = new android.location.Location("LongPressLocationProvider");
                 location.setLatitude(point.latitude);
@@ -117,7 +153,13 @@ public class LocationTab extends Fragment implements OnMapReadyCallback, GoogleM
                 mListener.onLocationChanged(location);
                 lat.setText(String.format("%.6f", point.latitude));
                 lon.setText(String.format("%.6f", point.longitude));
-                GetTimeZone(point);
+
+//                getActivity().runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        GetTimeZone(point);
+//                    }
+//                });
             }
         }
 
@@ -166,16 +208,15 @@ public class LocationTab extends Fragment implements OnMapReadyCallback, GoogleM
 
     private boolean centerMapOnMyLocation() {
         boolean rval = false;
-        LocationManager locationManager = (LocationManager)MainApplication.getAppContext().getSystemService(Context.LOCATION_SERVICE);
+        LocationManager locationManager = (LocationManager) MainApplication.getAppContext().getSystemService(Context.LOCATION_SERVICE);
         Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if (location != null) {
             LatLng myLocation = new LatLng(location.getLatitude(), location.getLongitude());
-            CameraUpdate center=CameraUpdateFactory.newLatLngZoom(myLocation, 12);
+            CameraUpdate center = CameraUpdateFactory.newLatLngZoom(myLocation, 12);
             map.animateCamera(center);
             rval = true;
-        }
-        else {
-             Toast.makeText(context, "Unable to access current location", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(context, "Unable to access current location", Toast.LENGTH_SHORT).show();
         }
         return rval;
     }
@@ -190,54 +231,25 @@ public class LocationTab extends Fragment implements OnMapReadyCallback, GoogleM
                 configTransfer.copy(gson.fromJson(json, ConfigTransfer.class));
                 LatLng myLocation = new LatLng(configTransfer.a, configTransfer.o);
                 mLocationSource.onMapLongClick(myLocation);
-                CameraUpdate center=CameraUpdateFactory.newLatLngZoom(myLocation, 12);
+                CameraUpdate center = CameraUpdateFactory.newLatLngZoom(myLocation, 12);
                 map.animateCamera(center);
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 ex.printStackTrace();
             }
         }
     };
 
-    public void GetTimeZone(LatLng point){
-
+    public void GetTimeZone(Location ll) {
         // Make RESTful webservice call using AsyncHttpClient object
         AsyncHttpClient client = new AsyncHttpClient();
-        String url = String.format("https://maps.googleapis.com/maps/api/timezone/json?location=%.6f,%.6f&timestamp=%d&key=AIzaSyCCmG5tz520cf5LWwYP23gkVA_2XP_0Pcw", point.latitude, point.longitude, System.currentTimeMillis()/1000);
-        client.get(context, url, new BaseJsonHttpResponseHandler<GoogleTimeZone>() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, String rawJsonResponse, GoogleTimeZone response) {
-                int utcOffset = (response.rawOffset + response.dstOffset) / 3600;
-                configTransfer.u = utcOffset;
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, String rawJsonData, GoogleTimeZone errorResponse) {
-
-            }
-
-            @Override
-            protected GoogleTimeZone parseResponse(String rawJsonData, boolean isFailure) throws Throwable {
-                Gson gson = new Gson();
-                return gson.fromJson(rawJsonData, GoogleTimeZone.class);
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                // When Http response code is '404'
-                if (statusCode == 404) {
-                    Toast.makeText(context, "Requested resource not found", Toast.LENGTH_LONG).show();
-                }
-                // When Http response code is '500'
-                else if (statusCode == 500) {
-                    Toast.makeText(context, "Something went wrong at server end", Toast.LENGTH_LONG).show();
-                }
-                // When Http response code other than 404, 500
-                else {
-                    Toast.makeText(context, "Unexpected Error occcured! [Most common Error: Device might not be connected to Internet or remote server is not up and running]", Toast.LENGTH_LONG).show();
-                }
-            }
-
-        });
+        String key = getResources().getString(R.string.google_zone_key);
+        String url = String.format("https://maps.googleapis.com/maps/api/timezone/json?location=%.6f,%.6f&timestamp=%d&key=%s", ll.getLatitude(), ll.getLongitude(), System.currentTimeMillis() / 1000, key);
+        Toast.makeText(context, String.format("GetTimeZone url: %s", url), Toast.LENGTH_LONG).show();
+        try {
+            client.get(url, httpHandler);
+        }
+        catch (Exception ex) {
+            Toast.makeText(context, String.format("AsyncHttpClient.get Exception: %s", ex.getMessage()), Toast.LENGTH_LONG).show();
+        }
     }
 }

@@ -38,8 +38,6 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <!--AIzaSyCCmG5tz520cf5LWwYP23gkVA_2XP_0Pcw-->
-
     </application>
 
 </manifest>
