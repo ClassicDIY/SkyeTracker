@@ -25,10 +25,6 @@ import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.Gson;
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.BaseJsonHttpResponseHandler;
-
-import cz.msebera.android.httpclient.Header;
 
 public class LocationTab extends Fragment implements OnMapReadyCallback, GoogleMap.OnMyLocationButtonClickListener {
 
@@ -38,7 +34,6 @@ public class LocationTab extends Fragment implements OnMapReadyCallback, GoogleM
     TextView lat, lon;
     Button btnLocation;
     Context context;
-    BaseJsonHttpResponseHandler<GoogleTimeZone> httpHandler;
 
     @Override
     public void onDestroyView() {
@@ -66,47 +61,9 @@ public class LocationTab extends Fragment implements OnMapReadyCallback, GoogleM
                 ConfigLocation configLocation = new ConfigLocation(ll);
                 String json = "SetC|" + gson.toJson(configLocation);
                 MainApplication.SendCommand(json);
-                GetTimeZone(ll);
             }
         });
-        httpHandler = new BaseJsonHttpResponseHandler<GoogleTimeZone>() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, String rawJsonResponse, GoogleTimeZone response) {
 
-                try {
-                    if (response != null && response.status != null) {
-                        if (response.status.compareTo("OK") == 0) {
-                            configTransfer.u = (response.rawOffset + response.dstOffset) / 3600;
-                            ConfigOptions configOptions = new ConfigOptions(configTransfer);
-                            Gson gson = new Gson();
-                            String json = "SetO|" + gson.toJson(configOptions);
-                            MainApplication.SendCommand(json);
-                        }
-                        else {
-                            Toast.makeText(context, String.format("Failed to get time zone from google api response.status: %s", response.status), Toast.LENGTH_LONG).show();
-                        }
-                    }
-                    else {
-                        Toast.makeText(context, String.format("Failed to get time zone from google api response.status is null"), Toast.LENGTH_LONG).show();
-                    }
-                }
-                catch (Exception ex) {
-                    Toast.makeText(context, String.format("Failed to get time zone from google api exception: %s", ex.getMessage()), Toast.LENGTH_LONG).show();
-                }
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, String rawJsonData, GoogleTimeZone errorResponse) {
-                Toast.makeText(context, String.format("Failed to get time zone from google api: onFailure: %s code: %d throwable: %s", rawJsonData, statusCode, throwable.getMessage()), Toast.LENGTH_LONG).show();
-            }
-
-            @Override
-            protected GoogleTimeZone parseResponse(String rawJsonData, boolean isFailure) throws Throwable {
-                Gson gson = new Gson();
-                return gson.fromJson(rawJsonData, GoogleTimeZone.class);
-            }
-
-        };
         mapView.onResume();// needed to get the map to display immediately
         try {
             MapsInitializer.initialize(getActivity().getApplicationContext());
@@ -238,18 +195,4 @@ public class LocationTab extends Fragment implements OnMapReadyCallback, GoogleM
             }
         }
     };
-
-    public void GetTimeZone(Location ll) {
-        // Make RESTful webservice call using AsyncHttpClient object
-        AsyncHttpClient client = new AsyncHttpClient();
-        String key = getResources().getString(R.string.google_zone_key);
-        String url = String.format("https://maps.googleapis.com/maps/api/timezone/json?location=%.6f,%.6f&timestamp=%d&key=%s", ll.getLatitude(), ll.getLongitude(), System.currentTimeMillis() / 1000, key);
-        Toast.makeText(context, String.format("GetTimeZone url: %s", url), Toast.LENGTH_LONG).show();
-        try {
-            client.get(url, httpHandler);
-        }
-        catch (Exception ex) {
-            Toast.makeText(context, String.format("AsyncHttpClient.get Exception: %s", ex.getMessage()), Toast.LENGTH_LONG).show();
-        }
-    }
 }

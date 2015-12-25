@@ -6,8 +6,6 @@ public class ConfigOptions implements Serializable {
 
     public ConfigOptions(ConfigTransfer cfg) {
         d = cfg.d;
-        u = cfg.u;
     }
     public boolean d; // dual axis
-    public int u; // offset to UTC
 }

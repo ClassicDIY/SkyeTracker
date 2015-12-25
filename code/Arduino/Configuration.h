@@ -20,7 +20,6 @@ namespace SkyeTracker
 		int _westAzimuth;
 		int _minimumElevation;
 		int _maximumElevation;
-		signed char _timeZoneOffsetToUTC;
 		int _horizontalLength;
 		int _verticalLength;
 		int _horizontalSpeed;
@@ -42,12 +41,10 @@ namespace SkyeTracker
 		int getVerticalLength() { return _verticalLength; }
 		int getHorizontalSpeed() { return _horizontalSpeed; }
 		int getVerticalSpeed() { return _verticalSpeed; }
-		signed char getTimeZoneOffsetToUTC() { return _timeZoneOffsetToUTC; }
 		void setDual(bool val);
 		void SetLocation(double lat, double lon);
 		void SetLimits(int minAzimuth, int maxAzimuth, int minElevation, int maxElevation);
 		void SetActuatorParameters(int horizontalLength, int verticalLength, int horizontalSpeed, int verticalSpeed);
-		void SetUTCOffset(signed char val);
 		void Load();
 		void Save();
 		void SendConfiguration();

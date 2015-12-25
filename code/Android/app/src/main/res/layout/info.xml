@@ -82,22 +82,10 @@
 
                 <TextView
                     style="@style/InfoLabel"
-                    android:text="Date/Time: " />
+                    android:text="Date/Time (UTC): " />
 
                 <TextView
                     android:id="@+id/textDateTime"
-                    style="@style/InfoValue"
-                    android:text="-" />
-            </LinearLayout>
-
-            <LinearLayout style="@style/InfoLayout">
-
-                <TextView
-                    style="@style/InfoLabel"
-                    android:text="UTC offset: " />
-
-                <TextView
-                    android:id="@+id/textUtcOffset"
                     style="@style/InfoValue"
                     android:text="-" />
             </LinearLayout>

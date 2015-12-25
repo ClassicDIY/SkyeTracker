@@ -44,4 +44,3 @@ public static *** i(...);
 
 -keep class com.skye.skyetracker.ConfigOptions { *; }
 -keep class com.skye.skyetracker.ConfigLocation { *; }
--keep class com.skye.skyetracker.GoogleTimeZone { *; }

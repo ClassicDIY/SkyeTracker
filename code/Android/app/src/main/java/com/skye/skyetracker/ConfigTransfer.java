@@ -16,7 +16,6 @@ public class ConfigTransfer implements Serializable {
         w = cf.w;
         n = cf.n;
         x = cf.x;
-        u = cf.u;
         lh = cf.lh;
         lv = cf.lv;
         sh = cf.sh;
@@ -30,7 +29,6 @@ public class ConfigTransfer implements Serializable {
     public int w; // west azimuth
     public int n; // mininmum elevation
     public int x; // maximum elevation
-    public int u; // offset to UTC
     public int lh; // length of horizontal actuator
     public int lv; // length of vertical actuator
     public int sh; // speed of horizontal actuator in inches per second * 100 (0.31 => 31)

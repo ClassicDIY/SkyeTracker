@@ -11,7 +11,7 @@
 
     <TextView
         style="@style/HeaderLabel"
-        android:text="Tracker Date/Time"
+        android:text="Tracker Date/Time UTC"
         android:layout_gravity="center_horizontal"
         android:paddingBottom="10dp" />
 
@@ -48,25 +48,6 @@
                 android:numbersTextColor="@color/Black"/>
 
 
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:orientation="horizontal"
-            android:paddingTop="25dp">
-
-            <TextView
-                style="@style/SetupLabel"
-                android:layout_gravity="center"
-                android:text="Timezone offset from UTC: " />
-
-            <Spinner
-                android:id="@+id/timezonespinner"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center" />
         </LinearLayout>
 
         <Button

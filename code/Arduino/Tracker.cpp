@@ -24,7 +24,7 @@ namespace SkyeTracker
 	void Tracker::Initialize(ThreadController* controller)
 	{
 		setState(TrackerState_Initializing);
-		_sun = new Sun(_config->getLat(), _config->getLon(), _config->getTimeZoneOffsetToUTC());
+		_sun = new Sun(_config->getLat(), _config->getLon());
 		DateTime now = _rtc->now();
 		_sun->calcSun(now.year(), now.month(), now.day(), now.hour(), now.minute(), now.second());
 		_azimuth = new LinearActuatorNoPot("Horizontal", 7, 2, 3);
@@ -170,7 +170,7 @@ namespace SkyeTracker
 		{
 			_config->Save();
 			delete _sun;
-			_sun = new Sun(_config->getLat(), _config->getLon(), _config->getTimeZoneOffsetToUTC());
+			_sun = new Sun(_config->getLat(), _config->getLon());
 			InitializeActuators();
 		}
 		else
@@ -310,7 +310,6 @@ namespace SkyeTracker
 			StaticJsonBuffer<64> jsonBuffer;
 			JsonObject& root = jsonBuffer.parseObject(data);
 			if (root.success()) {
-				_config->SetUTCOffset(root["u"]);
 				_config->setDual(root["d"]);
 				setInterval(PENDING_RESET);
 			}

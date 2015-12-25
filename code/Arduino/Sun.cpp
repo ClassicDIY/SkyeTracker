@@ -19,7 +19,6 @@ namespace SkyeTracker
 	double _latitude;
 	double _longitude;
 
-	int _zone;
 	double _azimuth;
 	double _elevation;
 	double _eqTime;
@@ -28,11 +27,10 @@ namespace SkyeTracker
 	bool _dark;
 
 
-	Sun::Sun(double latitude, double longitude, int zone)
+	Sun::Sun(double latitude, double longitude)
 	{
 		_latitude = latitude;
 		_longitude = -longitude;
-		_zone = -zone;
 
 		if ((_latitude >= -90) && (_latitude < -89.8))
 		{
@@ -81,12 +79,10 @@ namespace SkyeTracker
 
 		fltMins = ((float)minute / 60.0) / 24.0;
 		fltHrs = (float)hour / 24.0;
-		//fltHrs += (float)_zone / 24.0;
 		fltDayDecimal = fltHrs + fltMins;
 		JulianDay = (double)JulianResult + fltDayDecimal;
 		JulianCentury = (JulianDay - 2451545) / 36525.0;
 
-		//double jd = JD(dateTime.AddHours(zone));
 		//double jc = JulianCent(jd);
 		double theta = SunDeclination(JulianCentury);
 		double etime = EquationOfTime(JulianCentury);
@@ -94,7 +90,7 @@ namespace SkyeTracker
 		double solarDec = theta; // in degrees
 		_eqTime = (floor(100 * eqTime)) / 100.0;
 		_solarDec = (floor(100 * (solarDec))) / 100.0;
-		double solarTimeFix = eqTime - 4.0*_longitude + 60.0*_zone;
+		double solarTimeFix = eqTime - 4.0*_longitude;
 		double trueSolarTime = hour * 60 + minute + second / 60.0 + solarTimeFix;
 		while (trueSolarTime > 1440)
 		{
@@ -195,7 +191,7 @@ namespace SkyeTracker
 		}
 		//String d = "Sun: ";
 		//String dd = _dark ? " dark " : " daylight";
-		//d = d + year + "/" + month + "/" + day + " " + hour + ":" + minute + ":" + second + " Lat:" + _latitude + " Lon:" + _longitude + " zone:" + _zone + " azimuth:" + _azimuth + " elevation:" + _elevation + dd;
+		//d = d + year + "/" + month + "/" + day + " " + hour + ":" + minute + ":" + second + " Lat:" + _latitude + " Lon:" + _longitude + " azimuth:" + _azimuth + " elevation:" + _elevation + dd;
 		//Serial.println(d);
 
 		return;

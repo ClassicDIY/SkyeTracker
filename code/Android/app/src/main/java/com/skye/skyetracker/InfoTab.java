@@ -23,7 +23,7 @@ public class InfoTab extends Fragment {
 
     ConfigTransfer configTransfer;
     TextView textDualAxis;
-    TextView textLatitude, textDateTime, textUtcOffset, textLongitude, textArrayAzimuth, textArrayElevation, textSunAzimuth;
+    TextView textLatitude, textDateTime, textLongitude, textArrayAzimuth, textArrayElevation, textSunAzimuth;
     TextView textSunElevation, textMinAzimuth, textMaxAzimuth, textMinElevation, textMaxElevation, textTrackerState, textTrackerError, textHorizontalActuatorPosition, textVerticalActuatorPosition;
     Context context;
 
@@ -46,7 +46,6 @@ public class InfoTab extends Fragment {
         textMinElevation = (TextView) rootView.findViewById(R.id.textMinElevation);
         textMaxElevation = (TextView) rootView.findViewById(R.id.textMaxElevation);
         textDateTime = (TextView) rootView.findViewById(R.id.textDateTime);
-        textUtcOffset = (TextView) rootView.findViewById(R.id.textUtcOffset);
         textTrackerState = (TextView) rootView.findViewById(R.id.textTrackerState);
         textTrackerError = (TextView) rootView.findViewById(R.id.textTrackerError);
         textHorizontalActuatorPosition = (TextView) rootView.findViewById(R.id.textHorizontalActuatorPosition);
@@ -169,7 +168,6 @@ public class InfoTab extends Fragment {
                 textMaxAzimuth.setText(String.format("%d", configTransfer.w)+ (char) 0x00B0);
                 textMinElevation.setText(String.format("%d", configTransfer.n)+ (char) 0x00B0);
                 textMaxElevation.setText(String.format("%d", configTransfer.x)+ (char) 0x00B0);
-                textUtcOffset.setText(String.format("%d", configTransfer.u));
             }
             catch (Exception ex) {
                 ex.printStackTrace();
@@ -187,7 +185,7 @@ public class InfoTab extends Fragment {
                 long dv = Long.valueOf(timeTransfer.sT)*1000;// its need to be in milisecond
                 TimeZone tz = TimeZone.getDefault();
                 Date df = new java.util.Date(dv - tz.getOffset(dv));
-                String vv = new SimpleDateFormat("MM dd, yyyy hh:mma").format(df);
+                String vv = new SimpleDateFormat("MM dd, yyyy kk:mm").format(df);
                 textDateTime.setText(vv);
             }
             catch (Exception ex) {

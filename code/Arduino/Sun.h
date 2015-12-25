@@ -25,7 +25,7 @@ namespace SkyeTracker
 
 
 	public:
-		Sun(double latitude, double longitude, int zone);
+		Sun(double latitude, double longitude);
 		double azimuth();
 		double elevation();
 		bool ItsDark();

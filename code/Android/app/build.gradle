@@ -38,6 +38,5 @@ dependencies {
     compile 'com.android.support:appcompat-v7:21.0.3'
     compile 'com.android.support:support-v13:21.0.3'
     compile 'com.google.android.gms:play-services-maps:8.3.0'
-    compile 'com.google.android.gms:play-services:8.3.0'
-    compile 'com.loopj.android:android-async-http:1.4.9'
+
 }

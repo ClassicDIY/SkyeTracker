@@ -84,12 +84,6 @@ namespace SkyeTracker
 		_isDirty = true;
 	}
 
-	void Configuration::SetUTCOffset(signed char val)
-	{
-		_timeZoneOffsetToUTC = val;
-		_isDirty = true;
-	}
-
 	float deserialFloat(byte* buffer) {
 		float f = 0;
 		byte * b = (byte *)&f;
@@ -119,7 +113,6 @@ namespace SkyeTracker
 				_dualAxis = true;
 			else
 				_dualAxis = false;
-			_timeZoneOffsetToUTC = _buffer[1];
 			_eastAzimuth = deserialInt(&(_buffer[2]));
 			_westAzimuth = deserialInt(&(_buffer[4]));
 			_minimumElevation = deserialInt(&(_buffer[6]));
@@ -142,7 +135,6 @@ namespace SkyeTracker
 	void Configuration::LoadFactoryDefault()
 	{
 		setDual(true);
-		SetUTCOffset(-4);
 		SetLimits(90, 270, 0, 90);
 		SetActuatorParameters(12, 8, 31, 31);
 		//45.936527, -75.091259 Lac Simon
@@ -176,7 +168,7 @@ namespace SkyeTracker
 			_buffer[0] = 1;
 		else
 			_buffer[0] = 0;
-		_buffer[1] = (signed char)_timeZoneOffsetToUTC;
+
 		serialInt(&(_buffer[2]), _eastAzimuth);
 		serialInt(&(_buffer[4]), _westAzimuth);
 		serialInt(&(_buffer[6]), _minimumElevation);
@@ -215,7 +207,7 @@ namespace SkyeTracker
 	}
 
 	/*
-	Configuration|{"_dual":true,"_lat":45.936527,"_long":75.091255,"_eastAz":90.0,"_westAz":270.0,"_minElevation":0.0,"_maxElevation":90.0,"_offsetToUTC":-4,"_secondsTime":1444033308}
+	Configuration|{"_dual":true,"_lat":45.936527,"_long":75.091255,"_eastAz":90.0,"_westAz":270.0,"_minElevation":0.0,"_maxElevation":90.0,"_secondsTime":1444033308}
 	*/
 
 	void Configuration::SendConfiguration()
@@ -235,8 +227,6 @@ namespace SkyeTracker
 		Serial.print(getMinimumElevation());
 		Serial.print(F(",\"x\":"));
 		Serial.print(getMaximumElevation());
-		Serial.print(F(",\"u\":"));
-		Serial.print(getTimeZoneOffsetToUTC());
 		Serial.print(F(",\"lh\":"));
 		Serial.print(getHorizontalLength());
 		Serial.print(F(",\"lv\":"));
