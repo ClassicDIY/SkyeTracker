@@ -7,13 +7,9 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
-
-    private Menu mMenu;
     private TabStripAdapter tabStripAdapter;
     private SlidingTabLayout stl;
 
@@ -70,46 +66,6 @@ public class MainActivity extends Activity {
         tabStripAdapter.addTab(R.string.AboutTabTitle, AboutTab.class, null);
         tabStripAdapter.notifyTabsChanged();
 
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        mMenu = menu;
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if (id == R.id.action_connect) {
-            Disconnect();
-            Connect();
-            item.setEnabled(false);
-            MenuItem disconnectMenuItem = mMenu.findItem(R.id.action_disconnect);
-            disconnectMenuItem.setEnabled(true);
-        }
-        else if (id == R.id.action_disconnect) {
-            Disconnect();
-            item.setEnabled(false);
-            MenuItem disconnectMenuItem = mMenu.findItem(R.id.action_connect);
-            disconnectMenuItem.setEnabled(true);
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    private void Connect() {
-        Intent bluetoothConnect = new Intent("com.skye.skyetracker.Connect", null, MainApplication.getAppContext(), Tracker.class);
-        this.startService(bluetoothConnect);
-    }
-
-    private void Disconnect() {
-        Intent bluetoothDisconnect = new Intent("com.skye.skyetracker.Disconnect", null, MainApplication.getAppContext(), Tracker.class);
-        this.stopService(bluetoothDisconnect);
     }
 
     private void checkBTState() {

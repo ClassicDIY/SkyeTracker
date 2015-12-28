@@ -1,6 +1,8 @@
 package com.skye.skyetracker;
 
-public class Limits {
+import java.io.Serializable;
+
+public class Limits implements Serializable {
 
     public Limits(ConfigTransfer cfg){
         e = cfg.e;

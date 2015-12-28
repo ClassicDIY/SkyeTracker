@@ -11,7 +11,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
 import com.google.gson.Gson;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -22,7 +24,7 @@ import java.util.TimeZone;
 public class InfoTab extends Fragment {
 
     ConfigTransfer configTransfer;
-    TextView textDualAxis;
+    TextView textDualAxis, textBluetooth;
     TextView textLatitude, textDateTime, textLongitude, textArrayAzimuth, textArrayElevation, textSunAzimuth;
     TextView textSunElevation, textMinAzimuth, textMaxAzimuth, textMinElevation, textMaxElevation, textTrackerState, textTrackerError, textHorizontalActuatorPosition, textVerticalActuatorPosition;
     Context context;
@@ -35,6 +37,7 @@ public class InfoTab extends Fragment {
         configTransfer = new ConfigTransfer();
 
         textDualAxis = (TextView) rootView.findViewById(R.id.textDualAxis);
+        textBluetooth = (TextView) rootView.findViewById(R.id.textBluetooth);
         textLatitude = (TextView) rootView.findViewById(R.id.textLatitude);
         textLongitude = (TextView) rootView.findViewById(R.id.textLongitude);
         textArrayAzimuth = (TextView) rootView.findViewById(R.id.textArrayAzimuth);
@@ -53,6 +56,8 @@ public class InfoTab extends Fragment {
         LocalBroadcastManager.getInstance(context).registerReceiver(mPositionReceiver, new IntentFilter("com.skye.skyetracker.position"));
         LocalBroadcastManager.getInstance(context).registerReceiver(mConfigurationReceiver, new IntentFilter("com.skye.skyetracker.configuration"));
         LocalBroadcastManager.getInstance(context).registerReceiver(mDateTimeReceiver, new IntentFilter("com.skye.skyetracker.datetime"));
+        LocalBroadcastManager.getInstance(context).registerReceiver(mBluetoothReceiver, new IntentFilter("com.skye.skyetracker.bluetooth"));
+
 
         return rootView;
     }
@@ -63,8 +68,8 @@ public class InfoTab extends Fragment {
         LocalBroadcastManager.getInstance(context).unregisterReceiver(mPositionReceiver);
         LocalBroadcastManager.getInstance(context).unregisterReceiver(mConfigurationReceiver);
         LocalBroadcastManager.getInstance(context).unregisterReceiver(mDateTimeReceiver);
+        LocalBroadcastManager.getInstance(context).unregisterReceiver(mBluetoothReceiver);
     }
-
 
     @Override
     public void onStart() {
@@ -187,6 +192,27 @@ public class InfoTab extends Fragment {
                 Date df = new java.util.Date(dv - tz.getOffset(dv));
                 String vv = new SimpleDateFormat("MM dd, yyyy kk:mm").format(df);
                 textDateTime.setText(vv);
+            }
+            catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    };
+
+    private BroadcastReceiver mBluetoothReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Boolean connected = intent.getBooleanExtra("connected", false);
+            Gson gson = new Gson();
+            try {
+                if (connected) {
+                    textBluetooth.setText("Connected");
+                    textBluetooth.setTextColor(getResources().getColor(R.color.material_blue_grey_800));
+                }
+                else {
+                    textBluetooth.setText("Not Connected!");
+                    textBluetooth.setTextColor(getResources().getColor(R.color.text_red));
+                }
             }
             catch (Exception ex) {
                 ex.printStackTrace();

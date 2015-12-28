@@ -1,6 +1,8 @@
 package com.skye.skyetracker;
 
-public class Actuator {
+import java.io.Serializable;
+
+public class Actuator implements Serializable {
 
     public Actuator(ConfigTransfer cfg){
         lh = cfg.lh;

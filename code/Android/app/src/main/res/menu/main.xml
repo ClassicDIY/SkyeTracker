@@ -2,11 +2,5 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".MainActivity">
 
-    <item android:id="@+id/action_connect"
-        android:title="Connect"
-        android:orderInCategory="300"/>
 
-    <item android:id="@+id/action_disconnect"
-        android:title="Disconnect"
-        android:orderInCategory="400" />
 </menu>

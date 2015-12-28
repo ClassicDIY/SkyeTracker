@@ -29,6 +29,7 @@ public class LimitsTab extends Fragment {
     ConfigTransfer configTransfer;
     NumberPicker npEast, npWest, npMinElevation, npMaxElevation, horizontalLength, verticalLength, horizontalSpeed, verticalSpeed;
     Context context;
+    final int[] lengthLookup = {4, 8, 12, 18, 24, 36 };
 
     @Override
     public void onDestroyView() {
@@ -67,7 +68,9 @@ public class LimitsTab extends Fragment {
         horizontalLength.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
             public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-                configTransfer.lh = newVal;
+                if (newVal >= 0 && newVal < lengthLookup.length) {
+                    configTransfer.lh = lengthLookup[newVal];
+                }
             }
         });
         verticalLength = (NumberPicker) rootView.findViewById(R.id.verticalActuatorLength);
@@ -80,7 +83,9 @@ public class LimitsTab extends Fragment {
         verticalLength.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
             public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-                configTransfer.lv = newVal;
+                if (newVal >= 0 && newVal < lengthLookup.length) {
+                    configTransfer.lv = lengthLookup[newVal];
+                }
             }
         });
         horizontalSpeed = (NumberPicker) rootView.findViewById(R.id.horizontalActuatorSpeed);
@@ -233,8 +238,8 @@ public class LimitsTab extends Fragment {
                 npWest.setValue(configTransfer.w);
                 npMinElevation.setValue(configTransfer.n);
                 npMaxElevation.setValue(configTransfer.x);
-                horizontalLength.setValue(configTransfer.lh);
-                verticalLength.setValue(configTransfer.lv);
+                SetLenghtPickerValue(horizontalLength, configTransfer.lh);
+                SetLenghtPickerValue(verticalLength, configTransfer.lv);
                 horizontalSpeed.setValue(configTransfer.sh);
                 verticalSpeed.setValue(configTransfer.sv);
             }
@@ -243,5 +248,15 @@ public class LimitsTab extends Fragment {
             }
         }
     };
+
+    private void SetLenghtPickerValue(NumberPicker pkr, int var) {
+        for (int i = 0; i < lengthLookup.length; i++) {
+            if (var == lengthLookup[i]) {
+                pkr.setValue(i);
+                break;
+            }
+        }
+
+    }
 
 }

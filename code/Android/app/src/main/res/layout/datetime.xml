@@ -12,66 +12,79 @@
     <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent">
-    <TextView
-        style="@style/HeaderLabel"
-        android:text="Tracker Date/Time UTC"
-        android:layout_gravity="center_horizontal"
-        android:paddingBottom="10dp" />
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_gravity="center"
-        android:orientation="vertical"
-        android:paddingTop="15dp"
-        android:gravity="center_horizontal">
-
-        <LinearLayout
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_gravity="center_horizontal"
-            android:gravity="center_horizontal">
+            android:layout_gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                style="@style/HeaderLabel"
+                android:layout_gravity="center_horizontal"
+                android:paddingBottom="10dp"
+                android:text="Tracker Date/Time UTC" />
+
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_gravity="center"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:paddingTop="15dp">
+
+                <LinearLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:gravity="center_horizontal"
+                    android:weightSum="50"
+                    android:orientation="horizontal">
 
 
-            <DatePicker
-                android:id="@+id/datePicker"
-                style="@style/NumberPickerLayout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:spinnersShown="true"
-                android:datePickerMode="spinner"
-                android:calendarViewShown="false" />
+                    <DatePicker
+                        android:id="@+id/datePicker"
+                        style="@style/NumberPickerLayout"
+                        android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_weight="35"
+                        android:padding="-40dp"
+                        android:calendarViewShown="false"
+                        android:datePickerMode="spinner"
+                        android:spinnersShown="true" />
 
-            <TimePicker
-                android:id="@+id/timePicker"
-                style="@style/NumberPickerLayout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:numbersTextColor="@color/Black"/>
+                    <TimePicker
+                        android:id="@+id/timePicker"
+                        style="@style/NumberPickerLayout"
+                        android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_weight="15"
+                        android:padding="-40dp"
+                        android:numbersTextColor="@color/Black" />
 
 
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btnSyncTime"
+                    style="@style/btnStyleGenoa"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="25dp"
+                    android:text="Set Current Date/Time" />
+
+                <Button
+                    android:id="@+id/btnUploadDateTime"
+                    style="@style/btnStyleGenoa"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="25dp"
+                    android:text="Upload Date/Time" />
+
+            </LinearLayout>
         </LinearLayout>
-
-        <Button
-            android:id="@+id/btnSyncTime"
-            style="@style/btnStyleGenoa"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="25dp"
-            android:text="Set Current Date/Time" />
-
-        <Button
-            android:id="@+id/btnUploadDateTime"
-            style="@style/btnStyleGenoa"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="25dp"
-            android:text="Upload Date/Time" />
-
-    </LinearLayout>
     </ScrollView>
 
 

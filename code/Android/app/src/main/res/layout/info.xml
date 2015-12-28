@@ -22,6 +22,19 @@
 
                 <TextView
                     style="@style/InfoLabel"
+                    android:text="Bluetooth: " />
+
+                <TextView
+                    android:id="@+id/textBluetooth"
+                    style="@style/InfoValue"
+                    android:textColor="@color/DarkRed"
+                    android:text="Not Connected" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/InfoLayout">
+
+                <TextView
+                    style="@style/InfoLabel"
                     android:text="Tracker State: " />
 
                 <TextView

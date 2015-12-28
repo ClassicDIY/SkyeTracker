@@ -28,20 +28,33 @@ import java.util.UUID;
  */
 public class Tracker extends IntentService {
 
-    Handler receiver;
-
+    Handler bluetoothReceiver;
     private BluetoothSocket btSocket = null;
     final int RECEIVE_MESSAGE = 1;        // Status  for Handler
     private BufferedReader bufferedReader;
     private OutputStream mmOutStream;
     private ConnectedThread mConnectedThread;
+    private int mInterval = 1000; // bluetooth status refresh rate
+    private Handler mHandler;
+    boolean bluetoothConnected = false;
 
+    /**
+     * Creates an IntentService.  Invoked by your subclass's constructor.
+     *
+     */
     public Tracker() {
         super("Tracker");
-        receiver = new Handler() {
+        mConnectedThread = new ConnectedThread("TrackerWorker");
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        mHandler = new Handler();
+        bluetoothReceiver = new Handler() {
             public void handleMessage(android.os.Message msg) {
                 switch (msg.what) {
-                    case RECEIVE_MESSAGE:                                                   // if receive message
+                    case RECEIVE_MESSAGE: // if receive message
 
                         String strIncom = (String) msg.obj;
 
@@ -51,7 +64,7 @@ public class Tracker extends IntentService {
                                 BroadcastMessage(tupple[1], "com.skye.skyetracker.position");
                             } else if (tupple[0].equals("Cf")) {
                                 BroadcastMessage(tupple[1], "com.skye.skyetracker.configuration");
-                            }else if (tupple[0].equals("Dt")) {
+                            } else if (tupple[0].equals("Dt")) {
                                 BroadcastMessage(tupple[1], "com.skye.skyetracker.datetime");
                             }
                         }
@@ -60,31 +73,72 @@ public class Tracker extends IntentService {
                 }
             }
         };
-        mConnectedThread = new ConnectedThread();
-
+        startBluetoothStateBroadcast();
+        LocalBroadcastManager.getInstance(getBaseContext()).registerReceiver(mCommandReceiver, new IntentFilter("com.skye.skyetracker.Write"));
     }
-
-    private void BroadcastMessage(String json, String action) {
-        Intent commandIntent = new Intent(action, null, MainApplication.getAppContext(), Tracker.class);
-        commandIntent.putExtra("json", json);
-        LocalBroadcastManager.getInstance(MainApplication.getAppContext()).sendBroadcast(commandIntent);
-    }
-
     @Override
     protected void onHandleIntent(Intent intent) {
         Log.d(Constants.TAG, String.format("Tracker onHandleIntent action: %s", intent.getAction()));
         if ("com.skye.skyetracker.Connect".equalsIgnoreCase(intent.getAction())) {
-            if (SetupBluetooth()) {
-                mConnectedThread.start();
-                LocalBroadcastManager.getInstance(MainApplication.getAppContext()).registerReceiver(mCommandReceiver, new IntentFilter("com.skye.skyetracker.Write"));
-            } else {
-                Toast.makeText(getBaseContext(), "Failed to connect to bluetooth device", Toast.LENGTH_LONG).show();
+            try {
+                if (SetupBluetooth()) {
+                    mConnectedThread.start();
+                    LocalBroadcastManager.getInstance(this.getBaseContext()).registerReceiver(mCommandReceiver, new IntentFilter("com.skye.skyetracker.Write"));
+                } else {
+                    Toast.makeText(getBaseContext(), "Failed to connect to bluetooth device", Toast.LENGTH_LONG).show();
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
         if ("com.skye.skyetracker.Disconnect".equalsIgnoreCase(intent.getAction())) {
             Stop();
         }
     }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        bluetoothConnected = false;
+        stopBluetoothStateBroadcast();
+        Stop();
+        return super.onUnbind(intent);
+    }
+
+    Runnable mStatusChecker = new Runnable() {
+        @Override
+        public void run() {
+            updateBluetoothStatus();
+            mHandler.postDelayed(mStatusChecker, mInterval);
+        }
+    };
+
+    private void updateBluetoothStatus() {
+        Intent commandIntent = new Intent("com.skye.skyetracker.bluetooth", null, getBaseContext(), Tracker.class);
+        commandIntent.putExtra("connected", IsBluetoothConnected());
+        LocalBroadcastManager.getInstance(getBaseContext()).sendBroadcast(commandIntent);
+    }
+
+    void startBluetoothStateBroadcast() {
+        mStatusChecker.run();
+    }
+
+    void stopBluetoothStateBroadcast() {
+        mHandler.removeCallbacks(mStatusChecker);
+    }
+
+    public boolean IsBluetoothConnected() {
+        boolean rVal = false;
+        if (btSocket != null) {
+            rVal = btSocket.isConnected();
+        }
+        return rVal;
+    }
+
+    private void BroadcastMessage(String json, String action) {
+        Intent commandIntent = new Intent(action, null, getBaseContext(), Tracker.class);
+        commandIntent.putExtra("json", json);
+        LocalBroadcastManager.getInstance(getBaseContext()).sendBroadcast(commandIntent);
+     }
 
     //    Our handler for received Intents.
     private BroadcastReceiver mCommandReceiver = new BroadcastReceiver() {
@@ -97,77 +151,78 @@ public class Tracker extends IntentService {
         }
     };
 
-    private boolean SetupBluetooth() {
+    private boolean SetupBluetooth() throws InterruptedException {
         boolean rVal = false;
-
-        BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
-        ArrayList<String> addresses = new ArrayList<String>();
-        for (BluetoothDevice d : btAdapter.getBondedDevices()) {
-            if (d.getName().equals("HC-06")) {
-                addresses.add(d.getAddress());
+        while (!bluetoothConnected) {
+            BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
+            ArrayList<String> addresses = new ArrayList<String>();
+            for (BluetoothDevice d : btAdapter.getBondedDevices()) {
+                if (d.getName().equals("HC-06")) {
+                    addresses.add(d.getAddress());
+                }
             }
-        }
-        if (addresses.isEmpty()) {
-            Log.d(Constants.TAG, "...Could not find HC-06...");
-        } else {
-            for (String address : addresses) { // find find available HC-06 bluetooth device
-                try {
-
-                    // Set up a pointer to the remote node using it's address.
-                    BluetoothDevice device = btAdapter.getRemoteDevice(address);
-
-                    // Two things are needed to make a connection:
-                    //   A MAC address, which we got above.
-                    //   A Service ID or UUID.  In this case we are using the
-                    //     UUID for SPP.
-                    btSocket = createBluetoothSocket(device);
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-
-                // Discovery is resource intensive.  Make sure it isn't going on
-                // when you attempt to connect and pass your message.
-                btAdapter.cancelDiscovery();
-
-                // Establish the connection.  This will block until it connects.
-                Log.d(Constants.TAG, "...Connecting...");
-                try {
-                    btSocket.connect();
-                    Log.d(Constants.TAG, "...Connection ok...");
-                } catch (IOException e) {
-                    Log.d(Constants.TAG, "...Failed to connect...");
+            if (addresses.isEmpty()) {
+                Log.d(Constants.TAG, "...Could not find HC-06...");
+                mHandler.post(new DisplayToast(this, "...Skyetracker not paired with this device..."));
+                Thread.sleep(2000);
+            } else {
+                for (String address : addresses) { // find find available HC-06 bluetooth device
                     try {
-                        btSocket.close();
-                    } catch (IOException e2) {
-                        e2.printStackTrace();
-                    }
-                    continue;
-                }
-                InputStream tmpIn = null;
-                OutputStream tmpOut = null;
 
-                // Get the input and output streams, using temp objects because
-                // member streams are final
-                try {
-                    tmpIn = btSocket.getInputStream();
-                    tmpOut = btSocket.getOutputStream();
-                    rVal = true;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    continue;
+                        // Set up a pointer to the remote node using it's address.
+                        BluetoothDevice device = btAdapter.getRemoteDevice(address);
+
+                        // Two things are needed to make a connection:
+                        //   A MAC address, which we got above.
+                        //   A Service ID or UUID.  In this case we are using the
+                        //     UUID for SPP.
+                        btSocket = createBluetoothSocket(device);
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+
+                    // Discovery is resource intensive.  Make sure it isn't going on
+                    // when you attempt to connect and pass your message.
+                    btAdapter.cancelDiscovery();
+
+                    // Establish the connection.  This will block until it connects.
+                    Log.d(Constants.TAG, "...Connecting...");
+                    try {
+                        btSocket.connect();
+                        bluetoothConnected = true;
+                        Log.d(Constants.TAG, "...Connection ok...");
+                    } catch (IOException e) {
+                        Log.d(Constants.TAG, "...Failed to connect...");
+                        mHandler.post(new DisplayToast(this, "...Failed to connect to SkyeTracker..."));
+                        try {
+                            btSocket.close();
+                        } catch (IOException e2) {
+                            e2.printStackTrace();
+                        }
+                        continue;
+                    }
+                    InputStream tmpIn = null;
+                    OutputStream tmpOut = null;
+
+                    // Get the input and output streams, using temp objects because
+                    // member streams are final
+                    try {
+                        tmpIn = btSocket.getInputStream();
+                        tmpOut = btSocket.getOutputStream();
+                        rVal = true;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        continue;
+                    }
+                    bufferedReader = new BufferedReader(new InputStreamReader(tmpIn));
+                    mmOutStream = tmpOut;
+                    break;
                 }
-                bufferedReader = new BufferedReader(new InputStreamReader(tmpIn));
-                mmOutStream = tmpOut;
-                break;
             }
         }
         if (rVal) {
             Write("\n");
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            Thread.sleep(500);
             Write("\nGetConfiguration\r");
             Write("\nBroadcastPosition\r");
             Write("\nGetDateTime\r");
@@ -190,7 +245,8 @@ public class Tracker extends IntentService {
     /* Call this from the main activity to send data to the remote device */
     private void Write(String message) {
         if (mmOutStream != null) {
-            Log.d(Constants.TAG, "...Data to send: " + message + "...");
+            String nonStrange = message.replaceAll("\\p{Cntrl}", "");
+            Log.d(Constants.TAG, "...Data to send: [" + nonStrange + "]");
             byte[] msgBuffer = message.getBytes();
             try {
                 mmOutStream.write(msgBuffer);
@@ -206,10 +262,19 @@ public class Tracker extends IntentService {
                 mConnectedThread.Stop();
             }
             Log.d(Constants.TAG, "...Worker thread exiting, closing bluetooth...");
-            bufferedReader.close();
-            mmOutStream.close();
-            btSocket.close();
-        } catch (IOException e2) {
+            if (bufferedReader != null) {
+                bufferedReader.close();
+                bufferedReader = null;
+            }
+            if (mmOutStream != null) {
+                mmOutStream.close();
+                mmOutStream = null;
+            }
+            if (btSocket != null) {
+                btSocket.close();
+                btSocket = null;
+            }
+        } catch (Exception e2) {
             e2.printStackTrace();
         }
     }
@@ -218,8 +283,8 @@ public class Tracker extends IntentService {
 
         private boolean isRunning = true;
 
-        public ConnectedThread() {
-
+        public ConnectedThread(String name) {
+            super(name);
         }
 
         public void run() {
@@ -230,7 +295,7 @@ public class Tracker extends IntentService {
                     try {
                         // Read from the InputStream
                         String line = bufferedReader.readLine();
-                        receiver.obtainMessage(RECEIVE_MESSAGE, line.length(), -1, line).sendToTarget();     // Send to message queue Handler
+                        bluetoothReceiver.obtainMessage(RECEIVE_MESSAGE, line.length(), -1, line).sendToTarget();     // Send to message queue Handler
                     } catch (IOException e) {
                         break;
                     }
@@ -245,6 +310,20 @@ public class Tracker extends IntentService {
 
         public void Stop() throws IOException {
             isRunning = false;
+        }
+    }
+
+    public class DisplayToast implements Runnable {
+        private final Context mContext;
+        String mText;
+
+        public DisplayToast(Context mContext, String text){
+            this.mContext = mContext;
+            mText = text;
+        }
+
+        public void run(){
+            Toast.makeText(mContext, mText, Toast.LENGTH_SHORT).show();
         }
     }
 }

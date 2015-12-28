@@ -41,6 +41,8 @@ public static *** i(...);
 -keep class com.skye.skyetracker.TimeTransfer { *; }
 -keep class com.skye.skyetracker.PositionTransfer { *; }
 -keep class com.skye.skyetracker.ConfigTransfer { *; }
-
 -keep class com.skye.skyetracker.ConfigOptions { *; }
 -keep class com.skye.skyetracker.ConfigLocation { *; }
+-keep class com.skye.skyetracker.Limits { *; }
+-keep class com.skye.skyetracker.Actuator { *; }
+

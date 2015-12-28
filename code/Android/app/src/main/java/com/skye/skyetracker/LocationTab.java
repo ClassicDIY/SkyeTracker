@@ -165,7 +165,7 @@ public class LocationTab extends Fragment implements OnMapReadyCallback, GoogleM
 
     private boolean centerMapOnMyLocation() {
         boolean rval = false;
-        LocationManager locationManager = (LocationManager) MainApplication.getAppContext().getSystemService(Context.LOCATION_SERVICE);
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if (location != null) {
             LatLng myLocation = new LatLng(location.getLatitude(), location.getLongitude());
