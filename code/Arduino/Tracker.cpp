@@ -12,6 +12,7 @@ namespace SkyeTracker
 		_errorState = TrackerError_Ok;
 		_broadcastPosition = false;
 		_waitingForMorning = false;
+		_trackerState = TrackerState_Off;
 	}
 
 	Tracker::~Tracker()
@@ -214,9 +215,9 @@ namespace SkyeTracker
 		boolean afterDelimiter = false;
 		char command[32];
 		char data[64];
-		int commandIndex = 0;
-		int dataIndex = 0;
-		for (int i = 0; i < strlen(input); i++)
+		unsigned int commandIndex = 0;
+		unsigned int dataIndex = 0;
+		for (unsigned int i = 0; i < strlen(input); i++)
 		{
 			if (input[i] == '|')
 			{
@@ -244,8 +245,8 @@ namespace SkyeTracker
 				}
 			}
 		}
-		command[commandIndex++] = NULL;
-		data[dataIndex++] = NULL;
+		command[commandIndex++] = 0;
+		data[dataIndex++] = 0;
 		Serial.print(command);
 		Serial.print("|");
 		Serial.println(data);

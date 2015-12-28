@@ -197,7 +197,7 @@ namespace SkyeTracker
 
 	byte Configuration::CalcChecksum(byte _buffer[])
 	{
-		byte crc = 0, i;
+		byte crc = 0;
 		for (int i = 0; i < DS1307_RAM_SIZE; i++)
 			crc += _buffer[i];
 		crc = -crc;

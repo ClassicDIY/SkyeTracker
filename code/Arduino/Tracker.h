@@ -8,7 +8,7 @@
 #include "Configuration.h"
 #include "Enumerations.h"
 #include "Position.h"
-#include "LinearActuatorNoPot.h";
+#include "LinearActuatorNoPot.h"
 
 
 #define POSITION_UPDATE_INTERVAL 60000 // Check tracker every minute
@@ -116,7 +116,7 @@ namespace SkyeTracker
 		RTC_DS1307* _rtc;
 		Sun* _sun;
 		bool _broadcastPosition;
-		TrackerState _trackerState = TrackerState_Off;
+		TrackerState _trackerState;
 		bool _waitingForMorning;
 		int cycleHour;
 		void WaitForMorning();

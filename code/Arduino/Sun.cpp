@@ -1,5 +1,3 @@
-#define PI 3.14159265359
-
 #include <math.h>
 #include "Sun.h"
 

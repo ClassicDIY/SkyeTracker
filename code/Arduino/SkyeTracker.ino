@@ -85,7 +85,7 @@ void serialEvent() {
 		}
 		else if (inChar == '\r') {
 			//printHexString(_receiveBuffer);
-			_receiveBuffer[_receiveIndex] = NULL;
+			_receiveBuffer[_receiveIndex] = 0;
 			_tracker.ProcessCommand(_receiveBuffer);
 			_receiveIndex = 0;
 		}
