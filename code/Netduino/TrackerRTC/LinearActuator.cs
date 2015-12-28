@@ -173,6 +173,18 @@ namespace TrackerRTC
             }
         }
 
+        /// <summary>
+        /// Fraction extended from east (0 to 1)
+        /// </summary>
+        public double RelativePosition
+        {
+            get
+            {
+                var position = CurrentPosition - _eastPosition;
+                return position/Range;
+            }
+        }
+
         private double CalculateAngle()
         {
             var delta = ExtendedPosition - RetractedPosition;

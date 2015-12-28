@@ -54,11 +54,9 @@ namespace TrackerRTC
         /// <param name="latitude"></param>
         /// <param name="longitude"></param>
         /// <param name="dateTime"></param>
-        /// <param name="zone">Time offset from UTC</param>
-        public static Sun CalcSun(double latitude, double longitude, DateTime dateTime, int zone)
+        public static Sun CalcSun(double latitude, double longitude, DateTime dateTime)
         {
             var result = new Sun();
-
             if ((latitude >= -90) && (latitude < -89.8))
             {
                 //"All latitudes between 89.8 and 90 S\n will be set to -89.8."
@@ -69,15 +67,15 @@ namespace TrackerRTC
                 //"All latitudes between 89.8 and 90 N\n will be set to 89.8."
                 latitude = 89.8;
             }
-            var jd = JD(dateTime.AddHours(zone));
+            var jd = JD(dateTime);
             var jc = JulianCent(jd);
             var theta = SunDeclination(jc);
-            var etime = EquationOfTime(jc);
+            double etime = EquationOfTime(jc);
             var eqTime = etime;
             var solarDec = theta; // in degrees
             result.eqTime = (Math.Floor(100*eqTime))/100;
             result.solarDec = (Math.Floor(100*(solarDec)))/100;
-            var solarTimeFix = (eqTime + 4.0*longitude) - 60.0*zone;
+            var solarTimeFix = (eqTime + 4.0*longitude);
             var trueSolarTime = dateTime.TimeOfDay.Hours*60 + dateTime.TimeOfDay.Minutes + dateTime.TimeOfDay.Seconds/60 + solarTimeFix;
             while (trueSolarTime > 1440)
             {

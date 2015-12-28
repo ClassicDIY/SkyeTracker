@@ -184,20 +184,18 @@ namespace TrackerRTC
             }
         }
 
-        private int _timeZoneOffsetToUTC;
-
+        private int _verticalLength;
         /// <summary>
-        /// Hour to UTC (without daylight savings)
-        /// ex: EST = 4
+        /// length of actuator from Android App
         /// </summary>
-        public int TimeZoneOffsetToUTC
+        public int VerticalLength
         {
             get
             {
                 int rVal;
                 lock (this)
                 {
-                    rVal = _timeZoneOffsetToUTC;
+                    rVal = _verticalLength;
                 }
                 return rVal;
             }
@@ -205,7 +203,80 @@ namespace TrackerRTC
             {
                 lock (this)
                 {
-                    _timeZoneOffsetToUTC = value;
+                    _verticalLength = value;
+                }
+            }
+        }
+
+        private int _horizontalLength;
+        /// <summary>
+        /// length of actuator from Android App
+        /// </summary>
+        public int HorizontalLength
+        {
+            get
+            {
+                int rVal;
+                lock (this)
+                {
+                    rVal = _horizontalLength;
+                }
+                return rVal;
+            }
+            set
+            {
+                lock (this)
+                {
+                    _horizontalLength = value;
+                }
+            }
+        }
+
+
+        private int _verticalSpeed;
+        /// <summary>
+        /// Speed of actuator from Android App
+        /// </summary>
+        public int VerticalSpeed
+        {
+            get
+            {
+                int rVal;
+                lock (this)
+                {
+                    rVal = _verticalSpeed;
+                }
+                return rVal;
+            }
+            set
+            {
+                lock (this)
+                {
+                    _verticalSpeed = value;
+                }
+            }
+        }
+
+        private int _horizontalSpeed;
+        /// <summary>
+        /// Speed of actuator from Android App
+        /// </summary>
+        public int HorizontalSpeed
+        {
+            get
+            {
+                int rVal;
+                lock (this)
+                {
+                    rVal = _horizontalSpeed;
+                }
+                return rVal;
+            }
+            set
+            {
+                lock (this)
+                {
+                    _horizontalSpeed = value;
                 }
             }
         }
@@ -217,7 +288,7 @@ namespace TrackerRTC
 
             var rtc = DS1307.GetSingleton();
             var s = rtc.GetStrings();
-            if (s.Length == 8)
+            if (s.Length == 11)
             {
                 try
                 {
@@ -228,7 +299,10 @@ namespace TrackerRTC
                     Longitude = (float)Convert.ToDouble(s[4]);
                     MaximumElevation = Convert.ToInt32(s[5]);
                     MinimumElevation = Convert.ToInt32(s[6]);
-                    TimeZoneOffsetToUTC = Convert.ToInt16(s[7]);
+                    VerticalLength = Convert.ToInt32(s[7]);
+                    HorizontalLength = Convert.ToInt32(s[8]);
+                    VerticalSpeed = Convert.ToInt32(s[9]);
+                    HorizontalSpeed = Convert.ToInt32(s[10]);
                 }
                 catch (Exception ex)
                 {
@@ -243,14 +317,17 @@ namespace TrackerRTC
 
         private void DefaultSettings()
         {
-            //45.936527, 75.091259 Lac Simon
+            //45.936527, -75.091259 Lac Simon
             Latitude = (float)SunEquations.DegreesMinuteSecondDecimalDegrees("45.56.12");
-            Longitude = (float)SunEquations.DegreesMinuteSecondDecimalDegrees("75.5.32");
+            Longitude = (float)SunEquations.DegreesMinuteSecondDecimalDegrees("-75.5.32");
             MaximumElevation = 85;
             MinimumElevation = 15;
             EastAzimuth = 120;
             WestAzimuth = 250;
-            TimeZoneOffsetToUTC = 5;
+            VerticalLength = 8;
+            HorizontalLength = 12;
+            VerticalSpeed = 35;
+            HorizontalSpeed = 35;
             DualAxis = false;
             Save();
         }
@@ -294,7 +371,7 @@ namespace TrackerRTC
                 WestAzimuth = 315;
             }
             var rtc = DS1307.GetSingleton();
-            string[] sa = new[] { DualAxis ? "Y" : "N", EastAzimuth.ToString(), WestAzimuth.ToString(), Latitude.ToString("f6"), Longitude.ToString("f6"), MaximumElevation.ToString(), MinimumElevation.ToString(), TimeZoneOffsetToUTC.ToString() };
+            string[] sa = new[] { DualAxis ? "Y" : "N", EastAzimuth.ToString(), WestAzimuth.ToString(), Latitude.ToString("f6"), Longitude.ToString("f6"), MaximumElevation.ToString(), MinimumElevation.ToString(), VerticalLength.ToString(), HorizontalLength.ToString(), VerticalSpeed.ToString(), HorizontalSpeed.ToString() };
             rtc.SetRam(sa);
         }
 
@@ -308,7 +385,10 @@ namespace TrackerRTC
             ct.o = Longitude;
             ct.x = MaximumElevation;
             ct.n = MinimumElevation;
-            ct.u = TimeZoneOffsetToUTC;
+            ct.lh = HorizontalLength;
+            ct.lv = VerticalLength;
+            ct.sh = HorizontalSpeed;
+            ct.sv = VerticalSpeed;
             return ct;
         }
 
@@ -333,7 +413,16 @@ namespace TrackerRTC
         public void SetOptions(Options t)
         {
             DualAxis = t.d;
-            TimeZoneOffsetToUTC = t.u;
+            Save();
+            return;
+        }
+
+        public void SetActuator(Actuator ca)
+        {
+            VerticalLength = ca.lv;
+            VerticalSpeed = ca.sv;
+            HorizontalLength = ca.lh;
+            HorizontalSpeed = ca.sh;
             Save();
             return;
         }

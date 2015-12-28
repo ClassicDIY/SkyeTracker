@@ -216,7 +216,7 @@ namespace TrackerRTC
             var time = DateTime.Now.Date;
             while (true)
             {
-                var sun = SunEquations.CalcSun(Configuration.Latitude, Configuration.Longitude, time, Configuration.TimeZoneOffsetToUTC);
+                var sun = SunEquations.CalcSun(Configuration.Latitude, Configuration.Longitude, time);
                 if (sun.dark == false)
                 {
                     daylight = true;
@@ -290,7 +290,7 @@ namespace TrackerRTC
         {
             try
             {
-                var sun = SunEquations.CalcSun(Configuration.Latitude, Configuration.Longitude, DateTime.Now, Configuration.TimeZoneOffsetToUTC);
+                var sun = SunEquations.CalcSun(Configuration.Latitude, Configuration.Longitude, DateTime.Now);
                 SunAzimuth = sun.azimuth;
                 SunElevation = sun.elevation;
                 if (sun.dark && TrackerState != State.Dark)
@@ -328,13 +328,15 @@ namespace TrackerRTC
                 sb.Append("\"aZ\":");
                 sb.Append(_arrayAzimuth.ToString("f1"));
                 sb.Append(",\"hP\":");
-                sb.Append(_horizontalActuator.CurrentPosition.ToString("f1"));
+                var lh = _horizontalActuator.RelativePosition * Configuration.HorizontalLength;
+                sb.Append(lh.ToString("f1"));
                 if (DualAxis)
                 {
                     sb.Append(",\"aE\":");
                     sb.Append(_arrayElevation.ToString("f1"));
                     sb.Append(",\"vP\":");
-                    sb.Append(_verticalActuator.CurrentPosition.ToString("f1"));
+                    var lv = _verticalActuator.RelativePosition * Configuration.VerticalLength;
+                    sb.Append(lv.ToString("f1"));
                 }
                 else
                 {
@@ -854,11 +856,21 @@ namespace TrackerRTC
                     _netduinoSerialPort.Flush();
                     break;
                 case "BroadcastPosition":
-                    _broadcastTimer = new Timer(BroadcastTimerFunction, null, 2000, 2000);
+                    if (_broadcastTimer == null)
+                    {
+                        _broadcastTimer = new Timer(BroadcastTimerFunction, null, 2000, 2000);
+                    }
                     break;
                 case "StopBroadcast":
-                    _broadcastTimer.Dispose();
-                    _broadcastTimer = null;
+                    if (_broadcastTimer != null)
+                    {
+                        _broadcastTimer.Dispose();
+                        _broadcastTimer = null;
+                    }
+                    break;
+                case "SetA":
+                    var ca = (Actuator)json.FromJson(enc.GetBytes(data), typeof(Actuator));
+                    Configuration.SetActuator(ca);
                     break;
                 case "SetC":
                     var cf = (Location)json.FromJson(enc.GetBytes(data), typeof(Location));
@@ -873,13 +885,22 @@ namespace TrackerRTC
                     Configuration.SetOptions(options);
                     break;
                 case "SetDateTime":
-                    var dt = new DateTime(int.Parse(data));
+                    var dt = UnixTimeStampToDateTime(double.Parse(data));
                     Utility.SetLocalTime(dt);
+                    DS1307.SetRTCTime(dt);
                     break;
                 case "MoveTo":
                     MoveTo(data);
                     break;
             }
+        }
+
+        public static DateTime UnixTimeStampToDateTime(double unixTimeStamp)
+        {
+            // Unix timestamp is seconds past epoch
+            System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+            dtDateTime = dtDateTime.AddSeconds(unixTimeStamp).ToUniversalTime();
+            return dtDateTime;
         }
 
         public static long GetEpochTime()
