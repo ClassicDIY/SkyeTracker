@@ -4,6 +4,8 @@ Dual Axis solar tracker
 This project is based on an arduino nano, it uses a pair of linear actuators to move a set of solar panels so that they face the sun throughout the day.
 Knowing the latitude, longitude and the date/time, the software calculates the azimuth and elevation of the sun. The system is setup and calibrated using an android app that communicates with the device using the bluetooth interface. 
 
+![alt tag](https://farrelltonsolar.files.wordpress.com/2015/03/sunset.jpg)
+
 Used the following development tools;
 
 <ul>
