@@ -18,14 +18,19 @@
         android:orientation="vertical">
 
         <LinearLayout
-            android:layout_width="fill_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
+            android:gravity="left"
             android:orientation="vertical">
 
             <CheckBox
                 android:id="@+id/checkbox_dualAxis"
                 android:text="Dual Axis"
+                style="@style/CheckBoxLabel"/>
+
+            <CheckBox
+                android:id="@+id/checkbox_anemometer"
+                android:text="Anemometer"
                 style="@style/CheckBoxLabel"/>
 
 

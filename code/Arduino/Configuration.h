@@ -14,6 +14,7 @@ namespace SkyeTracker
 	private:
 		RTC_DS1307* _rtc;
 		bool _dualAxis;
+		bool _hasAnemometer;
 		float _latitude;
 		float _longitude;
 		int _eastAzimuth;
@@ -31,6 +32,7 @@ namespace SkyeTracker
 	public:
 		bool isDirty() { return _isDirty; }
 		bool isDual() { return _dualAxis; }
+		bool hasAnemometer() { return _hasAnemometer; }
 		double getLat() { return _latitude; }
 		double getLon() { return _longitude; }
 		int getEastAzimuth() { return _eastAzimuth; }
@@ -42,6 +44,7 @@ namespace SkyeTracker
 		int getHorizontalSpeed() { return _horizontalSpeed; }
 		int getVerticalSpeed() { return _verticalSpeed; }
 		void setDual(bool val);
+		void setHasAnemometer(bool val);
 		void SetLocation(double lat, double lon);
 		void SetLimits(int minAzimuth, int maxAzimuth, int minElevation, int maxElevation);
 		void SetActuatorParameters(int horizontalLength, int verticalLength, int horizontalSpeed, int verticalSpeed);

@@ -66,6 +66,8 @@ public class Tracker extends IntentService {
                                 BroadcastMessage(tupple[1], "com.skye.skyetracker.configuration");
                             } else if (tupple[0].equals("Dt")) {
                                 BroadcastMessage(tupple[1], "com.skye.skyetracker.datetime");
+                            } else if (tupple[0].equals("Wind")) {
+                                BroadcastMessage(tupple[1], "com.skye.skyetracker.windtime");
                             }
                         }
                         Log.d(Constants.TAG, "...String:" + strIncom + "Byte:" + msg.arg1 + "...");

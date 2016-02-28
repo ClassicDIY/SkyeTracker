@@ -8,5 +8,6 @@ public enum TrackerState
     TrackerState_Standby,
     TrackerState_Moving,
     TrackerState_Cycling,
-    TrackerState_Tracking
+    TrackerState_Tracking,
+    TrackerState_Parked
 }

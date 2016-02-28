@@ -22,15 +22,16 @@ namespace SkyeTracker
 		delete _elevation;
 	}
 
-	void Tracker::Initialize(ThreadController* controller)
+	void Tracker::Initialize(ThreadController* controller, Print* p)
 	{
 		setState(TrackerState_Initializing);
+		_stm = p;
 		_sun = new Sun(_config->getLat(), _config->getLon());
 		DateTime now = _rtc->now();
 		_sun->calcSun(now.year(), now.month(), now.day(), now.hour(), now.minute(), now.second());
-		_azimuth = new LinearActuatorNoPot("Horizontal", 7, 2, 3);
+		_azimuth = new LinearActuatorNoPot("Horizontal", PIN7, PIN2, PIN3);
 		controller->add(_azimuth);
-		_elevation = new LinearActuatorNoPot("Vertical", 6, 4, 5);
+		_elevation = new LinearActuatorNoPot("Vertical", PIN6, PIN4, PIN5);
 		controller->add(_elevation);
 		controller->add(this);
 		InitializeActuators();
@@ -76,18 +77,14 @@ namespace SkyeTracker
 	{
 		if (_errorState != TrackerError_Ok)
 		{
-			Serial.println(F("Error detected, Tracker moving to default position"));
+			traceln(_stm, F("Error detected, Tracker moving to default position"));
 			// move array to face south as a default position when an error exists
-			_azimuth->MoveTo(180);
-			if (_config->isDual())
-			{
-				_elevation->MoveTo(45);
-			}
+			Park(true);
 			enabled = false; // don't run worker thread when error exists
 		}
 		else if (getState() != TrackerState_Initializing && getState() != TrackerState_Off)
 		{
-			if (getState() == TrackerState_Moving || getState() == TrackerState_Cycling)
+			if (getState() == TrackerState_Moving || getState() == TrackerState_Cycling || getState() == TrackerState_Parked)
 			{
 				// re-initialize actuators if moved
 				InitializeActuators();
@@ -96,6 +93,32 @@ namespace SkyeTracker
 			setInterval(POSITION_UPDATE_INTERVAL);
 			setState(TrackerState_Tracking);
 			this->run();
+		}
+	}
+
+	void Tracker::Resume()
+	{
+		if (_sun->ItsDark() == false)
+		{
+			Track();
+		}
+	}
+
+	void Tracker::Park(bool protect = false)
+	{
+		if (getState() != TrackerState_Parked)
+		{
+			_azimuth->MoveTo(180);
+			if (_config->isDual())
+			{
+				float elevation = 45;
+				if (protect)
+				{
+					elevation = 90; // max elevation to protect against wind.
+				}
+				_elevation->MoveTo(elevation);
+			}
+			setState(TrackerState_Parked);
 		}
 	}
 
@@ -109,13 +132,13 @@ namespace SkyeTracker
 				_elevation->Retract();
 			}
 			_waitingForMorning = true;
-			Serial.println(F("Waiting For Morning"));
+			traceln(_stm, F("Waiting For Morning"));
 		}
 	}
 
 	void Tracker::TrackToSun()
 	{
-		Serial.println(F("TrackToSun "));
+		traceln(_stm, F("TrackToSun "));
 		_azimuth->MoveTo(_sun->azimuth());
 		if (_config->isDual())
 		{
@@ -184,7 +207,7 @@ namespace SkyeTracker
 				if (_azimuth->getState() == ActuatorState_Stopped && _elevation->getState() == ActuatorState_Stopped) {
 					cycleHour++;
 					cycleHour %= 24;
-					Serial.println(cycleHour);
+					traceln(_stm, cycleHour);
 					_sun->calcSun(now.year(), now.month(), now.day(), cycleHour, 0, 0);
 				}
 				break;
@@ -233,7 +256,7 @@ namespace SkyeTracker
 				command[commandIndex++] = input[i];
 				if (commandIndex >= sizeof(command))
 				{
-					Serial.println(F("Command overflow!"));
+					traceln(_stm, F("Command overflow!"));
 				}
 			}
 			else
@@ -241,7 +264,7 @@ namespace SkyeTracker
 				data[dataIndex++] = input[i];
 				if (dataIndex >= sizeof(data))
 				{
-					Serial.println(F("data overflow!"));
+					traceln(_stm, F("data overflow!"));
 				}
 			}
 		}
@@ -312,6 +335,7 @@ namespace SkyeTracker
 			JsonObject& root = jsonBuffer.parseObject(data);
 			if (root.success()) {
 				_config->setDual(root["d"]);
+				_config->setHasAnemometer(root["an"]);
 				setInterval(PENDING_RESET);
 			}
 		}
@@ -350,7 +374,7 @@ namespace SkyeTracker
 	/// Send configuration and position information out on serial port for android app
 	/// Position|{"_isDark":false,"_arrayAz":inf,"_arrayEl":ovf,"_sunAz":0.0,"_sunEl":0.0}
 	/// </summary>
-	void Tracker::BroadcastPosition()
+	bool Tracker::BroadcastPosition()
 	{
 		if (_broadcastPosition) { // received broadcast command from android app?
 			Serial.print("Po|{");
@@ -364,5 +388,6 @@ namespace SkyeTracker
 				sendDateTime();
 			}
 		}
+		return _broadcastPosition;
 	}
 }

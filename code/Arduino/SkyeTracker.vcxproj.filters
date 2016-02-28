@@ -30,6 +30,9 @@
     <ClCompile Include="LinearActuatorNoPot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Anemometer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sun.h">
@@ -48,6 +51,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LinearActuatorNoPot.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Anemometer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Trace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="__vm\.Arduino.vsarduino.h">

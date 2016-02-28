@@ -10,6 +10,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -24,8 +25,9 @@ import java.util.TimeZone;
 public class InfoTab extends Fragment {
 
     ConfigTransfer configTransfer;
-    TextView textDualAxis, textBluetooth;
-    TextView textLatitude, textDateTime, textLongitude, textArrayAzimuth, textArrayElevation, textSunAzimuth;
+    TextView textDualAxis, textBluetooth, textWindSpeed;
+    LinearLayout windData;
+    TextView textLatitude, textDateTime, textHighWindSpeed, textLongitude, textArrayAzimuth, textArrayElevation, textSunAzimuth;
     TextView textSunElevation, textMinAzimuth, textMaxAzimuth, textMinElevation, textMaxElevation, textTrackerState, textTrackerError, textHorizontalActuatorPosition, textVerticalActuatorPosition;
     Context context;
 
@@ -37,6 +39,7 @@ public class InfoTab extends Fragment {
         configTransfer = new ConfigTransfer();
 
         textDualAxis = (TextView) rootView.findViewById(R.id.textDualAxis);
+        textWindSpeed = (TextView) rootView.findViewById(R.id.textWindSpeed);
         textBluetooth = (TextView) rootView.findViewById(R.id.textBluetooth);
         textLatitude = (TextView) rootView.findViewById(R.id.textLatitude);
         textLongitude = (TextView) rootView.findViewById(R.id.textLongitude);
@@ -49,6 +52,8 @@ public class InfoTab extends Fragment {
         textMinElevation = (TextView) rootView.findViewById(R.id.textMinElevation);
         textMaxElevation = (TextView) rootView.findViewById(R.id.textMaxElevation);
         textDateTime = (TextView) rootView.findViewById(R.id.textDateTime);
+        windData = (LinearLayout) rootView.findViewById(R.id.windLayout);
+        textHighWindSpeed = (TextView) rootView.findViewById(R.id.textHighWindSpeed);
         textTrackerState = (TextView) rootView.findViewById(R.id.textTrackerState);
         textTrackerError = (TextView) rootView.findViewById(R.id.textTrackerError);
         textHorizontalActuatorPosition = (TextView) rootView.findViewById(R.id.textHorizontalActuatorPosition);
@@ -56,6 +61,7 @@ public class InfoTab extends Fragment {
         LocalBroadcastManager.getInstance(context).registerReceiver(mPositionReceiver, new IntentFilter("com.skye.skyetracker.position"));
         LocalBroadcastManager.getInstance(context).registerReceiver(mConfigurationReceiver, new IntentFilter("com.skye.skyetracker.configuration"));
         LocalBroadcastManager.getInstance(context).registerReceiver(mDateTimeReceiver, new IntentFilter("com.skye.skyetracker.datetime"));
+        LocalBroadcastManager.getInstance(context).registerReceiver(mWindTimeReceiver, new IntentFilter("com.skye.skyetracker.windtime"));
         LocalBroadcastManager.getInstance(context).registerReceiver(mBluetoothReceiver, new IntentFilter("com.skye.skyetracker.bluetooth"));
 
 
@@ -68,6 +74,7 @@ public class InfoTab extends Fragment {
         LocalBroadcastManager.getInstance(context).unregisterReceiver(mPositionReceiver);
         LocalBroadcastManager.getInstance(context).unregisterReceiver(mConfigurationReceiver);
         LocalBroadcastManager.getInstance(context).unregisterReceiver(mDateTimeReceiver);
+        LocalBroadcastManager.getInstance(context).unregisterReceiver(mWindTimeReceiver);
         LocalBroadcastManager.getInstance(context).unregisterReceiver(mBluetoothReceiver);
     }
 
@@ -125,6 +132,9 @@ public class InfoTab extends Fragment {
                     case TrackerState_Tracking:
                         textTrackerState.setText("Tracking");
                         break;
+                    case TrackerState_Parked:
+                        textTrackerState.setText("Parked");
+                        break;
                     default:
                     case TrackerState_Off:
                         textTrackerState.setText("Off");
@@ -172,7 +182,9 @@ public class InfoTab extends Fragment {
                 textMinAzimuth.setText(String.format("%d", configTransfer.e)+ (char) 0x00B0);
                 textMaxAzimuth.setText(String.format("%d", configTransfer.w)+ (char) 0x00B0);
                 textMinElevation.setText(String.format("%d", configTransfer.n)+ (char) 0x00B0);
-                textMaxElevation.setText(String.format("%d", configTransfer.x)+ (char) 0x00B0);
+                textMaxElevation.setText(String.format("%d", configTransfer.x) + (char) 0x00B0);
+                windData.setEnabled(configTransfer.an);
+
             }
             catch (Exception ex) {
                 ex.printStackTrace();
@@ -192,6 +204,30 @@ public class InfoTab extends Fragment {
                 Date df = new java.util.Date(dv - tz.getOffset(dv));
                 String vv = new SimpleDateFormat("MM dd, yyyy kk:mm").format(df);
                 textDateTime.setText(vv);
+            }
+            catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    };
+
+    private BroadcastReceiver mWindTimeReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String json = intent.getStringExtra("json");
+            Gson gson = new Gson();
+            try {
+                WindTransfer windTransfer = gson.fromJson(json, WindTransfer.class );
+                long dv = Long.valueOf(windTransfer.sT)*1000;// its need to be in milisecond
+                float sH = Float.valueOf(windTransfer.sH); // meters per second
+                sH *= 3.6;
+                TimeZone tz = TimeZone.getDefault();
+                Date df = new java.util.Date(dv - tz.getOffset(dv));
+                String vv = new SimpleDateFormat("MM dd, yyyy kk:mm").format(df);
+                textHighWindSpeed.setText(String.format("%.1f km/h @ %s", sH, vv));
+                float sC = Float.valueOf(windTransfer.sC); // meters per second
+                sC *= 3.6;
+                textWindSpeed.setText(String.format("%.1f km/h", sC));
             }
             catch (Exception ex) {
                 ex.printStackTrace();

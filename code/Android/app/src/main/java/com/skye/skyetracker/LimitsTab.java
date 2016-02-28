@@ -25,7 +25,7 @@ import java.lang.reflect.Method;
 public class LimitsTab extends Fragment {
 
     Button btnSetLimits;
-    CheckBox dualAxis;
+    CheckBox dualAxis, anemometer;
     ConfigTransfer configTransfer;
     NumberPicker npEast, npWest, npMinElevation, npMaxElevation, horizontalLength, verticalLength, horizontalSpeed, verticalSpeed;
     Context context;
@@ -153,6 +153,15 @@ public class LimitsTab extends Fragment {
             }
         });
 
+        anemometer = (CheckBox)rootView.findViewById(R.id.checkbox_anemometer);
+        anemometer.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                configTransfer.an = isChecked;
+            }
+        });
+
 
         btnSetLimits.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -234,6 +243,7 @@ public class LimitsTab extends Fragment {
             try {
                 configTransfer.copy(gson.fromJson(json, ConfigTransfer.class));
                 dualAxis.setChecked(configTransfer.d);
+                anemometer.setChecked(configTransfer.an);
                 npEast.setValue(configTransfer.e);
                 npWest.setValue(configTransfer.w);
                 npMinElevation.setValue(configTransfer.n);

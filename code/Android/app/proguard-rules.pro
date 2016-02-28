@@ -39,6 +39,7 @@ public static *** i(...);
 
 # Application classes that will be serialized/deserialized over Gson
 -keep class com.skye.skyetracker.TimeTransfer { *; }
+-keep class com.skye.skyetracker.WindTransfer { *; }
 -keep class com.skye.skyetracker.PositionTransfer { *; }
 -keep class com.skye.skyetracker.ConfigTransfer { *; }
 -keep class com.skye.skyetracker.ConfigOptions { *; }

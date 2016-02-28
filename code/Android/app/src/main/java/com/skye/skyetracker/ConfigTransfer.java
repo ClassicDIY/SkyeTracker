@@ -20,6 +20,7 @@ public class ConfigTransfer implements Serializable {
         lv = cf.lv;
         sh = cf.sh;
         sv = cf.sv;
+        an = cf.an;
     }
 
     public boolean d; // dual axis
@@ -33,6 +34,7 @@ public class ConfigTransfer implements Serializable {
     public int lv; // length of vertical actuator
     public int sh; // speed of horizontal actuator in inches per second * 100 (0.31 => 31)
     public int sv; // speed of vertical actuator in inches per second * 100 (0.31 => 31)
+    public boolean an; // has anemometer
 }
 
 

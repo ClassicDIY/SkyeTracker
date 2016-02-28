@@ -9,7 +9,7 @@
 #include "Enumerations.h"
 #include "Position.h"
 #include "LinearActuatorNoPot.h"
-
+#include "Trace.h"
 
 #define POSITION_UPDATE_INTERVAL 60000 // Check tracker every minute
 #define PENDING_RESET 3000 // Configuration changed, reset countdown
@@ -43,15 +43,17 @@ namespace SkyeTracker
 		~Tracker();
 
 		TrackerError _errorState;
-		void Initialize(ThreadController* controller);
+		void Initialize(ThreadController* controller, Print* p = NULL);
 		void Track();
+		void Resume();
+		void Park(bool protect);
 		TrackerState getState();
 		void setState(TrackerState state);
-		void BroadcastPosition();
+		bool BroadcastPosition();
 		void ProcessCommand(const char* input);
 
 	private:
-
+		Print* _stm;
 		void InitializeActuators();
 		void Move(Direction dir);
 		void Stop();

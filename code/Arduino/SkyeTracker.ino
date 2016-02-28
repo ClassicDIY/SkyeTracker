@@ -3,10 +3,14 @@
 #include <ThreadController.h>
 #include <Thread.h>
 #include <Wire.h> 
+#include <SoftwareSerial.h>
+
 #include "RTClib.h"
 #include "sun.h"
 #include "Configuration.h"
 #include "Tracker.h"
+#include "Trace.h"
+#include "Anemometer.h"
 
 using namespace SkyeTracker;
 
@@ -16,9 +20,15 @@ RTC_DS1307 _rtc;
 Configuration _config(&_rtc);
 ThreadController _controller = ThreadController();
 Tracker _tracker(&_config, &_rtc);
+Anemometer _anemometer(A3);
 Thread* _workerThread = new Thread();
+SoftwareSerial _swSer(12, 13, false);
+
 char* _receiveBuffer;
 int _receiveIndex = 0;
+int _protectCountdown = 0;
+float _recordedWindSpeedAtLastEvent = 0;
+uint32_t _lastWindEvent;
 
 void setup()
 {
@@ -26,33 +36,35 @@ void setup()
 	while (!Serial) {
 		; // wait for serial port to connect.
 	}
+	_swSer.begin(115200);
 	//freeMem("At start of setup");
-	Serial.print(F("RAM At start of setup: "));
-	Serial.println(String(freeRam(), DEC));
+	trace(&_swSer, F("RAM At start of setup: "));
+	traceln(&_swSer, String(freeRam(), DEC));
 	Wire.begin();
 	_rtc.begin();
 	if (!_rtc.isrunning()) {
-		Serial.println(F("RTC not running!"));
+		traceln(&_swSer, F("RTC not running!"));
 		_rtc.adjust(DateTime(2015, 6, 21, 12, 00, 0));
 		_tracker._errorState = TrackerError_FailedToAccessRTC;
 	}
+	_lastWindEvent = 0;
 	String d = "";
 	DateTime now = _rtc.now();
 	d = d + now.year() + "/" + now.month() + "/" + now.day() + " " + now.hour() + ":" + now.minute() + ":" + now.second() + "    ";
-	Serial.println(d);
-	Serial.println(F("Loading configuration"));
+	traceln(&_swSer, d);
+	traceln(&_swSer, F("Loading configuration"));
 	_config.Load();
 	// Configure main worker thread
 	_workerThread->onRun(runWorker);
 	_workerThread->setInterval(2000);
 	_controller.add(_workerThread);
-	Serial.println(F("Initializing tracker"));
-	_tracker.Initialize(&_controller);
+	traceln(&_swSer, F("Initializing tracker"));
+	_tracker.Initialize(&_controller, &_swSer);
 	_tracker.Track();
 	_receiveBuffer = (char*)malloc(RECEIVE_BUFFER);
 	//freeMem("At end of setup");
-	Serial.print(F("RAM Completing setup: ") );
-	Serial.println(String(freeRam(), DEC));
+	traceln(&_swSer, F("RAM Completing setup: ") );
+	traceln(&_swSer, String(freeRam(), DEC));
 }
 
 void loop()
@@ -68,9 +80,36 @@ void loop()
 void runWorker()
 {
 	//freeMem("Run");
-	//Serial.print(F("RAM in Run: "));
-	//Serial.println(String(freeRam(), DEC));
-	_tracker.BroadcastPosition();
+	//trace(&_swSer, F("RAM in Run: "));
+	//traceln(&_swSer, String(freeRam(), DEC));
+	bool broadcasting = _tracker.BroadcastPosition();
+	if (_config.hasAnemometer())
+	{
+		float windSpeed = _anemometer.WindSpeed();
+		if (windSpeed > 11) // wind speed greater than 40 km/hour?
+		{
+			_lastWindEvent = _rtc.now().unixtime();
+			_recordedWindSpeedAtLastEvent = windSpeed;
+			_tracker.Park(true);
+			_protectCountdown = 300; // 10 minute countdown to resume tracking
+		}
+		else if (--_protectCountdown <= 0)
+		{
+			_protectCountdown = 0;
+			_tracker.Resume();
+		}
+		if (broadcasting)
+		{
+			Serial.print("Wind|{");
+			Serial.print("\"sT\":"); // seconds in unixtime
+			Serial.print(_lastWindEvent);
+			Serial.print(",\"sC\":"); // current wind speed
+			Serial.print(windSpeed);
+			Serial.print(",\"sH\":"); // last high wind speed
+			Serial.print(_recordedWindSpeedAtLastEvent);
+			Serial.println("}");
+		};
+	}
 }
 
 void serialEvent() {
@@ -98,9 +137,9 @@ void serialEvent() {
 //{
 //	for (int i = 0; i < txt.length(); i++)
 //	{
-//		Serial.print(txt[i], HEX);
+//		trace(&_swSer, txt[i], HEX);
 //	}
-//	Serial.println("");
+//	traceln(&_swSer, "");
 //}
 
 
@@ -146,9 +185,9 @@ void serialEvent() {
 //uint16_t biggest;
 //
 //void freeMem(char* message) {
-//	Serial.print(message);
-//	Serial.print(":\t");
-//	Serial.println(freeMem(&biggest));
+//	trace(&_swSer, message);
+//	trace(&_swSer, ":\t");
+//	traceln(&_swSer, freeMem(&biggest));
 //}
 
 int freeRam()

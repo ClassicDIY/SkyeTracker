@@ -23,6 +23,12 @@ namespace SkyeTracker
 		_isDirty = true;
 	}
 
+	void Configuration::setHasAnemometer(bool val)
+	{
+		_hasAnemometer = val;
+		_isDirty = true;
+	}
+
 	void Configuration::SetLocation(double lat, double lon)
 	{
 		_latitude = lat;
@@ -123,6 +129,10 @@ namespace SkyeTracker
 			_verticalLength = deserialInt(&(_buffer[20]));
 			_horizontalSpeed = deserialInt(&(_buffer[22]));
 			_verticalSpeed = deserialInt(&(_buffer[24]));
+			if (_buffer[26] == 1)
+				_hasAnemometer = true;
+			else
+				_hasAnemometer = false;
 			_isDirty = false;
 		}
 		else
@@ -135,6 +145,7 @@ namespace SkyeTracker
 	void Configuration::LoadFactoryDefault()
 	{
 		setDual(true);
+		setHasAnemometer(false);
 		SetLimits(90, 270, 0, 90);
 		SetActuatorParameters(12, 8, 31, 31);
 		//45.936527, -75.091259 Lac Simon
@@ -180,7 +191,11 @@ namespace SkyeTracker
 		serialInt(&(_buffer[20]), _verticalLength);
 		serialInt(&(_buffer[22]), _horizontalSpeed);
 		serialInt(&(_buffer[24]), _verticalSpeed);
-		_buffer[26] = CalcChecksum(_buffer);
+		if (_hasAnemometer)
+			_buffer[26] = 1;
+		else
+			_buffer[26] = 0;
+		_buffer[28] = CalcChecksum(_buffer);
 		_rtc->writenvram(0, _buffer, DS1307_RAM_SIZE);
 		_isDirty = false;
 		Serial.println(F("Saved settings"));
@@ -235,6 +250,9 @@ namespace SkyeTracker
 		Serial.print(getHorizontalSpeed());
 		Serial.print(F(",\"sv\":"));
 		Serial.print(getVerticalSpeed());
+		Serial.print(F(",\"an\":"));
+		Serial.print(hasAnemometer() ? F("true") : F("false"));
 		Serial.println(F("}"));
 	}
+
 }
