@@ -6,6 +6,10 @@ Knowing the latitude, longitude and the date/time, the software calculates the a
 
 ![alt tag](https://farrelltonsolar.files.wordpress.com/2015/03/sunset.jpg)
 
+Added support for anemometer, array will move to horizontal when wind exceeds 30km/h
+
+![alt tag](https://github.com/graham22/SkyeTracker/blob/master/Pictures/V8%20Circuit.png)
+
 Used the following development tools;
 
 <ul>
