@@ -58,9 +58,14 @@ public class LocationTab extends Fragment implements OnMapReadyCallback, GoogleM
             public void onClick(View v) {
                 Gson gson = new Gson();
                 Location ll = map.getMyLocation();
-                ConfigLocation configLocation = new ConfigLocation(ll);
-                String json = "SetC|" + gson.toJson(configLocation);
-                MainApplication.SendCommand(json);
+                if (ll != null) {
+                    ConfigLocation configLocation = new ConfigLocation(ll);
+                    String json = "SetC|" + gson.toJson(configLocation);
+                    MainApplication.SendCommand(json);
+                }
+                else {
+                    Toast.makeText(context, "Press & hold to set location", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
