@@ -86,7 +86,12 @@ void runWorker()
 	if (_config.hasAnemometer())
 	{
 		float windSpeed = _anemometer.WindSpeed();
-		if (windSpeed > 11) // wind speed greater than 40 km/hour?
+		if (_recordedWindSpeedAtLastEvent < windSpeed)
+		{
+			_lastWindEvent = _rtc.now().unixtime();
+			_recordedWindSpeedAtLastEvent = windSpeed;
+		}
+		if (windSpeed > 8.0) // wind speed greater than 28.8 km/hour? (8 M/S *3600 S)
 		{
 			_lastWindEvent = _rtc.now().unixtime();
 			_recordedWindSpeedAtLastEvent = windSpeed;

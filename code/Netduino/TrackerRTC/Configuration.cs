@@ -292,7 +292,8 @@ namespace TrackerRTC
             {
                 try
                 {
-                    DualAxis = s[0] == "Y";
+                    //DualAxis = s[0] == "Y";
+                    DualAxis = false;
                     EastAzimuth = Convert.ToInt32(s[1]);
                     WestAzimuth = Convert.ToInt32(s[2]);
                     Latitude = (float)Convert.ToDouble(s[3]);

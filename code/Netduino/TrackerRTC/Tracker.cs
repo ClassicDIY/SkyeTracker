@@ -38,7 +38,7 @@ namespace TrackerRTC
         public static Lcd _lcd;
         private Timer _positionUpdateTimer;
         private Timer _broadcastTimer;
-        private readonly Thread _lcdUpdater;
+        //private readonly Thread _lcdUpdater;
         private State _trackerState = State.Starting;
         private double _arrayAzimuth;
         private double _sunAzimuth;
@@ -56,7 +56,7 @@ namespace TrackerRTC
         {
             Configuration = configuration;
             _isDark = false;
-            _lcdUpdater = new Thread(LCDUpdater);
+            //_lcdUpdater = new Thread(LCDUpdater);
         }
 
         /// <summary>
@@ -77,118 +77,118 @@ namespace TrackerRTC
             {
                 _horizontalActuator.Dispose();
             }
-            if (_lcdUpdater.IsAlive)
-            {
-                if (_lcdUpdater.Join(1000) == false)
-                {
-                    _lcdUpdater.Abort();
-                }
-            }
+            //if (_lcdUpdater.IsAlive)
+            //{
+            //    if (_lcdUpdater.Join(1000) == false)
+            //    {
+            //        _lcdUpdater.Abort();
+            //    }
+            //}
             GC.SuppressFinalize(this);
         }
 
         #region LCD
 
-        private void LCDUpdater()
-        {
-            while (true)
-            {
-                try
-                {
-#if DEBUG
-                    Debug.Print("azimuth: " + SunAzimuth.ToString("f1"));
-                    Debug.Print("elevation: " + SunElevation.ToString("f1"));
-                    Debug.Print(TrackerState == State.Dark ? "night" : "day");
-#else
-                    switch (TrackerState)
-                    {
-                        case State.Starting:
-                            _lcd.WriteLine(0, Resources.GetString(Resources.StringResources.Brand));
-                            _lcd.WriteLine(1, Resources.GetString(Resources.StringResources.Initializing));
-                            break;
+//        private void LCDUpdater()
+//        {
+//            while (true)
+//            {
+//                try
+//                {
+//#if DEBUG
+//                    Debug.Print("azimuth: " + SunAzimuth.ToString("f1"));
+//                    Debug.Print("elevation: " + SunElevation.ToString("f1"));
+//                    Debug.Print(TrackerState == State.Dark ? "night" : "day");
+//#else
+//                    switch (TrackerState)
+//                    {
+//                        case State.Starting:
+//                            _lcd.WriteLine(0, Resources.GetString(Resources.StringResources.Brand));
+//                            _lcd.WriteLine(1, Resources.GetString(Resources.StringResources.Initializing));
+//                            break;
 
-                        case State.ClockSet:
-                            _lcd.WriteLine(0, DateTime.Now.ToString(Resources.GetString(Resources.StringResources.DateFormat)));
-                            _lcd.WriteLine(1, Resources.GetString(Resources.StringResources.Initializing));
-                            break;
+//                        case State.ClockSet:
+//                            _lcd.WriteLine(0, DateTime.Now.ToString(Resources.GetString(Resources.StringResources.DateFormat)));
+//                            _lcd.WriteLine(1, Resources.GetString(Resources.StringResources.Initializing));
+//                            break;
 
-                        case State.InitializingActuator:
-                            var sb0 = new StringBuilder();
-                            sb0.Append(Resources.GetString(Resources.StringResources.Horizontal));
-                            sb0.Append(_horizontalActuator.CurrentPosition.ToString("f1"));
-                            if (DualAxis)
-                            {
-                                sb0.Append(Resources.GetString(Resources.StringResources.Vertical));
-                                sb0.Append(_verticalActuator.CurrentPosition.ToString("f1"));
-                            }
-                            _lcd.WriteLine(1, sb0.ToString());
-                            break;
+//                        case State.InitializingActuator:
+//                            var sb0 = new StringBuilder();
+//                            sb0.Append(Resources.GetString(Resources.StringResources.Horizontal));
+//                            sb0.Append(_horizontalActuator.CurrentPosition.ToString("f1"));
+//                            if (DualAxis)
+//                            {
+//                                sb0.Append(Resources.GetString(Resources.StringResources.Vertical));
+//                                sb0.Append(_verticalActuator.CurrentPosition.ToString("f1"));
+//                            }
+//                            _lcd.WriteLine(1, sb0.ToString());
+//                            break;
 
-                        case State.Testing:
-                            _lcd.WriteLine(0, Resources.GetString(Resources.StringResources.Testing));
-                            var sb1 = new StringBuilder();
-                            sb1.Append(Resources.GetString(Resources.StringResources.Azimuth));
-                            sb1.Append(ArrayAzimuth.ToString("f1"));
-                            if (DualAxis)
-                            {
-                                sb1.Append("  ");
-                                sb1.Append(Resources.GetString(Resources.StringResources.Elevation));
-                                sb1.Append(ArrayElevation.ToString("f1"));
-                            }
-                            _lcd.WriteLine(1, sb1.ToString());
-                            break;
+//                        case State.Testing:
+//                            _lcd.WriteLine(0, Resources.GetString(Resources.StringResources.Testing));
+//                            var sb1 = new StringBuilder();
+//                            sb1.Append(Resources.GetString(Resources.StringResources.Azimuth));
+//                            sb1.Append(ArrayAzimuth.ToString("f1"));
+//                            if (DualAxis)
+//                            {
+//                                sb1.Append("  ");
+//                                sb1.Append(Resources.GetString(Resources.StringResources.Elevation));
+//                                sb1.Append(ArrayElevation.ToString("f1"));
+//                            }
+//                            _lcd.WriteLine(1, sb1.ToString());
+//                            break;
 
-                        case State.Standby:
-                            _lcd.WriteLine(0, "Standby");
-                            _lcd.WriteLine(1, new string(_record));
-                            break;
+//                        case State.Standby:
+//                            _lcd.WriteLine(0, "Standby");
+//                            _lcd.WriteLine(1, new string(_record));
+//                            break;
 
-                        case State.Dark:
-                            _lcd.WriteLine(0, DateTime.Now.ToString(Resources.GetString(Resources.StringResources.DateFormat)));
-                            _lcd.WriteLine(1, Resources.GetString(Resources.StringResources.Dark));
-                            break;
+//                        case State.Dark:
+//                            _lcd.WriteLine(0, DateTime.Now.ToString(Resources.GetString(Resources.StringResources.DateFormat)));
+//                            _lcd.WriteLine(1, Resources.GetString(Resources.StringResources.Dark));
+//                            break;
 
-                        case State.Tracking:
-                            if (DualAxis)
-                            {
-                                var sb = new StringBuilder(Resources.GetString(Resources.StringResources.Azimuth));
-                                sb.Append(SunAzimuth.ToString("f1"));
-                                sb.Append(" (");
-                                sb.Append(ArrayAzimuth.ToString("f1"));
-                                sb.Append(") ");
-                                _lcd.WriteLine(0, sb.ToString());
-                                sb = new StringBuilder(Resources.GetString(Resources.StringResources.Elevation));
-                                sb.Append(SunElevation.ToString("f1"));
-                                sb.Append(" (");
-                                sb.Append(ArrayElevation.ToString("f1"));
-                                sb.Append(") ");
-                                _lcd.WriteLine(1, sb.ToString());
-                            }
-                            else
-                            {
-                                _lcd.WriteLine(0, DateTime.Now.ToString(Resources.GetString(Resources.StringResources.DateFormat)));
-                                var sb = new StringBuilder(Resources.GetString(Resources.StringResources.Azimuth));
-                                sb.Append(SunAzimuth.ToString("f1"));
-                                sb.Append(" (");
-                                sb.Append(ArrayAzimuth.ToString("f1"));
-                                sb.Append(") ");
-                                _lcd.WriteLine(1, sb.ToString());
-                            }
+//                        case State.Tracking:
+//                            if (DualAxis)
+//                            {
+//                                var sb = new StringBuilder(Resources.GetString(Resources.StringResources.Azimuth));
+//                                sb.Append(SunAzimuth.ToString("f1"));
+//                                sb.Append(" (");
+//                                sb.Append(ArrayAzimuth.ToString("f1"));
+//                                sb.Append(") ");
+//                                _lcd.WriteLine(0, sb.ToString());
+//                                sb = new StringBuilder(Resources.GetString(Resources.StringResources.Elevation));
+//                                sb.Append(SunElevation.ToString("f1"));
+//                                sb.Append(" (");
+//                                sb.Append(ArrayElevation.ToString("f1"));
+//                                sb.Append(") ");
+//                                _lcd.WriteLine(1, sb.ToString());
+//                            }
+//                            else
+//                            {
+//                                _lcd.WriteLine(0, DateTime.Now.ToString(Resources.GetString(Resources.StringResources.DateFormat)));
+//                                var sb = new StringBuilder(Resources.GetString(Resources.StringResources.Azimuth));
+//                                sb.Append(SunAzimuth.ToString("f1"));
+//                                sb.Append(" (");
+//                                sb.Append(ArrayAzimuth.ToString("f1"));
+//                                sb.Append(") ");
+//                                _lcd.WriteLine(1, sb.ToString());
+//                            }
 
-                            break;
-                    }
-#endif
-                }
-                catch (Exception)
-                {
-                    DebugLogger.TryLog("Worker threw an exception");
-                    _lcd.Clear();
-                    _lcd.WriteLine(0, "Error");
+//                            break;
+//                    }
+//#endif
+//                }
+//                catch (Exception)
+//                {
+//                    DebugLogger.TryLog("Worker threw an exception");
+//                    _lcd.Clear();
+//                    _lcd.WriteLine(0, "Error");
 
-                }
-                Thread.Sleep(500);
-            }
-        }
+//                }
+//                Thread.Sleep(500);
+//            }
+//        }
 
         #endregion
 
@@ -610,7 +610,7 @@ namespace TrackerRTC
         public bool Initialize()
         {
             var rVal = false;
-            SetupLCD();
+            //SetupLCD();
             if (SetupRTC())
             {
                 if (SetupComPort() == false)
@@ -671,50 +671,50 @@ namespace TrackerRTC
             return _horizontalActuator != null;
         }
 
-        private bool SetupLCD()
-        {
-            if (_lcd == null)
-            {
-                try
-                {
-#if MINI
-                    var shifter = new BaseShifterLcdTransferProvider.ShifterSetup
-                    {
-                        RW = ShifterPin.GP1, // not used
-                        RS = ShifterPin.GP0,
-                        Enable = ShifterPin.GP2,
-                        D4 = ShifterPin.GP4,
-                        D5 = ShifterPin.GP5,
-                        D6 = ShifterPin.GP6,
-                        D7 = ShifterPin.GP7,
-                        BL = ShifterPin.GP3,
-                    };
-                    _lcd = new Lcd(new MCP23008LcdTransferProvider(I2CBusExtension.GetSingleton(), 0x27, shifter));
+//        private bool SetupLCD()
+//        {
+//            if (_lcd == null)
+//            {
+//                try
+//                {
+//#if MINI
+//                    var shifter = new BaseShifterLcdTransferProvider.ShifterSetup
+//                    {
+//                        RW = ShifterPin.GP1, // not used
+//                        RS = ShifterPin.GP0,
+//                        Enable = ShifterPin.GP2,
+//                        D4 = ShifterPin.GP4,
+//                        D5 = ShifterPin.GP5,
+//                        D6 = ShifterPin.GP6,
+//                        D7 = ShifterPin.GP7,
+//                        BL = ShifterPin.GP3,
+//                    };
+//                    _lcd = new Lcd(new MCP23008LcdTransferProvider(I2CBusExtension.GetSingleton(), 0x27, shifter));
 
-#else
-                    _lcd = new Lcd(new GpioLcdTransferProvider(Pins.GPIO_PIN_D13 // rs
-                                                               , Pins.GPIO_PIN_D12 // enable 
-                                                               , Pins.GPIO_PIN_D8 // d4
-                                                               , Pins.GPIO_PIN_D9 // d5
-                                                               , Pins.GPIO_PIN_D10 // d6
-                                                               , Pins.GPIO_PIN_D11 // d7
-                                       )
-                                   , Pins.GPIO_NONE // Back light
-                        );
-#endif
-                    _lcd.Initialize(16, 2);
-                    _lcd.BackLightDuration = Timeout.Infinite;
-                    _lcd.Backlight = true;
-                    _lcdUpdater.Start();
-                }
-                catch (Exception ex)
-                {
-                    DebugLogger.TryLog(Resources.GetString(Resources.StringResources.LCDError));
-                    _lcd = null;
-                }
-            }
-            return _lcd != null;
-        }
+//#else
+//                    _lcd = new Lcd(new GpioLcdTransferProvider(Pins.GPIO_PIN_D13 // rs
+//                                                               , Pins.GPIO_PIN_D12 // enable 
+//                                                               , Pins.GPIO_PIN_D8 // d4
+//                                                               , Pins.GPIO_PIN_D9 // d5
+//                                                               , Pins.GPIO_PIN_D10 // d6
+//                                                               , Pins.GPIO_PIN_D11 // d7
+//                                       )
+//                                   , Pins.GPIO_NONE // Back light
+//                        );
+//#endif
+//                    _lcd.Initialize(16, 2);
+//                    _lcd.BackLightDuration = Timeout.Infinite;
+//                    _lcd.Backlight = true;
+//                    //_lcdUpdater.Start();
+//                }
+//                catch (Exception ex)
+//                {
+//                    DebugLogger.TryLog(Resources.GetString(Resources.StringResources.LCDError));
+//                    _lcd = null;
+//                }
+//            }
+//            return _lcd != null;
+//        }
 
         private bool SetupComPort()
         {

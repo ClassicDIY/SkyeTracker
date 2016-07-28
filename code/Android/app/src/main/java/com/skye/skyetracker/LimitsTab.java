@@ -30,6 +30,7 @@ public class LimitsTab extends Fragment {
     NumberPicker npEast, npWest, npMinElevation, npMaxElevation, horizontalLength, verticalLength, horizontalSpeed, verticalSpeed;
     Context context;
     final int[] lengthLookup = {4, 8, 12, 18, 24, 36 };
+    boolean _dirty = false;
 
     @Override
     public void onDestroyView() {
@@ -40,24 +41,28 @@ public class LimitsTab extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        set_isDirty(false);
         MainApplication.SendCommand("GetConfiguration");
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        set_isDirty(false);
         MainApplication.SendCommand("GetConfiguration");
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        set_isDirty(false);
         context = container.getContext();
         configTransfer = new ConfigTransfer();
         View rootView = inflater.inflate(R.layout.limits, container, false);
         btnSetLimits = (Button) rootView.findViewById(R.id.btnSetLimits);
         final String[] lengths = context.getResources().getStringArray(R.array.actuator_length_spinner_item);
 
+        MainApplication.SendCommand("StopBroadcast");
         horizontalLength = (NumberPicker) rootView.findViewById(R.id.horizontalActuatorLength);
         horizontalLength.setDisplayedValues(lengths);
         horizontalLength.setMinValue(0);
@@ -69,6 +74,7 @@ public class LimitsTab extends Fragment {
             @Override
             public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
                 if (newVal >= 0 && newVal < lengthLookup.length) {
+                    set_isDirty(true);
                     configTransfer.lh = lengthLookup[newVal];
                 }
             }
@@ -84,6 +90,7 @@ public class LimitsTab extends Fragment {
             @Override
             public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
                 if (newVal >= 0 && newVal < lengthLookup.length) {
+                    set_isDirty(true);
                     configTransfer.lv = lengthLookup[newVal];
                 }
             }
@@ -105,6 +112,7 @@ public class LimitsTab extends Fragment {
         horizontalSpeed.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
             public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+                set_isDirty(true);
                 configTransfer.sh = newVal;
             }
         });
@@ -124,6 +132,7 @@ public class LimitsTab extends Fragment {
         verticalSpeed.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
             public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+                set_isDirty(true);
                 configTransfer.sv = newVal;
             }
         });
@@ -149,6 +158,7 @@ public class LimitsTab extends Fragment {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                set_isDirty(true);
                 configTransfer.d = isChecked;
             }
         });
@@ -158,6 +168,7 @@ public class LimitsTab extends Fragment {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                set_isDirty(true);
                 configTransfer.an = isChecked;
             }
         });
@@ -175,6 +186,7 @@ public class LimitsTab extends Fragment {
                 MainApplication.SendCommand(json);
                 json = "SetO|" + gson.toJson(configOptions);
                 MainApplication.SendCommand(json);
+                set_isDirty(false);
             }
         });
 
@@ -188,6 +200,7 @@ public class LimitsTab extends Fragment {
         npEast.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
             public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+                set_isDirty(true);
                 configTransfer.e = newVal;
             }
         });
@@ -201,6 +214,7 @@ public class LimitsTab extends Fragment {
         npWest.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
             public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+                set_isDirty(true);
                 configTransfer.w = newVal;
             }
         });
@@ -215,6 +229,7 @@ public class LimitsTab extends Fragment {
         npMinElevation.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
             public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+                set_isDirty(true);
                 configTransfer.n = newVal;
             }
         });
@@ -228,6 +243,7 @@ public class LimitsTab extends Fragment {
         npMaxElevation.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
             public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+                set_isDirty(true);
                 configTransfer.x = newVal;
             }
         });
@@ -238,23 +254,24 @@ public class LimitsTab extends Fragment {
     private BroadcastReceiver mConfigurationReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String json = intent.getStringExtra("json");
-            Gson gson = new Gson();
-            try {
-                configTransfer.copy(gson.fromJson(json, ConfigTransfer.class));
-                dualAxis.setChecked(configTransfer.d);
-                anemometer.setChecked(configTransfer.an);
-                npEast.setValue(configTransfer.e);
-                npWest.setValue(configTransfer.w);
-                npMinElevation.setValue(configTransfer.n);
-                npMaxElevation.setValue(configTransfer.x);
-                SetLenghtPickerValue(horizontalLength, configTransfer.lh);
-                SetLenghtPickerValue(verticalLength, configTransfer.lv);
-                horizontalSpeed.setValue(configTransfer.sh);
-                verticalSpeed.setValue(configTransfer.sv);
-            }
-            catch (Exception ex) {
-                ex.printStackTrace();
+            if (isDirty() == false) {
+                String json = intent.getStringExtra("json");
+                Gson gson = new Gson();
+                try {
+                    configTransfer.copy(gson.fromJson(json, ConfigTransfer.class));
+                    dualAxis.setChecked(configTransfer.d);
+                    anemometer.setChecked(configTransfer.an);
+                    npEast.setValue(configTransfer.e);
+                    npWest.setValue(configTransfer.w);
+                    npMinElevation.setValue(configTransfer.n);
+                    npMaxElevation.setValue(configTransfer.x);
+                    SetLenghtPickerValue(horizontalLength, configTransfer.lh);
+                    SetLenghtPickerValue(verticalLength, configTransfer.lv);
+                    horizontalSpeed.setValue(configTransfer.sh);
+                    verticalSpeed.setValue(configTransfer.sv);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             }
         }
     };
@@ -267,6 +284,14 @@ public class LimitsTab extends Fragment {
             }
         }
 
+    }
+
+    private synchronized boolean isDirty() {
+        return _dirty;
+    }
+
+    private synchronized void set_isDirty(boolean val) {
+        _dirty = val;
     }
 
 }

@@ -17,6 +17,7 @@ namespace Common
         public int lv; // length of vertical actuator
         public int sh; // speed of horizontal actuator in inches per second * 100 (0.31 => 31)
         public int sv; // speed of vertical actuator in inches per second * 100 (0.31 => 31)
+        public bool an;
     }
 
     [Serializable]
