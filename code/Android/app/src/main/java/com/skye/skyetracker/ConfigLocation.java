@@ -1,14 +1,12 @@
 package com.skye.skyetracker;
 
-import android.location.Location;
-
 import java.io.Serializable;
 
 public class ConfigLocation implements Serializable {
 
-    public ConfigLocation(Location loc) {
-        a = (float)loc.getLatitude();
-        o = (float)loc.getLongitude();
+    public ConfigLocation(double lat, double lon) {
+        a = (float)lat;
+        o = (float)lon;
     }
 
     public ConfigLocation(ConfigTransfer cfg) {
