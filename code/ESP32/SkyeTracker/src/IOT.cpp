@@ -1,7 +1,6 @@
 #include "IOT.h"
 #include <sys/time.h>
 #include "time.h"
-// #include <WifiLocation.h>
 #include "Log.h"
 
 namespace SkyeTracker
@@ -24,8 +23,7 @@ IotWebConfParameter mqttServerParam = IotWebConfParameter("MQTT server", "mqttSe
 IotWebConfParameter mqttPortParam = IotWebConfParameter("MQTT port", "mqttSPort", _mqttPort, 5, "text", NULL, "8080");
 IotWebConfParameter mqttUserNameParam = IotWebConfParameter("MQTT user", "mqttUser", _mqttUserName, IOTWEBCONF_WORD_LEN);
 IotWebConfParameter mqttUserPasswordParam = IotWebConfParameter("MQTT password", "mqttPass", _mqttUserPassword, IOTWEBCONF_WORD_LEN, "password");
-// const char *googleApiKey = "AIzaSyA-zY6xTj4swaWhV_KBDvD4oqoyqxrY3og";
-// WifiLocation location(googleApiKey);
+
 const char *ntpServer = "pool.ntp.org";
 
 void publishDiscovery()
