@@ -22,6 +22,8 @@ extern SkyeTracker::IOT _iot;
 const char c_Track[] = "Track";
 const char c_Cycle[] = "Cycle";
 const char c_Stop[] = "Stop";
+const char c_Park[] = "Park";
+const char c_Protect[] = "Protect";
 const char c_GetConfiguration[] = "GetConfiguration";
 const char c_GetDateTime[] = "GetDateTime";
 const char c_BroadcastPosition[] = "BroadcastPosition";

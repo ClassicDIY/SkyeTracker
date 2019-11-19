@@ -308,6 +308,14 @@ namespace SkyeTracker
 		{
 			Cycle();
 		}
+		else if (strcmp(command, c_Park) == 0)
+		{
+			Park(false);
+		}
+		else if (strcmp(command, c_Protect) == 0)
+		{
+			Park(true);
+		}
 		else if (strcmp(command, c_Stop) == 0)
 		{
 			setState(TrackerState_Manual);

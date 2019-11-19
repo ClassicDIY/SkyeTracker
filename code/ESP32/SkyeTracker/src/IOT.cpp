@@ -2,6 +2,9 @@
 #include <sys/time.h>
 #include "time.h"
 #include "Log.h"
+#include "Tracker.h"
+
+extern SkyeTracker::Tracker _tracker;
 
 namespace SkyeTracker
 {
@@ -60,9 +63,11 @@ void publishDiscovery()
 void onMqttConnect(bool sessionPresent)
 {
 	logi("Connected to MQTT. Session present: %d", sessionPresent);
-	char mqttModeCmndTopic[STR_LEN];
-	sprintf(mqttModeCmndTopic, "%s/cmnd/MODE", _mqttRootTopic);
-	uint16_t packetIdSub = _mqttClient.subscribe(mqttModeCmndTopic, 1);
+	char mqttCmndTopic[STR_LEN];
+	sprintf(mqttCmndTopic, "%s/cmnd/Mode", _mqttRootTopic);
+	uint16_t packetIdSub = _mqttClient.subscribe(mqttCmndTopic, 1);
+	sprintf(mqttCmndTopic, "%s/cmnd/MoveTo", _mqttRootTopic);
+	packetIdSub = _mqttClient.subscribe(mqttCmndTopic, 1);
 	logi("MQTT subscribe, QoS 1, packetId: %d", packetIdSub);
 	publishDiscovery();
 	_mqttClient.publish(_willTopic, 0, false, "Online");
@@ -109,7 +114,33 @@ void onMqttPublish(uint16_t packetId)
 
 void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total)
 {
-	logi("MQTT Message arrived [%s]  qos: %d len: %d", topic, properties.qos, len);
+	logi("MQTT Message arrived [%s]  qos: %d len: %d index: %d total: %d", topic, properties.qos, len, index, total);
+	printHexString(payload, len);
+	int l = strlen(_mqttRootTopic) + 6;
+	if (l < strlen(topic) && len < 8)
+	{
+		char *p = &topic[l];
+		logi("p: %s", p);
+		char cmd[16];
+		char pl[16];
+		if (strcmp("Mode", p) == 0)
+		{
+			strncpy(pl, payload, len);
+			pl[len] = 0;
+			sprintf(cmd, "%s|", pl);
+			logi("cmd: %s", cmd);
+			_tracker.ProcessCommand(cmd);
+		}
+		if (strcmp("MoveTo", p) == 0)
+		{
+
+			strncpy(pl, payload, len);
+			pl[len] = 0;
+			sprintf(cmd, "MoveTo|%s", pl);
+			logi("cmd: %s", cmd);
+			_tracker.ProcessCommand(cmd);
+		}
+	}
 }
 
 IOT::IOT()
@@ -206,8 +237,6 @@ void IOT::Run()
 {
 	_iotWebConf.doLoop();
 }
-
-
 
 void IOT::publish(const char *subtopic, const char *value, boolean retained)
 {
