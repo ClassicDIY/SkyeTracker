@@ -15,10 +15,6 @@ extern BluetoothSerial ESP_BT;
 extern SkyeTracker::Configuration _config;
 extern SkyeTracker::IOT _iot;
 
-#define POSITION_UPDATE_INTERVAL 60000 // Check tracker every minute
-#define PENDING_RESET 3000 // Configuration changed, reset countdown
-#define CYCLE_POSITION_UPDATE_INTERVAL 5000 // Sweep through the day one hour at this interval
-
 const char c_Track[] = "Track";
 const char c_Cycle[] = "Cycle";
 const char c_Stop[] = "Stop";
