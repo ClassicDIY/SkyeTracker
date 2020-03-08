@@ -1,8 +1,10 @@
 # SkyeTracker
 Dual Axis solar tracker
 
-This project is based on an arduino nano, it uses a pair of linear actuators to move a set of solar panels so that they face the sun throughout the day.
-Knowing the latitude, longitude and the date/time, the software calculates the azimuth and elevation of the sun. The system is setup and calibrated using an android app that communicates with the device using the bluetooth interface. 
+This project is based on an Arduino Nano, it uses a pair of linear actuators to move a set of solar panels so that they face the sun throughout the day.
+Knowing the latitude, longitude and the date/time, the software calculates the azimuth and elevation of the sun. The system is setup and calibrated using an Android app that communicates with the device using the Bluetooth interface. 
+
+Check the [wiki](https://github.com/graham22/SkyeTracker/wiki) for more information.
 
 <p align="center">
   <img src="./Pictures/IMG_20140823_183240.jpg" width="650"/>
