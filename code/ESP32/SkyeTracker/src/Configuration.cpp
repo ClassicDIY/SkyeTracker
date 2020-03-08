@@ -1,7 +1,7 @@
 #include "Configuration.h"
 #include "Log.h"
 
-#define DS1307_RAM_SIZE 30
+#define STORAGE_SIZE 30
 
 Preferences _preferences;
 
@@ -113,8 +113,8 @@ void Configuration::Load()
 {
 	if (_preferences.begin("SkyeTracker", false))
 	{
-		byte _buffer[DS1307_RAM_SIZE + 1];
-		_preferences.getBytes("Configuration", _buffer, DS1307_RAM_SIZE);
+		byte _buffer[STORAGE_SIZE + 1];
+		_preferences.getBytes("Configuration", _buffer, STORAGE_SIZE);
 		if (CalcChecksum(_buffer) == 0)
 		{
 			logi("Checksum passed, loading saved settings");
@@ -180,8 +180,8 @@ void serialInt(byte *buffer, int f)
 
 void Configuration::Save()
 {
-	byte _buffer[DS1307_RAM_SIZE + 1];
-	for (int i = 0; i < DS1307_RAM_SIZE; i++)
+	byte _buffer[STORAGE_SIZE + 1];
+	for (int i = 0; i < STORAGE_SIZE; i++)
 	{
 		_buffer[i] = 0x00;
 	}
@@ -206,7 +206,7 @@ void Configuration::Save()
 	else
 		_buffer[26] = 0;
 	_buffer[28] = CalcChecksum(_buffer);
-	_preferences.putBytes("Configuration", _buffer, DS1307_RAM_SIZE);
+	_preferences.putBytes("Configuration", _buffer, STORAGE_SIZE);
 	_isDirty = false;
 	logi("Saved settings");
 }
@@ -214,7 +214,7 @@ void Configuration::Save()
 byte Configuration::CalcChecksum(byte _buffer[])
 {
 	byte crc = 0;
-	for (int i = 0; i < DS1307_RAM_SIZE; i++)
+	for (int i = 0; i < STORAGE_SIZE; i++)
 		crc += _buffer[i];
 	crc = -crc;
 	logi("Checksum cal: %x", crc);
