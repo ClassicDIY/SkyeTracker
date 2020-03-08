@@ -66,7 +66,7 @@ namespace SkyeTracker
 	{
 		cycleHour = 0;
 		enabled = true;
-		setInterval(TrackerCyclePositionUpdateInterval);
+		setInterval(CYCLE_POSITION_UPDATE_INTERVAL);
 		setState(TrackerState_Cycling);
 		this->run();
 	}
@@ -88,7 +88,7 @@ namespace SkyeTracker
 				InitializeActuators();
 			}
 			enabled = true;
-			setInterval(TrackerPositionUpdateInterval);
+			setInterval(POSITION_UPDATE_INTERVAL);
 			setState(TrackerState_Tracking);
 			this->run();
 		}
@@ -208,7 +208,7 @@ namespace SkyeTracker
 		{
 			_elevation->Initialize(_config.getMinimumElevation(), _config.getMaximumElevation(), _config.getVerticalLength(), _config.getVerticalSpeed());
 		}
-		setInterval(TrackerPositionUpdateInterval);
+		setInterval(POSITION_UPDATE_INTERVAL);
 		setState(TrackerState_Standby);
 	}
 
@@ -342,7 +342,7 @@ namespace SkyeTracker
 			DeserializationError error = deserializeJson(doc, data);
 			if (!error) {
 				_config.SetLocation(doc["a"], doc["o"]);
-				setInterval(TrackerPendingReset);
+				setInterval(PENDING_RESET);
 			}
 		}
 		else if (strcmp(command, c_SetA) == 0) // set actuator size/speed
@@ -350,7 +350,7 @@ namespace SkyeTracker
 			DeserializationError error = deserializeJson(doc, data);
 			if (!error) {
 				_config.SetActuatorParameters(doc["lh"], doc["lv"], doc["sh"], doc["sv"]);
-				setInterval(TrackerPendingReset);
+				setInterval(PENDING_RESET);
 			}
 		}
 		else if (strcmp(command, c_SetL) == 0) // set limits
@@ -358,7 +358,7 @@ namespace SkyeTracker
 			DeserializationError error = deserializeJson(doc, data);
 			if (!error) {
 				_config.SetLimits(doc["e"], doc["w"], doc["n"], doc["x"]);
-				setInterval(TrackerPendingReset);
+				setInterval(PENDING_RESET);
 			}
 		}
 		else if (strcmp(command, c_SetO) == 0) // set options
@@ -367,7 +367,7 @@ namespace SkyeTracker
 			if (!error) {
 				_config.setDual(doc["d"]);
 				_config.setHasAnemometer(doc["an"]);
-				setInterval(TrackerPendingReset);
+				setInterval(PENDING_RESET);
 			}
 		}
 		else if (strcmp(command, c_SetDateTime) == 0)

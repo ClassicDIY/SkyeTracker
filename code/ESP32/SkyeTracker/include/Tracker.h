@@ -15,6 +15,14 @@ extern BluetoothSerial ESP_BT;
 extern SkyeTracker::Configuration _config;
 extern SkyeTracker::IOT _iot;
 
+// Rate (in ms) at which the tracker will update to the sun's position
+#define POSITION_UPDATE_INTERVAL 60000
+// Configuration changed, reset countdown. Changes in the config will
+// delay so that the actuator doesn't change direction while it's already moving.
+#define PENDING_RESET 3000
+// Used for testing the tracker. Sweep through the day one hour at this interval.
+#define CYCLE_POSITION_UPDATE_INTERVAL 5000
+
 const char c_Track[] = "Track";
 const char c_Cycle[] = "Cycle";
 const char c_Stop[] = "Stop";
