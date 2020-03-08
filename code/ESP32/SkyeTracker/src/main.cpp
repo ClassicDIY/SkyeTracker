@@ -73,7 +73,7 @@ void runWorker()
 			_lastWindEvent = _config.GetTime();
 			_recordedWindSpeedAtLastEvent = windSpeed;
 		}
-		if (windSpeed > 8.0) // wind speed greater than 28.8 km/hour? (8 M/S *3600 S)
+		if (windSpeed > (AnemometerWindSpeedProtection / 3.6)) // wind speed protection
 		{
 			_lastWindEvent = _config.GetTime();
 			_recordedWindSpeedAtLastEvent = windSpeed;
