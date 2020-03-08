@@ -9,7 +9,7 @@
 
 #include <sys/time.h>
 #include "time.h"
-#include "sun.h"
+#include "Sun.h"
 #include "Configuration.h"
 #include "IOT.h"
 #include "Tracker.h"

@@ -3,7 +3,7 @@
 #include <ArduinoJson.h>
 #include <ThreadController.h>
 #include <Thread.h>
-#include "sun.h"
+#include "Sun.h"
 #include "Configuration.h"
 #include "Enumerations.h"
 #include "Position.h"
