@@ -2,6 +2,19 @@
 
 #include "Preferences.h"
 #include "BluetoothSerial.h"
+#define DualAxisEnabled true
+#define  AzimuthMin 90
+#define  AzimuthMax 270
+#define  ElevationMin 0
+#define  ElevationMax 90
+// Location
+#define  LocationLatitude 45.936527
+#define  LocationLongitude -75.091259
+// Actuators
+#define  ActuatorHorizontalLength 12
+#define  ActuatorVerticalLength 8
+#define  ActuatorHorizontalSpeed 31
+#define  ActuatorVerticalSpeed 31
 
 extern BluetoothSerial ESP_BT;
 
