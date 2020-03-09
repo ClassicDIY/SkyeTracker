@@ -153,12 +153,13 @@ void Configuration::Load()
 
 void Configuration::LoadFactoryDefault()
 {
-	setDual(true);
-	setHasAnemometer(false);
-	SetLimits(90, 270, 0, 90);
-	SetActuatorParameters(12, 8, 31, 31);
+	setDual(DualAxisEnabled);
+	setHasAnemometer(AnemometerEnabled);
+	SetLimits(AzimuthMin, AzimuthMax, ElevationMin, ElevationMax);
+	SetActuatorParameters(ActuatorHorizontalLength, ActuatorVerticalLength,
+	    ActuatorHorizontalSpeed, ActuatorVerticalSpeed);
 	//45.936527, -75.091259 Lac Simon
-	SetLocation(45.936527, -75.091259);
+	SetLocation(LocationLatitude, LocationLongitude);
 	Save();
 }
 
