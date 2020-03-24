@@ -25,7 +25,7 @@ namespace SkyeTracker
 		// https://github.com/G6EJD/ESP32-ADC-Accuracy-Improvement-function
 		// and improves the default ADC reading accuracy to within 1%.
 		double sensorVoltage = -0.000000000000016 * pow(reading, 4) +
-		    0.000000000118171 * pow(reading, 3) - 0.000000301211691 * pow(reading, 2) +
+			0.000000000118171 * pow(reading, 3) - 0.000000301211691 * pow(reading, 2) +
 			0.001109019271794 * reading + 0.034143524634089;
 
 		// Convert voltage value to wind speed using range of max and min voltages and wind speed for the anemometer
