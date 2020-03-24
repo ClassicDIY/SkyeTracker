@@ -140,7 +140,7 @@ void setup()
 	_config.Load();
 	_iot.Init();
 	_lastWindEvent = 0;
-	ESP_BT.begin("HC-06"); // backward compatible with Android app
+	ESP_BT.begin(BluetoothDeviceName);
 	while (!ESP_BT.isReady())
 	{
 		;
