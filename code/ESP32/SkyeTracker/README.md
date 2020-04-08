@@ -1,3 +1,13 @@
+# ESP32 version of SkyeTracker 
+
+<p align="center">
+<img src=https://github.com/ClassicDIY/SkyeTracker/blob/master/Pictures/ESP32-pinout-mapping.png width=500>
+</p>
+
+<p>
+Please refer to the <a href="https://github.com/ClassicDIY/SkyeTracker/wiki">SkyeTracker wiki</a> for more information.
+</p>
+
 # Prograqmming setup for the ESP32 version of SkyeTracker
 <p>
 Once you download extract the ZIP file for this project
