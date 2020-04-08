@@ -5,7 +5,7 @@
 namespace SkyeTracker
 {
 
-	Tracker::Tracker(Configuration* config, DS1307* rtc)
+	Tracker::Tracker(Configuration* config, RTC_DS1307* rtc)
 	{
 		_config = config;
 		_rtc = rtc;

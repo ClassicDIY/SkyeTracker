@@ -1,13 +1,12 @@
 #include "Configuration.h"
 #include <util/crc16.h>
-#include <wire.h>
 
 #define DS1307_RAM_SIZE 30
 
 namespace SkyeTracker
 {
 
-	Configuration::Configuration(DS1307* rtc)
+	Configuration::Configuration(RTC_DS1307* rtc)
 	{
 		_rtc = rtc;
 		_isDirty = false;
@@ -109,24 +108,10 @@ namespace SkyeTracker
 		return i;
 	}
 
-	void Configuration::readnvram(uint8_t* buf, uint8_t size, uint8_t address) 
-	{
-		for (uint8_t pos = 0; pos < size; ++pos) {
-			buf[pos] = _rtc->read(address+pos);
-		}
-	}
-
-	void Configuration::writenvram(uint8_t address, uint8_t* buf, uint8_t size) 
-	{
-		for (uint8_t pos = 0; pos < size; ++pos) {
-			_rtc->write(address+pos, buf[pos]);
-		}
-	}
-
 	void Configuration::Load()
 	{
 		byte _buffer[DS1307_RAM_SIZE+1];
-		readnvram(_buffer, DS1307_RAM_SIZE, 0);
+		_rtc->readnvram(_buffer, DS1307_RAM_SIZE, 0);
 		if (CalcChecksum(_buffer) == 0)
 		{
 			Serial.println(F("Checksum passed, loading saved settings"));
@@ -201,6 +186,7 @@ namespace SkyeTracker
 		serialInt(&(_buffer[8]), _maximumElevation);
 		serialFloat(&(_buffer[10]), _latitude);  // arduino nano double is the same as float
 		serialFloat(&(_buffer[14]), _longitude);
+
 		serialInt(&(_buffer[18]), _horizontalLength);
 		serialInt(&(_buffer[20]), _verticalLength);
 		serialInt(&(_buffer[22]), _horizontalSpeed);
@@ -210,7 +196,7 @@ namespace SkyeTracker
 		else
 			_buffer[26] = 0;
 		_buffer[28] = CalcChecksum(_buffer);
-		writenvram(0, _buffer, DS1307_RAM_SIZE);
+		_rtc->writenvram(0, _buffer, DS1307_RAM_SIZE);
 		_isDirty = false;
 		Serial.println(F("Saved settings"));
 		//for (int i = 0; i < DS1307_RAM_SIZE; i++)

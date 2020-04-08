@@ -39,7 +39,7 @@ namespace SkyeTracker
 	class Tracker : public Thread
 	{
 	public:
-		Tracker(Configuration* config, DS1307* rtc);
+		Tracker(Configuration* config, RTC_DS1307* rtc);
 		~Tracker();
 
 		TrackerError _errorState;
@@ -115,7 +115,7 @@ namespace SkyeTracker
 		LinearActuatorNoPot* _azimuth;
 		LinearActuatorNoPot* _elevation;
 
-		DS1307* _rtc;
+		RTC_DS1307* _rtc;
 		Sun* _sun;
 		bool _broadcastPosition;
 		TrackerState _trackerState;

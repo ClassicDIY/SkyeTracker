@@ -8,11 +8,11 @@ namespace SkyeTracker
 	class Configuration
 	{
 	public:
-		Configuration(DS1307* rtc);
+		Configuration(RTC_DS1307* rtc);
 		~Configuration();
 
 	private:
-		DS1307* _rtc;
+		RTC_DS1307* _rtc;
 		bool _dualAxis;
 		bool _hasAnemometer;
 		float _latitude;
@@ -51,9 +51,6 @@ namespace SkyeTracker
 		void Load();
 		void Save();
 		void SendConfiguration();
-		void readnvram(uint8_t* buf, uint8_t size, uint8_t address);
-		void writenvram(uint8_t address, uint8_t* buf, uint8_t size);
-		
 	};
 
 }

@@ -15,7 +15,7 @@ using namespace SkyeTracker;
 
 #define RECEIVE_BUFFER 200
 
-DS1307 _rtc;
+RTC_DS1307 _rtc;
 Configuration _config(&_rtc);
 ThreadController _controller = ThreadController();
 Tracker _tracker(&_config, &_rtc);

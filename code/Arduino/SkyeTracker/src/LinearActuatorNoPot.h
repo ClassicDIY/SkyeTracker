@@ -29,7 +29,7 @@ namespace SkyeTracker
 		int _enableActuator;
 		int _PWMa;
 		int _PWMb;
-		DS1307* _rtc;
+		RTC_DS1307* _rtc;
 		float _inchesPerSecond;
 		float _currentPosition;
 		long _lastTime;
