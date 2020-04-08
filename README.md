@@ -16,7 +16,8 @@ Check the [wiki](https://github.com/ClassicDIY/SkyeTracker/wiki) for more inform
 
 Used the following development tools:
 
-- Visual Studio with PlatformIO IDE extension
+- Visual Studio with PlatformIO IDE extension (ESP32 version)
+- Arduino IDE (Nano version)
 - Android Studio for mobile app development
 - Diptrace for schematic & PCB
 - Sketchup for mechanical drawings
