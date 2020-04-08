@@ -17,6 +17,6 @@ Here is a video tutorial for the VSCode & PlatformIO setup;
 
 Once setup with the PlatformIO extension, use File->Open Folder to open the project selecting the `SkyeTracker-master\code\Arduino\SkyeTracker` folder.
 
-The Arduino type can be set to UNO or NANO in the platform.ini.
+The Arduino type can be set in the platform.ini.
 
 
