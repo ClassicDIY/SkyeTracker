@@ -1,6 +1,10 @@
 #include "Tracker.h"
 #include <math.h>
 #include "LinearActuatorNoPot.h"
+#include <SoftwareSerial.h>
+#include "Trace.h"
+
+extern SoftwareSerial _swSer;
 
 namespace SkyeTracker
 {
@@ -22,10 +26,9 @@ namespace SkyeTracker
 		delete _elevation;
 	}
 
-	void Tracker::Initialize(ThreadController* controller, Print* p)
+	void Tracker::Initialize(ThreadController* controller)
 	{
 		setState(TrackerState_Initializing);
-		_stm = p;
 		_sun = new Sun(_config->getLat(), _config->getLon());
 		DateTime now = _rtc->now();
 		_sun->calcSun(now.year(), now.month(), now.day(), now.hour(), now.minute(), now.second());
@@ -77,7 +80,7 @@ namespace SkyeTracker
 	{
 		if (_errorState != TrackerError_Ok)
 		{
-			traceln(_stm, F("Error detected, Tracker moving to default position"));
+			traceln(&_swSer, F("Error detected, Tracker moving to default position"));
 			// move array to face south as a default position when an error exists
 			Park(true);
 			enabled = false; // don't run worker thread when error exists
@@ -132,13 +135,13 @@ namespace SkyeTracker
 				_elevation->Retract();
 			}
 			_waitingForMorning = true;
-			traceln(_stm, F("Waiting For Morning"));
+			traceln(&_swSer, F("Waiting For Morning"));
 		}
 	}
 
 	void Tracker::TrackToSun()
 	{
-		traceln(_stm, F("TrackToSun "));
+		traceln(&_swSer, F("TrackToSun "));
 		_azimuth->MoveTo(_sun->azimuth());
 		if (_config->isDual())
 		{
@@ -207,7 +210,7 @@ namespace SkyeTracker
 				if (_azimuth->getState() == ActuatorState_Stopped && _elevation->getState() == ActuatorState_Stopped) {
 					cycleHour++;
 					cycleHour %= 24;
-					traceln(_stm, cycleHour);
+					traceln(&_swSer, cycleHour);
 					_sun->calcSun(now.year(), now.month(), now.day(), cycleHour, 0, 0);
 				}
 				break;
@@ -257,7 +260,7 @@ namespace SkyeTracker
 				command[commandIndex++] = input[i];
 				if (commandIndex >= sizeof(command))
 				{
-					traceln(_stm, F("Command overflow!"));
+					traceln(&_swSer, F("Command overflow!"));
 				}
 			}
 			else
@@ -265,15 +268,15 @@ namespace SkyeTracker
 				data[dataIndex++] = input[i];
 				if (dataIndex >= sizeof(data))
 				{
-					traceln(_stm, F("data overflow!"));
+					traceln(&_swSer, F("data overflow!"));
 				}
 			}
 		}
 		command[commandIndex++] = 0;
 		data[dataIndex++] = 0;
-		Serial.print(command);
-		Serial.print("|");
-		Serial.println(data);
+		trace(&_swSer, command);
+		trace(&_swSer, "|");
+		trace(&_swSer, data);
 		if (strcmp(command, c_Track) == 0)
 		{
 			Track();

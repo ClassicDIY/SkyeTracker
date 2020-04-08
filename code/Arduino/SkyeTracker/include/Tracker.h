@@ -43,7 +43,7 @@ namespace SkyeTracker
 		~Tracker();
 
 		TrackerError _errorState;
-		void Initialize(ThreadController* controller, Print* p = NULL);
+		void Initialize(ThreadController* controller);
 		void Track();
 		void Resume();
 		void Park(bool protect);
@@ -53,7 +53,6 @@ namespace SkyeTracker
 		void ProcessCommand(const char* input);
 
 	private:
-		Print* _stm;
 		void InitializeActuators();
 		void Move(Direction dir);
 		void Stop();

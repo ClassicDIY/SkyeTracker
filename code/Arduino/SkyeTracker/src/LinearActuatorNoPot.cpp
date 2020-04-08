@@ -1,5 +1,9 @@
 
 #include "LinearActuatorNoPot.h"
+#include <SoftwareSerial.h>
+#include "Trace.h"
+
+extern SoftwareSerial _swSer;
 
 namespace SkyeTracker
 {
@@ -53,25 +57,25 @@ namespace SkyeTracker
 				enabled = false;
 				_currentPosition = 0;
 				Stop();
-				Serial.println(_name + F(" actuator retracted and initialized"));
+				// Serial.println(_name + F(" actuator retracted and initialized"));
 			}
 		}
 		else
 		{
 			float currentAngle = CurrentAngleFlipped();
 			float delta = abs(currentAngle - _requestedAngle);
-			Serial.print(_name + F(" tracking currentAngle: "));
-			Serial.print(currentAngle);
-			Serial.print(F(" _requestedAngle: "));
-			Serial.print(_requestedAngle);
-			Serial.print(F(" delta: "));
-			Serial.print(delta);
-			Serial.print(F(" _currentPosition: "));
-			Serial.println(_currentPosition);
+			trace(&_swSer, _name + F(" tracking currentAngle: "));
+			traceln(&_swSer, currentAngle);
+			trace(&_swSer, F(" _requestedAngle: "));
+			traceln(&_swSer, _requestedAngle);
+			trace(&_swSer, F(" delta: "));
+			traceln(&_swSer, delta);
+			trace(&_swSer, F(" _currentPosition: "));
+			traceln(&_swSer, _currentPosition);
 			if (delta <= histeresis)
 			{
 				Stop();
-				Serial.println(_name + F(" actuator tracking complete "));
+				traceln(&_swSer, _name + F(" actuator tracking complete "));
 			}
 			else if (currentAngle < _requestedAngle)
 			{
@@ -79,7 +83,7 @@ namespace SkyeTracker
 				{
 					MoveOut();
 					_lastTime = millis();
-					Serial.println(_name + F(" actuator MoveOut "));
+					traceln(&_swSer, _name + F(" actuator MoveOut "));
 				}
 			}
 			else if (currentAngle > _requestedAngle)
@@ -88,7 +92,7 @@ namespace SkyeTracker
 				{
 					MoveIn();
 					_lastTime = millis();
-					Serial.println(_name + F(" actuator MoveIn "));
+					traceln(&_swSer, _name + F(" actuator MoveIn "));
 				}
 			}
 			long now = millis();
@@ -174,10 +178,10 @@ namespace SkyeTracker
 		angle = FlipAngle(angle);
 		if (abs(angle - CurrentAngleFlipped()) > POSITIONINTERVAL)
 		{
-			Serial.print(F("Move "));
-			Serial.print(_name);
-			Serial.print(F(" to: "));
-			Serial.println(angle);
+			trace(&_swSer, F("Move "));
+			trace(&_swSer, _name);
+			trace(&_swSer, F(" to: "));
+			traceln(&_swSer, angle);
 			if (angle > _extendedAngle)
 			{
 				angle = _extendedAngle;

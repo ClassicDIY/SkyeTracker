@@ -21,8 +21,7 @@ ThreadController _controller = ThreadController();
 Tracker _tracker(&_config, &_rtc);
 Anemometer _anemometer(A3);
 Thread* _workerThread = new Thread();
-SoftwareSerial _swSer(12, 13, false);
-
+SoftwareSerial _swSer(8, 9, false);
 char* _receiveBuffer;
 int _receiveIndex = 0;
 int _protectCountdown = 0;
@@ -124,7 +123,7 @@ void setup()
 	_workerThread->setInterval(2000);
 	_controller.add(_workerThread);
 	traceln(&_swSer, F("Initializing tracker"));
-	_tracker.Initialize(&_controller, &_swSer);
+	_tracker.Initialize(&_controller);
 	_tracker.Track();
 	_receiveBuffer = (char*)malloc(RECEIVE_BUFFER);
 	//freeMem("At end of setup");

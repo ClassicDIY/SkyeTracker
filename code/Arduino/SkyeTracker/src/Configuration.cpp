@@ -1,5 +1,9 @@
 #include "Configuration.h"
+#include <SoftwareSerial.h>
 #include <util/crc16.h>
+#include "Trace.h"
+
+extern SoftwareSerial _swSer;
 
 #define DS1307_RAM_SIZE 30
 
@@ -114,7 +118,7 @@ namespace SkyeTracker
 		_rtc->readnvram(_buffer, DS1307_RAM_SIZE, 0);
 		if (CalcChecksum(_buffer) == 0)
 		{
-			Serial.println(F("Checksum passed, loading saved settings"));
+			traceln(&_swSer, F("Checksum passed, loading saved settings"));
 			if (_buffer[0] == 1)
 				_dualAxis = true;
 			else
@@ -137,7 +141,7 @@ namespace SkyeTracker
 		}
 		else
 		{
-			Serial.println(F("Checksum failed, loading default settings"));
+			traceln(&_swSer, F("Checksum failed, loading default settings"));
 			LoadFactoryDefault();
 		}
 	}
@@ -198,16 +202,7 @@ namespace SkyeTracker
 		_buffer[28] = CalcChecksum(_buffer);
 		_rtc->writenvram(0, _buffer, DS1307_RAM_SIZE);
 		_isDirty = false;
-		Serial.println(F("Saved settings"));
-		//for (int i = 0; i < DS1307_RAM_SIZE; i++)
-		//{
-		//	Serial.print(i);
-		//	Serial.print(":");
-		//	Serial.print(_buffer[i], HEX);
-		//	Serial.print(" ");
-		//}
-
-		//CalcChecksum(_buffer);
+		traceln(&_swSer, F("Saved settings"));
 	}
 
 	byte Configuration::CalcChecksum(byte _buffer[])
@@ -216,8 +211,6 @@ namespace SkyeTracker
 		for (int i = 0; i < DS1307_RAM_SIZE; i++)
 			crc += _buffer[i];
 		crc = -crc;
-		//Serial.print(F("Checksum cal: "));
-		//Serial.println(crc, HEX);
 		return crc;
 	}
 
