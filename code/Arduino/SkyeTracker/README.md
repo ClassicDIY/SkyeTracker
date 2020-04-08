@@ -17,11 +17,6 @@ Here is a video tutorial for the VSCode & PlatformIO setup;
 
 Once setup with the PlatformIO extension, use File->Open Folder to open the project selecting the `SkyeTracker-master\code\Arduino\SkyeTracker` folder.
 
-The Log level can be set in the platform.ini file by setting APP_LOG_LEVEL to one of the following;
+The Arduino type can be set to UNO or NANO in the platform.ini.
 
-* #define ARDUHAL_LOG_LEVEL_NONE       (0)
-* #define ARDUHAL_LOG_LEVEL_ERROR      (1)
-* #define ARDUHAL_LOG_LEVEL_WARN       (2)
-* #define ARDUHAL_LOG_LEVEL_INFO       (3)
-* #define ARDUHAL_LOG_LEVEL_DEBUG      (4)
-* #define ARDUHAL_LOG_LEVEL_VERBOSE    (5)
+
