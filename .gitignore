@@ -54,3 +54,4 @@ code/Android/app/src/debug/res/values/google_maps_api.xml
 code/Android/app/src/release/res/values/google_maps_api.xml
 code/Android/app/src/release/res/values/google_maps_api.xml
 *.iml
+code/Android/app/app.iml
