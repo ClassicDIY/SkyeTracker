@@ -1,4 +1,9 @@
 # SkyeTracker
+
+[![GitHub All Releases](https://img.shields.io/github/downloads/ClassicDIY/SkyeTracker/total?style=for-the-badge)](https://https://github.com/ClassicDIY/SkyeTracker/releases)
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/ClassicDIY/SkyeTracker?style=for-the-badge)](https://github.com/ClassicDIY/SkyeTracker/releases)
+[![https://www.buymeacoffee.com/r4K2HIB](https://img.shields.io/badge/Donate-Buy%20Me%20a%20coffee-orange?style=for-the-badge)](https://www.buymeacoffee.com/r4K2HIB)
+
 Dual Axis solar tracker for Arduino and ESP32.
 
 This project uses a pair of linear actuators to move a set of solar panels so that they face the sun throughout the day.
