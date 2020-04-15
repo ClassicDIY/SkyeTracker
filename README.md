@@ -25,7 +25,7 @@ Check the [wiki](https://github.com/ClassicDIY/SkyeTracker/wiki) for more inform
 
 ## SkyeTracker PCB (Arduino Nano)
 <p align="center">
-  <img src="./Pictures/IMG_20151129_100732.jpg " width="400"/>
+  <img src="./Pictures/pcb.jpg " width="400"/>
 </p>
 
 Used the following development tools:
