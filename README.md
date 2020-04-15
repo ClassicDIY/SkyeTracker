@@ -24,8 +24,11 @@ Check the [wiki](https://github.com/ClassicDIY/SkyeTracker/wiki) for more inform
 </p>
 
 ## SkyeTracker PCB (Arduino Nano)
+
+### There are implementations for both Arduino and ESP32 devices.
+
 <p align="center">
-  <img src="./Pictures/pcb.png " width="400"/>
+  <img src="./Pictures/pcb.png " width="400">
 </p>
 
 Used the following development tools:
