@@ -1,7 +1,5 @@
 # SkyeTracker
 
-<a href='https://play.google.com/store/apps/details?id=com.skye.skyetracker&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' width=200/></a>
-
 [![GitHub All Releases](https://img.shields.io/github/downloads/ClassicDIY/SkyeTracker/total?style=for-the-badge)](https://https://github.com/ClassicDIY/SkyeTracker/releases)
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/ClassicDIY/SkyeTracker?style=for-the-badge)](https://github.com/ClassicDIY/SkyeTracker/releases)
 [![https://www.buymeacoffee.com/r4K2HIB](https://img.shields.io/badge/Donate-Buy%20Me%20a%20coffee-orange?style=for-the-badge)](https://www.buymeacoffee.com/r4K2HIB)
@@ -16,6 +14,12 @@ Check the [wiki](https://github.com/ClassicDIY/SkyeTracker/wiki) for more inform
 <p align="center">
   <img src="./Pictures/IMG_20140823_183240.jpg" width="650"/>
 </p>
+
+## SkyeTracker app
+
+<a href='https://play.google.com/store/apps/details?id=com.skye.skyetracker&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' width=200/></a>
+
+<img src="https://github.com/ClassicDIY/SkyeTracker/blob/master/Pictures/Move%20Tab.png" alt="SkyeTracker App" width="400">
 
 <p align="center">
   <img src="./Pictures/IMG_20151129_100732.jpg " width="650"/>
