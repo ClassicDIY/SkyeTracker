@@ -19,7 +19,9 @@ Check the [wiki](https://github.com/ClassicDIY/SkyeTracker/wiki) for more inform
 
 <a href='https://play.google.com/store/apps/details?id=com.skye.skyetracker&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' width=200/></a>
 
+<p align="center">
 <img src="./Pictures/Move%20Tab.png" alt="SkyeTracker App" width="400">
+</p>
 
 ## SkyeTracker PCB (Arduino Nano)
 <p align="center">
