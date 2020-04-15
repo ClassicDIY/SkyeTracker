@@ -36,6 +36,9 @@ proguard/
 *.tinyresources
 *.resources
 
+# macOS
+.DS_Store
+
 # Visual Studio/Visual Micro
 *.pe
 *.pdbx
