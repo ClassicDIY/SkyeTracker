@@ -12,7 +12,7 @@ Knowing the latitude, longitude and the date/time, the software calculates the a
 Check the [wiki](https://github.com/ClassicDIY/SkyeTracker/wiki) for more information.
 
 <p align="center">
-  <img src="./Pictures/IMG_20140823_183240.jpg" width="650"/>
+  <img src="./Pictures/IMG_20140823_183240.jpg" width="400"/>
 </p>
 
 ## SkyeTracker app
@@ -21,8 +21,9 @@ Check the [wiki](https://github.com/ClassicDIY/SkyeTracker/wiki) for more inform
 
 <img src="https://github.com/ClassicDIY/SkyeTracker/blob/master/Pictures/Move%20Tab.png" alt="SkyeTracker App" width="400">
 
+## SkyeTracker PCB (Arduino Nano)
 <p align="center">
-  <img src="./Pictures/IMG_20151129_100732.jpg " width="650"/>
+  <img src="./Pictures/IMG_20151129_100732.jpg " width="400"/>
 </p>
 
 Used the following development tools:
