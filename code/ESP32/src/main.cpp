@@ -73,19 +73,22 @@ void runWorker()
 			_lastWindEvent = _config.GetTime();
 			_recordedWindSpeedAtLastEvent = windSpeed;
 		}
-		if (windSpeed > (AnemometerWindSpeedProtection / 3.6)) // wind speed greater than 28.8 km/hour? (8 M/S *3600 S)
+		if (_tracker.getState() == TrackerState_Tracking)
 		{
-			_lastWindEvent = _config.GetTime();
-			_recordedWindSpeedAtLastEvent = windSpeed;
-			_tracker.Park(true);
-			_protectCountdown = 300; // 10 minute countdown to resume tracking
-		}
-		else if (--_protectCountdown <= 0)
-		{
-			_protectCountdown = 0;
-			if (_tracker.getState() == TrackerState_Parked)
+			if (windSpeed > (AnemometerWindSpeedProtection / 3.6)) // wind speed greater than 28.8 km/hour? (8 M/S *3600 S)
 			{
-				_tracker.Resume();
+				_lastWindEvent = _config.GetTime();
+				_recordedWindSpeedAtLastEvent = windSpeed;
+				_tracker.Park(true);
+				_protectCountdown = 300; // 10 minute countdown to resume tracking
+			}
+			else if (--_protectCountdown <= 0)
+			{
+				_protectCountdown = 0;
+				if (_tracker.getState() == TrackerState_Parked)
+				{
+					_tracker.Resume();
+				}
 			}
 		}
 		if (broadcasting && ESP_BT.hasClient())
