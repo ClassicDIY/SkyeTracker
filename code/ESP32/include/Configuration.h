@@ -2,7 +2,10 @@
 
 #include "Preferences.h"
 #include "BluetoothSerial.h"
+
+// Factory default settings
 #define DualAxisEnabled true
+#define AnemometerEnabled true
 #define  AzimuthMin 90
 #define  AzimuthMax 270
 #define  ElevationMin 0

@@ -73,7 +73,7 @@ void runWorker()
 			_lastWindEvent = _config.GetTime();
 			_recordedWindSpeedAtLastEvent = windSpeed;
 		}
-		if (windSpeed > (AnemometerWindSpeedProtection / 3.6)) // wind speed protection
+		if (windSpeed > (AnemometerWindSpeedProtection / 3.6)) // wind speed greater than 28.8 km/hour? (8 M/S *3600 S)
 		{
 			_lastWindEvent = _config.GetTime();
 			_recordedWindSpeedAtLastEvent = windSpeed;
@@ -140,7 +140,7 @@ void setup()
 	_config.Load();
 	_iot.Init();
 	_lastWindEvent = 0;
-	ESP_BT.begin(BluetoothDeviceName);
+	ESP_BT.begin("HC-06"); // name must be HC-06 to work with Android App
 	while (!ESP_BT.isReady())
 	{
 		;

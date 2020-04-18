@@ -32,9 +32,9 @@ namespace SkyeTracker
 		_sun = new Sun(_config->getLat(), _config->getLon());
 		DateTime now = _rtc->now();
 		_sun->calcSun(now.year(), now.month(), now.day(), now.hour(), now.minute(), now.second());
-		_azimuth = new LinearActuatorNoPot("Horizontal", PIN7, PIN2, PIN3);
+		_azimuth = new LinearActuatorNoPot("Horizontal", ENABLE_H, PWMa_H, PWMb_H);
 		controller->add(_azimuth);
-		_elevation = new LinearActuatorNoPot("Vertical", PIN6, PIN4, PIN5);
+		_elevation = new LinearActuatorNoPot("Vertical", ENABLE_V, PWMa_V, PWMb_V);
 		controller->add(_elevation);
 		controller->add(this);
 		InitializeActuators();

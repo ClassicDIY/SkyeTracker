@@ -19,11 +19,11 @@ namespace SkyeTracker
 		float sensorVoltage = sensorValue * voltageConversionConstant; //Convert sensor value to actual voltage
 
 																 //Convert voltage value to wind speed using range of max and min voltages and wind speed for the anemometer
-		if (sensorVoltage <= voltageMin) {
+		if (sensorVoltage <= AnemometerVoltageMin) {
 			return 0; //Check if voltage is below minimum value. If so, set wind speed to zero.
 		}
 		else {
-			return (sensorVoltage - voltageMin)*windSpeedMax / (voltageMax - voltageMin); //For voltages above minimum value, use the linear relationship to calculate wind speed.
+			return (sensorVoltage - AnemometerVoltageMin)*AnemometerWindSpeedMax / (AnemometerVoltageMax - AnemometerVoltageMin); //For voltages above minimum value, use the linear relationship to calculate wind speed.
 		}
 	}
 }
