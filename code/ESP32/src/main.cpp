@@ -143,7 +143,8 @@ void setup()
 	_config.Load();
 	_iot.Init();
 	_lastWindEvent = 0;
-	ESP_BT.begin("HC-06"); // name must be HC-06 to work with Android App
+	// ESP_BT.begin("HC-06"); 
+	ESP_BT.begin(BluetoothDeviceName);
 	while (!ESP_BT.isReady())
 	{
 		;
