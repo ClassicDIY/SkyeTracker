@@ -140,8 +140,8 @@ void setup()
 		; // wait for serial port to connect.
 	}
 	logi("Loading configuration");
-	_config.Load();
 	_iot.Init();
+	_config.Load();
 	_lastWindEvent = 0;
 	// ESP_BT.begin("HC-06"); 
 	ESP_BT.begin(BluetoothDeviceName);
@@ -156,6 +156,7 @@ void setup()
 	_controller.add(_workerThread);
 	logi("Initializing tracker");
 	_tracker.Initialize(&_controller);
+
 	_tracker.Track();
 	_receiveBuffer = (char *)malloc(RECEIVE_BUFFER);
 	init_watchdog();

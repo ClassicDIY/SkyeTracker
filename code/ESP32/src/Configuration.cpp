@@ -111,8 +111,16 @@ int deserialInt(byte *buffer)
 
 void Configuration::Load()
 {
+
 	if (_preferences.begin("SkyeTracker", false))
 	{
+		if (digitalRead(FACTORY_RESET_PIN) == LOW)
+		{
+			logi("FACTORY_RESET_PIN LOW, loading default settings");
+			LoadFactoryDefault();
+			_preferences.clear();
+			Save();
+		}
 		byte _buffer[STORAGE_SIZE + 1];
 		_preferences.getBytes("Configuration", _buffer, STORAGE_SIZE);
 		if (CalcChecksum(_buffer) == 0)
@@ -153,14 +161,13 @@ void Configuration::Load()
 
 void Configuration::LoadFactoryDefault()
 {
+	logi("loading factory default settings");
 	setDual(DualAxisEnabled);
 	setHasAnemometer(AnemometerEnabled);
 	SetLimits(AzimuthMin, AzimuthMax, ElevationMin, ElevationMax);
 	SetActuatorParameters(ActuatorHorizontalLength, ActuatorVerticalLength,
-	    ActuatorHorizontalSpeed, ActuatorVerticalSpeed);
-	//45.936527, -75.091259 Lac Simon
+    ActuatorHorizontalSpeed, ActuatorVerticalSpeed);
 	SetLocation(LocationLatitude, LocationLongitude);
-	Save();
 }
 
 void serialFloat(byte *buffer, float f)

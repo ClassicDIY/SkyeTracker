@@ -13,8 +13,8 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.content.PermissionChecker;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.core.content.PermissionChecker;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -61,35 +61,28 @@ public class LocationTab extends Fragment {
         btnUploadLocation = (Button) rootView.findViewById(R.id.btnUploadLocation);
         btnUploadLocation.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Gson gson = new Gson();
-
-                    ConfigLocation configLocation = new ConfigLocation(latitude, longitude);
-                    String json = "SetC|" + gson.toJson(configLocation);
-                    MainApplication.SendCommand(json);
+            if (selfPermissionGranted(Manifest.permission.ACCESS_FINE_LOCATION) == false) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    requestPermissions(INITIAL_PERMS, INITIAL_REQUEST);
+                }
             }
-        });
+            LocationManager lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+            if (selfPermissionGranted(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                @SuppressLint("MissingPermission") Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
-        btnSetLocation = (Button) rootView.findViewById(R.id.btnSetCurrentLocation);
-        btnSetLocation.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if (selfPermissionGranted(Manifest.permission.ACCESS_FINE_LOCATION) == false) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        requestPermissions(INITIAL_PERMS, INITIAL_REQUEST);
-                    }
+                if (location == null){
+                    Toast.makeText(getActivity(),"Location Not found",Toast.LENGTH_LONG).show();
+                }else {
+                    lat.setText(String.format("%.6f", location.getLatitude()));
+                    lon.setText(String.format("%.6f", location.getLongitude()));
+                    longitude = location.getLongitude();
+                    latitude = location.getLatitude();
                 }
-                LocationManager lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-                if (selfPermissionGranted(Manifest.permission.ACCESS_FINE_LOCATION)) {
-                    @SuppressLint("MissingPermission") Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
-                    if (location == null){
-                        Toast.makeText(getActivity(),"Location Not found",Toast.LENGTH_LONG).show();
-                    }else {
-                        lat.setText(String.format("%.6f", location.getLatitude()));
-                        lon.setText(String.format("%.6f", location.getLongitude()));
-                        longitude = location.getLongitude();
-                        latitude = location.getLatitude();
-                    }
-                }
+            }
+            Gson gson = new Gson();
+            ConfigLocation configLocation = new ConfigLocation(latitude, longitude);
+            String json = "SetC|" + gson.toJson(configLocation);
+            MainApplication.SendCommand(json);
             }
         });
 

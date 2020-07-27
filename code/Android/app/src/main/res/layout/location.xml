@@ -82,22 +82,13 @@
                 </LinearLayout>
 
                 <Button
-                    android:id="@+id/btnSetCurrentLocation"
-                    style="@style/btnStyleGenoa"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="25dp"
-                    android:text="Set Current Location" />
-
-                <Button
                     android:id="@+id/btnUploadLocation"
                     style="@style/btnStyleGenoa"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_marginTop="25dp"
-                    android:text="Upload Location" />
+                    android:text="Upload Current Location" />
 
             </LinearLayout>
         </LinearLayout>

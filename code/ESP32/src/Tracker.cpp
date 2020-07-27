@@ -376,6 +376,7 @@ namespace SkyeTracker
 			tv.tv_sec = atol(data);
 			tv.tv_usec = 0;
 			settimeofday(&tv, NULL);
+			_cycleTime = _config.GetTime();
 			printLocalTime();
 		}
 		else if (strcmp(command, c_MoveTo) == 0)

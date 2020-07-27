@@ -23,7 +23,7 @@
                 style="@style/HeaderLabel"
                 android:layout_gravity="center_horizontal"
                 android:paddingBottom="10dp"
-                android:text="Tracker Date/Time UTC" />
+                android:text="Tracker Date/Time" />
 
             <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="fill_parent"
@@ -42,37 +42,15 @@
                     android:orientation="horizontal">
 
 
-                    <DatePicker
-                        android:id="@+id/datePicker"
-                        style="@style/NumberPickerLayout"
+                    <TextView
+                        android:id="@+id/dateTextView"
+                        style="@style/MapInfo"
                         android:layout_height="wrap_content"
                         android:layout_width="0dp"
-                        android:layout_weight="35"
-                        android:padding="-40dp"
-                        android:calendarViewShown="false"
-                        android:datePickerMode="spinner"
-                        android:spinnersShown="true" />
-
-                    <TimePicker
-                        android:id="@+id/timePicker"
-                        style="@style/NumberPickerLayout"
-                        android:layout_height="wrap_content"
-                        android:layout_width="0dp"
-                        android:layout_weight="15"
-                        android:padding="-40dp"
-                        android:numbersTextColor="@color/Black" />
+                        android:layout_weight="35"/>
 
 
                 </LinearLayout>
-
-                <Button
-                    android:id="@+id/btnSyncTime"
-                    style="@style/btnStyleGenoa"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="25dp"
-                    android:text="Set Current Date/Time" />
 
                 <Button
                     android:id="@+id/btnUploadDateTime"
@@ -81,7 +59,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_marginTop="25dp"
-                    android:text="Upload Date/Time" />
+                    android:text="Upload Current Date/Time" />
 
             </LinearLayout>
         </LinearLayout>

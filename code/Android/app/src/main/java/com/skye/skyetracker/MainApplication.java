@@ -3,7 +3,7 @@ package com.skye.skyetracker;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 /**
  * Created by Graham on 20/08/2014.

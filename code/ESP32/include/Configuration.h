@@ -11,8 +11,8 @@
 #define  ElevationMin 0
 #define  ElevationMax 90
 // Location
-#define  LocationLatitude 45.936527
-#define  LocationLongitude -75.091259
+#define  LocationLatitude 51.5074
+#define  LocationLongitude 0.1278
 // Actuators
 #define  ActuatorHorizontalLength 12
 #define  ActuatorVerticalLength 8
@@ -43,12 +43,13 @@ namespace SkyeTracker
 		int _verticalLength;
 		int _horizontalSpeed;
 		int _verticalSpeed;
-		void LoadFactoryDefault();
+		
 		byte CalcChecksum(byte _buffer[]);
 		bool _isDirty;
 		
 
 	public:
+		void LoadFactoryDefault();
 		bool isDirty() { return _isDirty; }
 		bool isDual() { return _dualAxis; }
 		bool hasAnemometer() { return _hasAnemometer; }
