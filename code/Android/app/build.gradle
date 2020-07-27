@@ -8,8 +8,6 @@ android {
         applicationId "com.skye.skyetracker"
         minSdkVersion 16
         targetSdkVersion 28
-        versionCode 240
-        versionName "2.4.0"
     }
 
     signingConfigs {
