@@ -165,8 +165,7 @@ void Configuration::LoadFactoryDefault()
 	setDual(DualAxisEnabled);
 	setHasAnemometer(AnemometerEnabled);
 	SetLimits(AzimuthMin, AzimuthMax, ElevationMin, ElevationMax);
-	SetActuatorParameters(ActuatorHorizontalLength, ActuatorVerticalLength,
-    ActuatorHorizontalSpeed, ActuatorVerticalSpeed);
+	SetActuatorParameters(ActuatorHorizontalLength, ActuatorVerticalLength, ActuatorHorizontalSpeed, ActuatorVerticalSpeed);
 	SetLocation(LocationLatitude, LocationLongitude);
 }
 
