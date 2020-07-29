@@ -15,6 +15,7 @@ Check the [wiki](https://github.com/ClassicDIY/SkyeTracker/wiki) for more inform
 
 <p align="center">
   <img src="./Pictures/IMG_20140823_183240.jpg" width="400"/>
+  <img src="./Pictures/AssembledWithAnemometer.jpg" width="400"/>
 </p>
 
 ## SkyeTracker app
