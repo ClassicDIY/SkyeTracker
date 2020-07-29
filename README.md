@@ -6,7 +6,7 @@
 [![GitHub All Releases](https://img.shields.io/github/downloads/ClassicDIY/SkyeTracker/total?style=for-the-badge)](https://github.com/ClassicDIY/SkyeTracker/releases)
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/ClassicDIY/SkyeTracker?style=for-the-badge)](https://github.com/ClassicDIY/SkyeTracker/releases)
 
-Dual Axis solar tracker for Arduino and ESP32.
+## Dual Axis solar tracker.
 
 This project uses a pair of linear actuators to move a set of solar panels so that they face the sun throughout the day.
 Knowing the latitude, longitude and the date/time, the software calculates the azimuth and elevation of the sun. The system is setup and calibrated using an Android app that communicates with the device using the Bluetooth interface. It has support for an anemometer, moving the solar panel array to horizontal position when the wind exceeds 30km/h.
