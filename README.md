@@ -26,7 +26,7 @@ Check the [wiki](https://github.com/ClassicDIY/SkyeTracker/wiki) for more inform
 <img src="./Pictures/Move%20Tab.png" alt="SkyeTracker App" width="400">
 </p>
 
-## SkyeTracker PCB (Arduino Nano)
+## SkyeTracker Wiring (ESP32)
 
 ### There are implementations for both Arduino and ESP32 devices.
 
