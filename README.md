@@ -31,7 +31,7 @@ Check the [wiki](https://github.com/ClassicDIY/SkyeTracker/wiki) for more inform
 ### There are implementations for both Arduino and ESP32 devices.
 
 <p align="center">
-  <img src="./Pictures/pcb.png " width="400">
+  <img src="./Pictures/ESP%20Setup.PNG" width="800">
 </p>
 
 Used the following development tools:
