@@ -35,11 +35,12 @@ Check the [wiki](https://github.com/ClassicDIY/SkyeTracker/wiki) for more inform
   <img src="./Pictures/ESP%20Setup.PNG" width="800">
 </p>
 
-Used the following development tools:
+## Development tools:
 
-- Visual Studio Code with PlatformIO IDE extension.
-- Android Studio for mobile app development
-- Diptrace for schematic & PCB
-- Sketchup for mechanical drawings
-
+<ul>
+  <li>Visual Studio Code with PlatformIO IDE extension.</li>
+  <li>Android Studio for mobile app development.</li>
+  <li>Diptrace for schematic & PCB (NANO version).</li>
+  <li>Sketchup for mechanical drawings.</li>
+</ul>
 
