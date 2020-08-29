@@ -28,7 +28,7 @@ public class DateTimeTab extends Fragment {
     TextView dateTextView;
     Button btnUploadDateTime;
     Context context;
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEEE, dd-MMM-yyyy hh-mm-ss a");
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MMM-yyyy hh-mm-ss a");
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,  Bundle savedInstanceState) {
@@ -78,7 +78,6 @@ public class DateTimeTab extends Fragment {
                 Calendar trackerDateTime = Calendar.getInstance(TimeZone.getTimeZone("gmt"));
                 trackerDateTime.setTimeInMillis(dv);
                 dateTextView.setText(simpleDateFormat.format(trackerDateTime.getTime()));
-
             }
             catch (Exception ex) {
                 ex.printStackTrace();

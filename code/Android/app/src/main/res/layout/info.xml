@@ -126,7 +126,7 @@
 
                 <TextView
                     style="@style/InfoLabel"
-                    android:text="Date/Time (UTC): " />
+                    android:text="Date/Time: " />
 
                 <TextView
                     android:id="@+id/textDateTime"

@@ -16,6 +16,7 @@ import android.widget.TextView;
 import com.google.gson.Gson;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -30,6 +31,7 @@ public class InfoTab extends Fragment {
     TextView textLatitude, textDateTime, textHighWindSpeed, textLongitude, textArrayAzimuth, textArrayElevation, textSunAzimuth;
     TextView textSunElevation, textMinAzimuth, textMaxAzimuth, textMinElevation, textMaxElevation, textTrackerState, textTrackerError, textHorizontalActuatorPosition, textVerticalActuatorPosition;
     Context context;
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MMM-yyyy hh-mm-ss a");
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -198,12 +200,11 @@ public class InfoTab extends Fragment {
             String json = intent.getStringExtra("json");
             Gson gson = new Gson();
             try {
-                TimeTransfer timeTransfer = gson.fromJson(json, TimeTransfer.class );
+                TimeTransfer timeTransfer = gson.fromJson(json, TimeTransfer.class);
                 long dv = Long.valueOf(timeTransfer.sT)*1000;// its need to be in milisecond
-                TimeZone tz = TimeZone.getDefault();
-                Date df = new java.util.Date(dv - tz.getOffset(dv));
-                String vv = new SimpleDateFormat("MM dd, yyyy kk:mm").format(df);
-                textDateTime.setText(vv);
+                Calendar trackerDateTime = Calendar.getInstance(TimeZone.getTimeZone("gmt"));
+                trackerDateTime.setTimeInMillis(dv);
+                textDateTime.setText(simpleDateFormat.format(trackerDateTime.getTime()));
             }
             catch (Exception ex) {
                 ex.printStackTrace();
@@ -221,9 +222,9 @@ public class InfoTab extends Fragment {
                 long dv = Long.valueOf(windTransfer.sT)*1000;// its need to be in milisecond
                 float sH = Float.valueOf(windTransfer.sH); // meters per second
                 sH *= 3.6;
-                TimeZone tz = TimeZone.getDefault();
-                Date df = new java.util.Date(dv - tz.getOffset(dv));
-                String vv = new SimpleDateFormat("MM dd, yyyy kk:mm").format(df);
+                Calendar windDateTime = Calendar.getInstance(TimeZone.getTimeZone("gmt"));
+                windDateTime.setTimeInMillis(dv);
+                String vv = simpleDateFormat.format(windDateTime.getTime());
                 textHighWindSpeed.setText(String.format("%.1f km/h @ %s", sH, vv));
                 float sC = Float.valueOf(windTransfer.sC); // meters per second
                 sC *= 3.6;
