@@ -3,6 +3,8 @@
 |If you find this project useful or interesting, please help support further development!|[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=graham.a.ross%40gmail.com&item_name=Support+SkyeTracker+development&currency_code=USD&source=url)|
 |---|---|
 
+[![HitCount](http://hits.dwyl.com/ClassicDIY/SkyeTracker.svg)](http://hits.dwyl.com/ClassicDIY/SkyeTracker)
+
 [![GitHub All Releases](https://img.shields.io/github/downloads/ClassicDIY/SkyeTracker/total?style=for-the-badge)](https://github.com/ClassicDIY/SkyeTracker/releases)
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/ClassicDIY/SkyeTracker?style=for-the-badge)](https://github.com/ClassicDIY/SkyeTracker/releases)
 
