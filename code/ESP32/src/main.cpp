@@ -82,14 +82,11 @@ void runWorker()
 				_tracker.Park(true);
 				_protectCountdown = 300; // 10 minute countdown to resume tracking
 			}
-			else if (--_protectCountdown <= 0)
-			{
-				_protectCountdown = 0;
-				if (_tracker.getState() == TrackerState_Parked)
-				{
-					_tracker.Resume();
-				}
-			}
+		}
+		if (_tracker.getState() == TrackerState_Parked && --_protectCountdown <= 0)
+		{
+			_protectCountdown = 0;
+			_tracker.Resume();
 		}
 		if (broadcasting && ESP_BT.hasClient())
 		{
