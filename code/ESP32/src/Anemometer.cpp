@@ -15,7 +15,7 @@ namespace SkyeTracker
 	// Wind speed in meters per second
 	float Anemometer::WindSpeed()
 	{
-		// Get a value between 0 and 1023 from the analog pin connected to the anemometer
+		// Get a value between 0 and 4095 from the analog pin connected to the anemometer
 		double reading = analogRead(_sensorPin);
 		if (reading < 1 || reading > ADC_Resolution)
 		{
