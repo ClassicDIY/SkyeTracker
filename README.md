@@ -33,7 +33,7 @@ Check the [wiki](https://github.com/ClassicDIY/SkyeTracker/wiki) for more inform
 
 ### There are implementations for both Arduino and ESP32 devices.
 
-Check the [ESP32 wiki](https://github.com/ClassicDIY/SkyeTracker/wiki/3---ESP32) for more information.
+Check the [wiki](https://github.com/ClassicDIY/SkyeTracker/wiki/3---ESP32) for updated information on the ESP32 implementation.
 
 <p align="center">
   <img src="./Pictures/Prototype_ESP32.PNG" width="800">
