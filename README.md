@@ -13,7 +13,7 @@
 This project uses a pair of linear actuators to move a set of solar panels so that they face the sun throughout the day.
 Knowing the latitude, longitude and the date/time, the software calculates the azimuth and elevation of the sun. The system is setup and calibrated using an Android app that communicates with the device using the Bluetooth interface. It has support for an anemometer, moving the solar panel array to horizontal position when the wind exceeds 30km/h.
 
-Check the [wiki](https://github.com/ClassicDIY/SkyeTracker/wiki/3---ESP32-wiring-diagram) for more information.
+Check the <a href='https://github.com/ClassicDIY/SkyeTracker/wiki/3---ESP32-wiring-diagram'> wiki </a> for more information.
 
 <p align="center">
   <img src="./Pictures/IMG_20140823_183240.jpg" width="400"/>
