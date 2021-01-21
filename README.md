@@ -15,7 +15,7 @@ Knowing the latitude, longitude and the date/time, the software calculates the a
 
 Check the <a href='https://github.com/ClassicDIY/SkyeTracker/wiki/3---ESP32-wiring-diagram'> wiki </a> for more information.
 
-Videos <a href='https://www.youtube.com/playlist?list=PLblHpNAh7b6LoXEqofkJhKn6jD81Y85qT'>
+Here are some <a href='https://www.youtube.com/playlist?list=PLblHpNAh7b6LoXEqofkJhKn6jD81Y85qT'> videos </a>.
 
 <p align="center">
   <img src="./Pictures/IMG_20140823_183240.jpg" width="400"/>
