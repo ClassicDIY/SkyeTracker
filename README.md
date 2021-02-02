@@ -35,7 +35,7 @@ Here are some <a href='https://www.youtube.com/playlist?list=PLblHpNAh7b6LoXEqof
 
 ### There are implementations for both Arduino and ESP32 devices.
 
-Check the [wiki](https://github.com/ClassicDIY/SkyeTracker/wiki/3---ESP32) for updated information on the ESP32 implementation.
+Check the [wiki](https://github.com/ClassicDIY/SkyeTracker/wiki/3---ESP32-wiring-diagram) for updated information on the ESP32 implementation.
 
 <p align="center">
   <img src="./Pictures/Prototype_ESP32.PNG" width="800">
