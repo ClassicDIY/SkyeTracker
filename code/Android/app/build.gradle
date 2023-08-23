@@ -1,13 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "28.0.3"
+    compileSdkVersion 33
 
     defaultConfig {
         applicationId "com.skye.skyetracker"
         minSdkVersion 15
-        targetSdkVersion 30
+        targetSdkVersion 33
     }
 
     signingConfigs {
@@ -27,6 +26,7 @@ android {
 
         }
     }
+    namespace 'com.skye.skyetracker'
 }
 
 dependencies {
