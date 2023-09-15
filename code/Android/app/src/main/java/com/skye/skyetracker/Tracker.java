@@ -1,5 +1,7 @@
 package com.skye.skyetracker;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.IntentService;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -8,9 +10,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Build;
+import android.content.pm.PackageManager;
 import android.os.Handler;
+
+import androidx.core.app.ActivityCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import android.util.Log;
 import android.widget.Toast;
 
@@ -19,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -78,6 +84,7 @@ public class Tracker extends IntentService {
         startBluetoothStateBroadcast();
         LocalBroadcastManager.getInstance(getBaseContext()).registerReceiver(mCommandReceiver, new IntentFilter("com.skye.skyetracker.Write"));
     }
+
     @Override
     protected void onHandleIntent(Intent intent) {
         Log.d(Constants.TAG, String.format("Tracker onHandleIntent action: %s", intent.getAction()));
@@ -140,7 +147,7 @@ public class Tracker extends IntentService {
         Intent commandIntent = new Intent(action, null, getBaseContext(), Tracker.class);
         commandIntent.putExtra("json", json);
         LocalBroadcastManager.getInstance(getBaseContext()).sendBroadcast(commandIntent);
-     }
+    }
 
     //    Our handler for received Intents.
     private BroadcastReceiver mCommandReceiver = new BroadcastReceiver() {
@@ -155,6 +162,11 @@ public class Tracker extends IntentService {
 
     private boolean SetupBluetooth() throws InterruptedException {
         boolean rVal = false;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                return rVal;
+            }
+        }
         while (!bluetoothConnected) {
             BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
             ArrayList<String> addresses = new ArrayList<String>();
@@ -178,9 +190,14 @@ public class Tracker extends IntentService {
                         //   A MAC address, which we got above.
                         //   A Service ID or UUID.  In this case we are using the
                         //     UUID for SPP.
-                        btSocket = createBluetoothSocket(device);
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
+                        final Method m = device.getClass().getMethod("createInsecureRfcommSocketToServiceRecord", new Class[]{UUID.class});
+                        btSocket = (BluetoothSocket) m.invoke(device, Constants.MY_UUID);
+                    } catch (InvocationTargetException e) {
+                        throw new RuntimeException(e);
+                    } catch (NoSuchMethodException e) {
+                        throw new RuntimeException(e);
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException(e);
                     }
 
                     // Discovery is resource intensive.  Make sure it isn't going on
@@ -230,18 +247,6 @@ public class Tracker extends IntentService {
             Write("\nGetDateTime\r");
         }
         return rVal;
-    }
-
-    private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
-        if (Build.VERSION.SDK_INT >= 10) {
-            try {
-                final Method m = device.getClass().getMethod("createInsecureRfcommSocketToServiceRecord", new Class[]{UUID.class});
-                return (BluetoothSocket) m.invoke(device, Constants.MY_UUID);
-            } catch (Exception e) {
-                Log.e(Constants.TAG, "Could not create Insecure RFComm Connection", e);
-            }
-        }
-        return device.createRfcommSocketToServiceRecord(Constants.MY_UUID);
     }
 
     /* Call this from the main activity to send data to the remote device */

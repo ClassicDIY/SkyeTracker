@@ -1,17 +1,28 @@
 package com.skye.skyetracker;
 
+import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
+
+import androidx.core.app.ActivityCompat;
 import androidx.viewpager.widget.ViewPager;
+
 import android.util.Log;
 import android.widget.Toast;
+
 
 public class MainActivity extends Activity {
     private TabStripAdapter tabStripAdapter;
     private SlidingTabLayout stl;
+
+    private static final String[] PERMISSIONS_BLUETOOTH = {
+            Manifest.permission.BLUETOOTH_SCAN,
+            Manifest.permission.BLUETOOTH_CONNECT
+    };
 
     @Override
     protected void onPause() {
@@ -47,8 +58,7 @@ public class MainActivity extends Activity {
             public void onPageSelected(int position) {
                 if (position > 0) {
                     MainApplication.SendCommand("StopBroadcast");
-                }
-                else {
+                } else {
                     MainApplication.SendCommand("BroadcastPosition");
                 }
             }
@@ -71,15 +81,35 @@ public class MainActivity extends Activity {
     private void checkBTState() {
         // Check for Bluetooth support and then check to make sure it is turned on
         // Emulator doesn't support Bluetooth and will return null
+        boolean bluetoothAvailable = getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH);
+        if (!bluetoothAvailable) {
+            errorExit("Fatal Error", "Bluetooth not support");
+        }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                // We don't have permission so prompt the user
+                ActivityCompat.requestPermissions(this, PERMISSIONS_BLUETOOTH,1);
+            }
+            return;
+        }
         BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
-        if(btAdapter==null) {
+        if (btAdapter == null) {
             errorExit("Fatal Error", "Bluetooth not support");
         } else {
             if (btAdapter.isEnabled()) {
                 Log.d(Constants.TAG, "...Bluetooth ON...");
             } else {
                 //Prompt user to turn on Bluetooth
+
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, 1);
+            }
+        }
+    }
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                 startActivityForResult(enableBtIntent, 1);
             }
         }
