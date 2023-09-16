@@ -19,6 +19,7 @@
 -optimizationpasses 5
 
 -keep class * extends android.app.Activity
+-keep class * extends android.app.Fragment
 
 -assumenosideeffects class android.util.Log {
 public static *** d(...);
@@ -34,7 +35,7 @@ public static *** i(...);
 -keepattributes Signature
 -keepattributes *Annotation*
 # Gson specific classes
--keep class sun.misc.Unsafe { *; }
+
 -keep class com.google.gson.stream.** { *; }
 
 # Application classes that will be serialized/deserialized over Gson
