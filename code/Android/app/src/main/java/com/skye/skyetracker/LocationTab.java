@@ -2,6 +2,7 @@ package com.skye.skyetracker;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -9,10 +10,13 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+
+import androidx.core.app.ActivityCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.core.content.PermissionChecker;
 import android.view.LayoutInflater;
@@ -61,28 +65,32 @@ public class LocationTab extends Fragment {
         btnUploadLocation = (Button) rootView.findViewById(R.id.btnUploadLocation);
         btnUploadLocation.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-            if (selfPermissionGranted(Manifest.permission.ACCESS_FINE_LOCATION) == false) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    requestPermissions(INITIAL_PERMS, INITIAL_REQUEST);
+                if (selfPermissionGranted(Manifest.permission.ACCESS_COARSE_LOCATION) == false) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        requestPermissions(INITIAL_PERMS, INITIAL_REQUEST);
+                    }
                 }
-            }
-            LocationManager lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-            if (selfPermissionGranted(Manifest.permission.ACCESS_FINE_LOCATION)) {
-                @SuppressLint("MissingPermission") Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions((Activity) context, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 101);
+                }
 
-                if (location == null){
-                    Toast.makeText(getActivity(),"Location Not found",Toast.LENGTH_LONG).show();
-                }else {
-                    lat.setText(String.format("%.6f", location.getLatitude()));
-                    lon.setText(String.format("%.6f", location.getLongitude()));
-                    longitude = location.getLongitude();
-                    latitude = location.getLatitude();
+                LocationManager lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+                if (selfPermissionGranted(Manifest.permission.ACCESS_COARSE_LOCATION)) {
+                    @SuppressLint("MissingPermission") Location location = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+
+                    if (location == null) {
+                        Toast.makeText(getActivity(), "Location Not found", Toast.LENGTH_LONG).show();
+                    } else {
+                        lat.setText(String.format("%.6f", location.getLatitude()));
+                        lon.setText(String.format("%.6f", location.getLongitude()));
+                        longitude = location.getLongitude();
+                        latitude = location.getLatitude();
+                        Gson gson = new Gson();
+                        ConfigLocation configLocation = new ConfigLocation(latitude, longitude);
+                        String json = "SetC|" + gson.toJson(configLocation);
+                        MainApplication.SendCommand(json);
+                    }
                 }
-            }
-            Gson gson = new Gson();
-            ConfigLocation configLocation = new ConfigLocation(latitude, longitude);
-            String json = "SetC|" + gson.toJson(configLocation);
-            MainApplication.SendCommand(json);
             }
         });
 
