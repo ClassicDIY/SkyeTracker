@@ -187,6 +187,11 @@ namespace SkyeTracker
 			setInterval(shortCheckInterval);
 			_requestedAngle = angle;
 			enabled = true;
+			char angle[16];
+			sprintf(angle, "%.0f", _requestedAngle);
+			char subtopic[32];
+			sprintf(subtopic, "%sAngle", _name);
+			_iot.publish(subtopic, angle, false);
 		}
 	}
 

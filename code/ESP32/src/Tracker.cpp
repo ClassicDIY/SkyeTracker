@@ -169,6 +169,7 @@ namespace SkyeTracker
 
 	void Tracker::setState(TrackerState state)
 	{
+		logd("setState: %d", state);
 		if (_trackerState != state) {
 			_trackerState = state;
 			_config.SendConfiguration();

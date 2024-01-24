@@ -21,7 +21,7 @@ char _mqttServer[IOTWEBCONF_WORD_LEN];
 char _mqttPort[5];
 char _mqttUserName[IOTWEBCONF_WORD_LEN];
 char _mqttUserPassword[IOTWEBCONF_WORD_LEN];
-u_int _uniqueId = 0;
+u_int32_t _uniqueId = ESP.getEfuseMac() & 0xFFFFFFFF;
 IotWebConfSeparator seperatorParam = IotWebConfSeparator("MQTT");
 IotWebConfParameter mqttServerParam = IotWebConfParameter("MQTT server", "mqttServer", _mqttServer, IOTWEBCONF_WORD_LEN);
 IotWebConfParameter mqttPortParam = IotWebConfParameter("MQTT port", "mqttSPort", _mqttPort, 5, "text", NULL, "1883");

@@ -3,12 +3,15 @@
 #include <ThreadController.h>
 #include <Thread.h>
 #include "Enumerations.h"
+#include "IOT.h"
 
 #define noise 2
 #define histeresis 2
 #define shortCheckInterval 100
 #define longCheckInterval 5000
 #define POSITIONINTERVAL 5 // Move array when sun moves 5 degrees past current position
+
+extern SkyeTracker::IOT _iot;
 
 namespace SkyeTracker
 {
