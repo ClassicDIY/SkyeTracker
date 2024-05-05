@@ -4,6 +4,7 @@
 #include "time.h"
 #include "Log.h"
 #include "Tracker.h"
+#include <IotWebConfESP32HTTPUpdateServer.h>
 
 extern SkyeTracker::Tracker _tracker;
 
@@ -13,6 +14,7 @@ AsyncMqttClient _mqttClient;
 TimerHandle_t mqttReconnectTimer;
 DNSServer _dnsServer;
 WebServer _webServer(80);
+// Create Update Server
 HTTPUpdateServer _httpUpdater;
 IotWebConf _iotWebConf(TAG, &_dnsServer, &_webServer, TAG, CONFIG_VERSION);
 char _mqttRootTopic[STR_LEN];
@@ -22,18 +24,18 @@ char _mqttPort[5];
 char _mqttUserName[IOTWEBCONF_WORD_LEN];
 char _mqttUserPassword[IOTWEBCONF_WORD_LEN];
 u_int32_t _uniqueId = ESP.getEfuseMac() & 0xFFFFFFFF;
-IotWebConfSeparator seperatorParam = IotWebConfSeparator("MQTT");
-IotWebConfParameter mqttServerParam = IotWebConfParameter("MQTT server", "mqttServer", _mqttServer, IOTWEBCONF_WORD_LEN);
-IotWebConfParameter mqttPortParam = IotWebConfParameter("MQTT port", "mqttSPort", _mqttPort, 5, "text", NULL, "1883");
-IotWebConfParameter mqttUserNameParam = IotWebConfParameter("MQTT user", "mqttUser", _mqttUserName, IOTWEBCONF_WORD_LEN);
-IotWebConfParameter mqttUserPasswordParam = IotWebConfParameter("MQTT password", "mqttPass", _mqttUserPassword, IOTWEBCONF_WORD_LEN, "password");
-IotWebConfParameter mqttRootTopicParam = IotWebConfParameter("MQTT Root Topic", "mqttRootTopic", _mqttRootTopic, IOTWEBCONF_WORD_LEN);
+iotwebconf::ParameterGroup MQTT_group = iotwebconf::ParameterGroup("MQTT", "MQTT");
+iotwebconf::TextParameter mqttServerParam = iotwebconf::TextParameter("MQTT server", "mqttServer", _mqttServer, IOTWEBCONF_WORD_LEN);
+iotwebconf::NumberParameter mqttPortParam = iotwebconf::NumberParameter("MQTT port", "mqttSPort", _mqttPort, NUMBER_CONFIG_LEN, "text", NULL, "1883");
+iotwebconf::TextParameter mqttUserNameParam = iotwebconf::TextParameter("MQTT user", "mqttUser", _mqttUserName, IOTWEBCONF_WORD_LEN);
+iotwebconf::PasswordParameter mqttUserPasswordParam = iotwebconf::PasswordParameter("MQTT password", "mqttPass", _mqttUserPassword, IOTWEBCONF_WORD_LEN, "password");
+iotwebconf::TextParameter mqttRootTopicParam = iotwebconf::TextParameter("MQTT Root Topic", "mqttRootTopic", _mqttRootTopic, IOTWEBCONF_WORD_LEN);
 const char *ntpServer = "pool.ntp.org";
 
 void publishDiscovery()
 {
 	char buffer[STR_LEN];
-	StaticJsonDocument<1024> doc; // MQTT discovery
+	JsonDocument doc;
 	doc["name"] = _iotWebConf.getThingName();
 	sprintf(buffer, "%X", _uniqueId);
 	doc["unique_id"] = buffer;
@@ -42,14 +44,14 @@ void publishDiscovery()
 	doc["avty_t"] = "~/tele/LWT";
 	doc["pl_avail"] = "Online";
 	doc["pl_not_avail"] = "Offline";
-	JsonObject device = doc.createNestedObject("device");
+	JsonObject device = doc["device"].to<JsonObject>();
 	device["name"] = "SkyeTracker";
 	device["sw_version"] = CONFIG_VERSION;
 	device["manufacturer"] = "SkyeTracker";
 	sprintf(buffer, "ESP32-Bit (%X)", _uniqueId);
 	device["model"] = buffer;
-	JsonArray identifiers = device.createNestedArray("identifiers");
-	identifiers.add(_uniqueId);
+	sprintf(buffer, "%X_%s", _uniqueId, "SkyeTracker");
+	device["identifiers"] = buffer;
 	doc["~"] = _mqttRootTopic;
 	String s;
 	serializeJson(doc, s);
@@ -92,12 +94,12 @@ void WiFiEvent(WiFiEvent_t event)
 {
 	logd("[WiFi-event] event: %d", event);
 	String s;
-	StaticJsonDocument<128> doc;
+	JsonDocument doc;
 	switch (event)
 	{
 	case SYSTEM_EVENT_STA_GOT_IP:
 		// logd("WiFi connected, IP address: %s", WiFi.localIP().toString().c_str());
-		doc["IP"] = WiFi.localIP().toString().c_str();
+		doc["IP"] = WiFi.localIP();
 		doc["ApPassword"] = TAG;
 		serializeJson(doc, s);
 		s += '\n';
@@ -212,13 +214,12 @@ void IOT::Init()
 	}
 	mqttReconnectTimer = xTimerCreate("mqttTimer", pdMS_TO_TICKS(5000), pdFALSE, (void *)0, reinterpret_cast<TimerCallbackFunction_t>(connectToMqtt));
 	WiFi.onEvent(WiFiEvent);
-	_iotWebConf.setupUpdateServer(&_httpUpdater);
-	_iotWebConf.addParameter(&seperatorParam);
-	_iotWebConf.addParameter(&mqttServerParam);
-	_iotWebConf.addParameter(&mqttPortParam);
-	_iotWebConf.addParameter(&mqttUserNameParam);
-	_iotWebConf.addParameter(&mqttUserPasswordParam);
-	_iotWebConf.addParameter(&mqttRootTopicParam);
+	MQTT_group.addItem(&mqttServerParam);
+	MQTT_group.addItem(&mqttPortParam);
+	MQTT_group.addItem(&mqttUserNameParam);
+	MQTT_group.addItem(&mqttUserPasswordParam);
+	MQTT_group.addItem(&mqttRootTopicParam);
+	_iotWebConf.addParameterGroup(&MQTT_group);
 	boolean validConfig = _iotWebConf.init();
 	if (!validConfig)
 	{
@@ -288,7 +289,7 @@ void IOT::Run()
 		{
 			String s = Serial.readStringUntil('}');
 			s += "}";
-			StaticJsonDocument<128> doc;
+			JsonDocument doc;
 			DeserializationError err = deserializeJson(doc, s);
 			if (err)
 			{
@@ -298,7 +299,7 @@ void IOT::Run()
 			{
 				if (doc.containsKey("ssid") && doc.containsKey("password"))
 				{
-					IotWebConfParameter *p = _iotWebConf.getWifiSsidParameter();
+					iotwebconf::Parameter *p = _iotWebConf.getWifiSsidParameter();
 					strcpy(p->valueBuffer, doc["ssid"]);
 					logd("Setting ssid: %s", p->valueBuffer);
 					p = _iotWebConf.getWifiPasswordParameter();
@@ -306,7 +307,7 @@ void IOT::Run()
 					logd("Setting password: %s", p->valueBuffer);
 					p = _iotWebConf.getApPasswordParameter();
 					strcpy(p->valueBuffer, TAG); // reset to default AP password
-					_iotWebConf.configSave();
+					_iotWebConf.saveConfig();
 					esp_restart(); // force reboot
 				}
 				else

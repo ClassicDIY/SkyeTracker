@@ -8,11 +8,13 @@ extern "C"
 #include "freertos/timers.h"
 }
 #include "AsyncMqttClient.h"
-#include "IotWebConf.h"
+#include <IotWebConf.h>
+#include <IotWebConfUsing.h>
 #include "Configuration.h"
 
 #define STR_LEN 64                            // general string buffer size
 #define CONFIG_LEN 32                         // configuration string buffer size
+#define NUMBER_CONFIG_LEN 5
 
 extern SkyeTracker::Configuration _config;
 

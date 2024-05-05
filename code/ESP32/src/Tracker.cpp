@@ -269,7 +269,7 @@ namespace SkyeTracker
 		char data[64];
 		unsigned int commandIndex = 0;
 		unsigned int dataIndex = 0;
-		StaticJsonDocument<64> doc;
+		JsonDocument doc;
 		for (unsigned int i = 0; i < strlen(input); i++)
 		{
 			if (input[i] == '|')
