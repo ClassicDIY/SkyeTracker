@@ -5,6 +5,7 @@
 #include <SoftwareSerial.h>
 #include <Wire.h>
 #include <RTClib.h>
+#include <SPI.h>
 #include "sun.h"
 #include "Configuration.h"
 #include "Tracker.h"
