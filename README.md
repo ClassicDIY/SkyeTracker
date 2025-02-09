@@ -23,7 +23,8 @@ Here are some <a href='https://www.youtube.com/playlist?list=PLblHpNAh7b6LoXEqof
 
 ## SkyeTracker app
 
-<a href='https://play.google.com/store/apps/details?id=com.skye.skyetracker&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' width=200/></a>
+The SkyeTracker Android app APK is no longer in Google Play, please <a href='https://www.howtogeek.com/313433/how-to-sideload-apps-on-android/'>sideload</a> the APK found in the latest release.
+<a href='https://github.com/ClassicDIY/SkyeTracker/releases'>APK File</a>
 
 <p align="center">
   <img src="./Pictures/Info%20Tab.png" alt="SkyeTracker App" width="400">
