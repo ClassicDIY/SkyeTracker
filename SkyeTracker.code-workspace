@@ -1,9 +1,6 @@
 {
 	"folders": [
 		{
-			"path": "code\\Arduino"
-		},
-		{
 			"path": "code\\ESP32"
 		}
 	]

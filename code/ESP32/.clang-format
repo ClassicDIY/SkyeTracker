@@ -1,0 +1,16 @@
+BasedOnStyle: LLVM
+IndentWidth: 3
+SortIncludes: false
+IncludeBlocks: Preserve
+ColumnLimit: 145
+BraceWrapping:
+  AfterFunction: false
+  AfterClass: false
+  AfterControlStatement: false
+  AfterEnum: false
+  AfterStruct: false
+  AfterUnion: false
+  BeforeCatch: false
+  BeforeElse: false
+  IndentBraces: false
+

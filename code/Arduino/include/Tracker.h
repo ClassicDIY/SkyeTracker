@@ -20,8 +20,6 @@ const char c_Cycle[] = "Cycle";
 const char c_Stop[] = "Stop";
 const char c_GetConfiguration[] = "GetConfiguration";
 const char c_GetDateTime[] = "GetDateTime";
-const char c_BroadcastPosition[] = "BroadcastPosition";
-const char c_StopBroadcast[] = "StopBroadcast";
 const char c_SetC[] = "SetC";
 const char c_SetL[] = "SetL";
 const char c_SetA[] = "SetA";
@@ -49,7 +47,6 @@ namespace SkyeTracker
 		void Park(bool protect);
 		TrackerState getState();
 		void setState(TrackerState state);
-		bool BroadcastPosition();
 		void ProcessCommand(const char* input);
 
 	private:
@@ -116,7 +113,6 @@ namespace SkyeTracker
 
 		RTC_DS1307* _rtc;
 		Sun* _sun;
-		bool _broadcastPosition;
 		TrackerState _trackerState;
 		bool _waitingForMorning;
 		int cycleHour;

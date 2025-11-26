@@ -38,10 +38,6 @@ int freeRam()
 
 void runWorker()
 {
-	//freeMem("Run");
-	//trace(&_swSer, F("RAM in Run: "));
-	//traceln(&_swSer, String(freeRam(), DEC));
-	bool broadcasting = _tracker.BroadcastPosition();
 	if (_config.hasAnemometer())
 	{
 		float windSpeed = _anemometer.WindSpeed();
@@ -64,36 +60,6 @@ void runWorker()
 				_protectCountdown = 0;
 				_tracker.Resume();
 			}
-		}
-		if (broadcasting)
-		{
-			Serial.print("Wind|{");
-			Serial.print("\"sT\":"); // seconds in unixtime
-			Serial.print(_lastWindEvent);
-			Serial.print(",\"sC\":"); // current wind speed
-			Serial.print(windSpeed);
-			Serial.print(",\"sH\":"); // last high wind speed
-			Serial.print(_recordedWindSpeedAtLastEvent);
-			Serial.println("}");
-		};
-	}
-}
-
-void serialEvent() {
-	
-	while (Serial.available()) {
-		char inChar = (char)Serial.read();
-		_receiveBuffer[_receiveIndex++] = inChar;
-		if (_receiveIndex >= RECEIVE_BUFFER)
-		{
-			Serial.print(F("receive buffer overflow!: "));
-			_receiveIndex = 0;
-		}
-		else if (inChar == '\r') {
-			//printHexString(_receiveBuffer);
-			_receiveBuffer[_receiveIndex] = 0;
-			_tracker.ProcessCommand(_receiveBuffer);
-			_receiveIndex = 0;
 		}
 	}
 }
@@ -142,67 +108,4 @@ void loop()
 	{
 		_tracker.Track();
 	}
-	serialEvent();
 }
-
-// Debug helper functions
-//
-//void printHexString(String txt)
-//{
-//	for (int i = 0; i < txt.length(); i++)
-//	{
-//		trace(&_swSer, txt[i], HEX);
-//	}
-//	traceln(&_swSer, "");
-//}
-
-
-//Code to print out the free memory
-
-//struct __freelist {
-//	size_t sz;
-//	struct __freelist *nx;
-//};
-//
-//extern char * const __brkval;
-//extern struct __freelist *__flp;
-//
-//uint16_t freeMem(uint16_t *biggest)
-//{
-//	char *brkval;
-//	char *cp;
-//	unsigned freeSpace;
-//	struct __freelist *fp1, *fp2;
-//
-//	brkval = __brkval;
-//	if (brkval == 0) {
-//		brkval = __malloc_heap_start;
-//	}
-//	cp = __malloc_heap_end;
-//	if (cp == 0) {
-//		cp = ((char *)AVR_STACK_POINTER_REG) - __malloc_margin;
-//	}
-//	if (cp <= brkval) return 0;
-//
-//	freeSpace = cp - brkval;
-//
-//	for (*biggest = 0, fp1 = __flp, fp2 = 0;
-//	fp1;
-//		fp2 = fp1, fp1 = fp1->nx) {
-//		if (fp1->sz > *biggest) *biggest = fp1->sz;
-//		freeSpace += fp1->sz;
-//	}
-//
-//	return freeSpace;
-//}
-//
-//uint16_t biggest;
-//
-//void freeMem(char* message) {
-//	trace(&_swSer, message);
-//	trace(&_swSer, ":\t");
-//	traceln(&_swSer, freeMem(&biggest));
-//}
-
-
-

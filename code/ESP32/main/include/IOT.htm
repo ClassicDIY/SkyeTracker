@@ -1,0 +1,358 @@
+const char *redirect_html PROGMEM = R"rawliteral(
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{n}</title>
+        <script>
+            window.onload = function() {
+                window.location.href = "http://{ip}";
+            };
+        </script>
+    </head>
+    <body>
+        <h1>Redirecting to Home Page...</h1>
+    </body>
+    </html>
+)rawliteral";
+
+const char update_html[] PROGMEM = R"rawliteral(
+    <!DOCTYPE html><html lang=\"en\"><head><meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>Firmware Update</title>
+    </head><body>
+    <h1>Firmware Update</h1>
+    <h1>ESP32 OTA Update</h1>
+    <form method='POST' action='/doupdate' enctype='multipart/form-data'>
+    <input type='file' name='firmware'>
+    </form>
+    <div>
+        Copyright (c) 2025. ClassicDIY</br>
+        The source code is hosted and available on Github at <a href="https://github.com/classicdiy/ESP_PLC" target="_blank">https://github.com/classicdiy/ESP_PLC</a>.</br>
+        The software is provided on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</br>
+    </div>
+    </body></html>
+)rawliteral";
+
+const char network_config_top[] PROGMEM = R"rawliteral(
+    <!DOCTYPE html><html lang=\"en\"><head><meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>{n}</title>
+    <script>
+    
+        function dhcpCheck(checkbox) {
+            const fieldset = document.getElementById("dhcp");
+            fieldset.disabled = checkbox.checked;
+        }
+        function mqttFieldset(checkbox) {
+            const fieldset = document.getElementById("mqtt");
+            fieldset.disabled = !checkbox.checked;
+        }
+        function modbusFieldset(checkbox) {
+            const fieldset = document.getElementById("modbus");
+            fieldset.disabled = !checkbox.checked;
+        }
+        function modbusBridgeFieldset(checkbox) {
+            const fieldset = document.getElementById("modbusBridge");
+            fieldset.disabled = !checkbox.checked;
+        }
+        function showMBFields() {
+            document.querySelectorAll('#modbusSelector-container > div').forEach(div => div.classList.add('hidden'));
+            var selectedValue = document.getElementById('modbusModeSelector').value;
+            if (selectedValue) {
+                document.getElementById(selectedValue + '-fields').classList.remove('hidden');
+            }
+            toggleMDBridgeFieldset();
+        }
+        function showFields() {
+            // Hide all fields
+            document.querySelectorAll('#networkSelector-container > div').forEach(div => div.classList.add('hidden'));
+            // Get selected value
+            var selectedValue = document.getElementById('networkSelector').value.trim();
+            if (selectedValue === "apmode") {
+              var modbusEl = document.getElementById('modbus');
+              if (modbusEl) {
+                modbusEl.classList.add('hidden');
+              }
+              var mqttEl = document.getElementById('mqtt');
+              if (mqttEl) {
+                mqttEl.classList.add('hidden');
+              }
+            }
+            else {
+                console.log("Selected:", selectedValue);
+                document.getElementById(selectedValue + '-fields').classList.remove('hidden');
+                var mqttEl = document.getElementById('mqtt');
+                if (mqttEl) {
+                  mqttEl.classList.remove('hidden');
+                }
+                var modbusEl = document.getElementById('modbus');
+                if (modbusEl) {
+                  modbusEl.classList.remove('hidden');
+                }
+                showMBFields();
+            }
+        }
+
+        function toggleMDBridgeFieldset() {
+          const selector = document.getElementById("modbusModeSelector");
+          const fieldset = document.getElementById("modbusBridge");
+          fieldset.classList.toggle("hidden", selector.value === "rtu");
+        }
+
+        window.onload = function() {
+		      showFields();
+          var mqttEl = document.getElementById('mqttCheckbox');
+          if (mqttEl) {
+            mqttFieldset(mqttEl);
+          }
+          var modbusEl = document.getElementById('modbusCheckbox');
+          if (modbusEl) {
+            modbusFieldset(modbusEl);
+            modbusBridgeFieldset(document.getElementById("modbusBridgeCheckbox"));
+            toggleMDBridgeFieldset();
+          }
+          var dhcpEl = document.getElementById('dhcpCheckbox');
+          if (dhcpEl) {
+            dhcpCheck(dhcpEl);
+          }
+          
+		    }
+        function validateInputs() {
+            {validateInputs}
+            return true;
+        }
+    {script}
+    </script>
+    {style}
+    </head>
+    <body>
+      <div id="config">
+      <div>
+          <h2>{n}</h2>
+          <div class="ver">Firmware version '{v}'</div>
+          <hr>
+      </div>
+
+)rawliteral";
+
+const char network_config[] PROGMEM = R"rawliteral(
+<form onsubmit="return validateInputs()" action='/submit' method='post'>
+<fieldset id="network" class="fs">
+  <legend>Network</legend>
+
+  <div class="form-grid">
+    <label for="AP_SSID">AP SSID/Device Name</label>
+    <input type="text" id="AP_SSID" name="AP_SSID" value="{AP_SSID}" required maxlength="32">
+  </div>
+
+  <div class="form-grid">
+    <label for="AP_Pw">AP/admin Password</label>
+    <input type="text" id="AP_Pw" name="AP_Pw" value="{AP_Pw}" minlength="8" required maxlength="32">
+  </div>
+
+  <div class="form-grid">
+    <label for="networkSelector">Network Mode</label>
+    <select id="networkSelector" name="networkSelector" onchange="showFields()">
+      <option value="APMode" {APMode}>AP Mode</option>
+      <option value="wifi" {WIFI}>WiFi</option>
+      <option value="ethernet" {ETH}>Ethernet</option>
+      <option value="modem" {4G}>4G Modem</option>
+    </select>
+  </div>
+
+  <div id="networkSelector-container">
+    <div id="wifi-fields" class="hidden">
+      <div class="form-grid">
+        <label for="SSID">WiFi SSID</label>
+        <input type="text" id="SSID" name="SSID" value="{SSID}" maxlength="32">
+      </div>
+      <div class="form-grid">
+        <label for="WiFi_Pw">WiFi Password</label>
+        <input type="text" id="WiFi_Pw" name="WiFi_Pw" value="{WiFi_Pw}" maxlength="32">
+      </div>
+    </div>
+
+    <div id="ethernet-fields" class="hidden">
+      <fieldset id="dhcp" class="fs">
+        <legend>
+          <label><input type="checkbox" id="dhcpCheckbox" name="dhcpCheckbox" onclick="dhcpCheck(this)" {dhcpChecked}> Use DHCP</label>
+        </legend>
+        <div class="form-grid">
+          <label for="ETH_SIP">Static IP</label>
+          <input type="text" id="ETH_SIP" name="ETH_SIP" value="{ETH_SIP}" maxlength="32">
+        </div>
+        <div class="form-grid">
+          <label for="ETH_SM">Subnet Mask</label>
+          <input type="text" id="ETH_SM" name="ETH_SM" value="{ETH_SM}" maxlength="32">
+        </div>
+        <div class="form-grid">
+          <label for="ETH_GW">Gateway</label>
+          <input type="text" id="ETH_GW" name="ETH_GW" value="{ETH_GW}" maxlength="32">
+        </div>
+      </fieldset>
+    </div>
+
+    <div id="modem-fields" class="hidden">
+      <div class="form-grid">
+        <label for="APN">APN</label>
+        <input type="text" id="APN" name="APN" value="{APN}" maxlength="32">
+      </div>
+      <div class="form-grid">
+        <label for="SIM_USERNAME">Username</label>
+        <input type="text" id="SIM_USERNAME" name="SIM_USERNAME" value="{SIM_USERNAME}" maxlength="32">
+      </div>
+      <div class="form-grid">
+        <label for="SIM_PASSWORD">Password</label>
+        <input type="text" id="SIM_PASSWORD" name="SIM_PASSWORD" value="{SIM_PASSWORD}" maxlength="32">
+      </div>
+      <div class="form-grid">
+        <label for="SIM_PIN">PIN</label>
+        <input type="text" id="SIM_PIN" name="SIM_PIN" value="{SIM_PIN}" maxlength="32">
+      </div>
+    </div>
+  </div>
+</fieldset>
+)rawliteral";
+
+const char config_mqtt[] PROGMEM = R"rawliteral(
+  <fieldset id="mqtt" class="fs">
+    <legend>
+      <label><input type="checkbox" id="mqttCheckbox" name="mqttCheckbox" onclick="mqttFieldset(this)" {mqttchecked}> MQTT</label>
+    </legend>
+
+    <div class="form-grid">
+      <label for="mqttServer">MQTT Server</label>
+      <input type="text" id="mqttServer" name="mqttServer" value="{mqttServer}" maxlength="64">
+    </div>
+
+    <div class="form-grid">
+      <label for="mqttPort">MQTT Port</label>
+      <input type="number" id="mqttPort" name="mqttPort" value="{mqttPort}" step="1">
+    </div>
+
+    <div class="form-grid">
+      <label for="mqttUser">MQTT User</label>
+      <input type="text" id="mqttUser" name="mqttUser" value="{mqttUser}" maxlength="32">
+    </div>
+
+    <div class="form-grid">
+      <label for="mqttPw">MQTT Password</label>
+      <input type="text" id="mqttPw" name="mqttPw" value="{mqttPw}" maxlength="32">
+    </div>
+  </fieldset>
+)rawliteral";
+
+const char config_modbus[] PROGMEM = R"rawliteral(
+  <fieldset  id="modbus" class="fs">
+    <legend><label><input type="checkbox" id="modbusCheckbox" name="modbusCheckbox" onclick="modbusFieldset(this)" {modbuschecked}> Modbus</label></legend>
+
+    <div class="form-grid">
+      <label for="modbusModeSelector">Modbus Mode</label>
+      <select id="modbusModeSelector" name="modbusModeSelector" onchange="showMBFields()">
+        <option value="tcp" {TCP}>TCP</option>
+        <option value="rtu" {RTU}>RTU</option>
+      </select>
+    </div>
+    <div id="modbusSelector-container">
+      <div id="tcp-fields" class="form-grid hidden">
+        <label for="modbusPort">Modbus Port</label>
+        <input type="number" id="modbusPort" name="modbusPort" value="{modbusPort}" step="1">
+      </div>
+
+      <div id="rtu-fields" class="hidden">
+        <div class="form-grid">
+          <label for="svrRTUBaud">RTU Baud Rate</label>
+          <select id="svrRTUBaud" name="svrRTUBaud">
+            <option value="9600" {RTU_SVR_9600} >9600</option>
+            <option value="19200" {RTU_SVR_19200} >19200</option>
+            <option value="38400" {RTU_SVR_38400} >38400</option>
+            <option value="115200" {RTU_SVR_115200} >115200</option>
+          </select>
+        </div>
+        <div class="form-grid">
+          <label for="svrRTUParity">RTU Parity</label>
+          <select id="svrRTUParity" name="svrRTUParity">
+            <option value="none" {RTU_SVR_Parity_None}>None</option>
+            <option value="even" {RTU_SVR_Parity_Even}>Even</option>
+            <option value="odd" {RTU_SVR_Parity_Odd}>Odd</option>
+          </select>
+        </div>
+        <div class="form-grid">
+          <label for="svrRTUStopBits">RTU Stop Bits</label>
+          <select id="svrRTUStopBits" name="svrRTUStopBits">
+            <option value="1" {RTU_SVR_1Stop}>1</option>
+            <option value="2" {RTU_SVR_2Stop}>2</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="form-grid"><label for="modbusID">Modbus ID</label><input type="number" id="modbusID" name="modbusID" value="{modbusID}" step="1"></div>
+    <div {inputRegDivClass}>
+      <div class="form-grid"><label for="inputRegBase">Input Register Address</label><input type="number" id="inputRegBase" name="inputRegBase" value="{inputRegBase}" step="1" min="0" max="65531"></div>
+    </div>
+    <div {coilDivClass}>
+      <div class="form-grid"><label for="coilBase">Coil Address</label><input type="number" id="coilBase" name="coilBase" value="{coilBase}" step="1" min="0" max="65529"></div>
+    </div>
+    <div {discreteDivClass}>
+        <div class="form-grid"><label for="discreteBase">Discrete Address</label><input type="number" id="discreteBase" name="discreteBase" value="{discreteBase}" step="1" min="0" max="65531"></div>
+    </div>
+    <div {holdingRegDivClass}>
+        <div class="form-grid"><label for="holdingRegBase">Holding Register Address</label><input type="number" id="holdingRegBase" name="holdingRegBase" value="{holdingRegBase}" step="1" min="0" max="65531"></div>
+    </div>
+    </fieldset>  
+)rawliteral";
+
+const char config_modbusBridge[] PROGMEM = R"rawliteral(
+  <fieldset id="modbusBridge" class="fs">
+    <legend><label><input type="checkbox" id="modbusBridgeCheckbox" name="modbusBridgeCheckbox" onclick="modbusBridgeFieldset(this)" {modbusBridgechecked}> Modbus Bridge</label></legend>
+    <div class="form-grid">
+      <label for="clientRTUBaud">RTU Baud Rate</label>
+      <select id="clientRTUBaud" name="clientRTUBaud">
+        <option value="9600" {RTU_CLIENT_9600} >9600</option>
+        <option value="19200" {RTU_CLIENT_19200} >19200</option>
+        <option value="38400" {RTU_CLIENT_38400} >38400</option>
+        <option value="115200" {RTU_CLIENT_115200} >115200</option>
+      </select>
+    </div>
+    <div class="form-grid">
+      <label for="clientRTUParity">RTU Parity</label>
+      <select id="clientRTUParity" name="clientRTUParity">
+        <option value="none" {RTU_CLIENT_Parity_None}>None</option>
+        <option value="even" {RTU_CLIENT_Parity_Even}>Even</option>
+        <option value="odd" {RTU_CLIENT_Parity_Odd}>Odd</option>
+      </select>
+    </div>
+    <div class="form-grid">
+      <label for="clientRTUStopBits">RTU Stop Bits</label>
+      <select id="clientRTUStopBits" name="clientRTUStopBits">
+        <option value="1" {RTU_CLIENT_1Stop}>1</option>
+        <option value="2" {RTU_CLIENT_2Stop}>2</option>
+      </select>
+    </div>
+    {modbusBridgeAppSettings}
+  </fieldset>
+)rawliteral";
+
+const char config_apply_button[] PROGMEM = R"rawliteral(
+    <button type="submit" >Apply</button>
+    </form>
+)rawliteral";
+
+const char config_links[] PROGMEM = R"rawliteral(
+        <div class="link-row">
+          <a href='/'>Home page</a>
+          <a href='/update'>Firmware update</a>
+          <a href='/reboot'>Reboot</a>
+        </div>
+
+    </body></html>
+)rawliteral";
+
+const char config_links_no_ota[] PROGMEM = R"rawliteral(
+        <div class="link-row">
+          <a href='/'>Home page</a> 
+          <a href='/reboot'>Reboot</a> 
+        </div>
+
+    </body></html>
+)rawliteral";

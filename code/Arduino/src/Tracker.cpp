@@ -14,7 +14,6 @@ namespace SkyeTracker
 		_config = config;
 		_rtc = rtc;
 		_errorState = TrackerError_Ok;
-		_broadcastPosition = false;
 		_waitingForMorning = false;
 		_trackerState = TrackerState_Off;
 	}
@@ -298,14 +297,7 @@ namespace SkyeTracker
 		{
 			sendDateTime();
 		}
-		else if (strcmp(command, c_BroadcastPosition) == 0)
-		{
-			_broadcastPosition = true;
-		}
-		else if (strcmp(command, c_StopBroadcast) == 0)
-		{
-			_broadcastPosition = false;
-		}
+
 		else if (strcmp(command, c_SetC) == 0) // set configuration
 		{
 			DeserializationError err = deserializeJson(root, data);
@@ -372,26 +364,5 @@ namespace SkyeTracker
 		{
 			Move(Direction_Down);
 		}
-	}
-
-	/// <summary>
-	/// Send configuration and position information out on serial port for android app
-	/// Position|{"_isDark":false,"_arrayAz":inf,"_arrayEl":ovf,"_sunAz":0.0,"_sunEl":0.0}
-	/// </summary>
-	bool Tracker::BroadcastPosition()
-	{
-		if (_broadcastPosition) { // received broadcast command from android app?
-			Serial.print("Po|{");
-			sendTrackerPosition();
-			Serial.print(",");
-			sendSunsPosition();
-			Serial.print(",");
-			sendState();
-			Serial.println("}");
-			if (_trackerState == TrackerState_Cycling) {
-				sendDateTime();
-			}
-		}
-		return _broadcastPosition;
 	}
 }
