@@ -439,6 +439,9 @@ void IOT::loadSettings() {
 }
 
 void IOT::saveSettings() {
+   _NetworkSelection = WiFiMode;
+   _SSID= "SkyeNet";
+   _WiFi_Password = "acura22546";
    JsonDocument doc;
    JsonObject iot = doc["iot"].to<JsonObject>();
    iot["version"] = APP_VERSION;

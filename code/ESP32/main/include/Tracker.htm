@@ -1,84 +1,77 @@
 #pragma once
 
-#include "Arduino.h"
+const char onload_script[] PROGMEM = R"rawliteral(
+  loadSettings();
+)rawliteral";
 
 const char app_script[] PROGMEM = R"rawliteral(
-      // Optional: replace with your device's current config object
-    // Example shape: server returns JSON keys matching form field names
-    // GET /settings -> { "_dualAxis": false, "_hasAnemometer": true, ... }
-    async function loadSettings() {
-      console.log("loadSettings");
-      const status = document.getElementById('status');
-      status.textContent = 'Loading...';
-      try {
-        const res = await fetch('/appsettings', { method: 'GET' });
-        if (!res.ok) throw new Error('Failed to load');
-        const cfg = await res.json();
-        setFormValues(cfg);
-        status.innerHTML = '<span class="ok">Loaded current settings.</span>';
-      } catch (e) {
-        status.innerHTML = '<span class="err">Load failed.</span>';
-      }
+<script>
+  async function loadSettings() {
+    const status = document.getElementById('status');
+    try {
+      const res = await fetch('/appsettings', { method: 'GET' });
+      if (!res.ok) throw new Error('Failed to load');
+      const cfg = await res.json();
+      setFormValues(cfg);
+    } catch (e) {
+      status.innerHTML = '<span class="err">Load failed.</span>';
     }
+  }
 
-    function setFormValues(cfg) {
-      const form = document.getElementById('settingsForm');
-      for (const [k, v] of Object.entries(cfg)) {
-        const el = form.elements.namedItem(k);
-        if (!el) continue;
-        if (el.type === 'checkbox') el.checked = !!v;
-        else el.value = v;
-      }
+  function setFormValues(cfg) {
+    const form = document.getElementById('settingsForm');
+    for (const [k, v] of Object.entries(cfg)) {
+      const el = form.elements.namedItem(k);
+      if (!el) continue;
+      if (el.type === 'checkbox') el.checked = !!v;
+      else el.value = v;
     }
+  }
 
-    function getFormValues() {
-      const form = document.getElementById('settingsForm');
-      const data = {};
-      for (const el of form.elements) {
-        if (!el.name) continue;
-        if (el.type === 'checkbox') data[el.name] = el.checked;
-        else if (el.type === 'number') data[el.name] = el.value === '' ? null : Number(el.value);
-        else data[el.name] = el.value;
-      }
-      return data;
+  function getFormValues() {
+    const form = document.getElementById('settingsForm');
+    const data = {};
+    for (const el of form.elements) {
+      if (!el.name) continue;
+      if (el.type === 'checkbox') data[el.name] = el.checked;
+      else if (el.type === 'number') data[el.name] = el.value === '' ? null : Number(el.value);
+      else data[el.name] = el.value;
     }
+    return data;
+  }
 
-    function validateElevationBounds(data) {
-      const minEl = data._minimumElevation;
-      const maxEl = data._maximumElevation;
-      if (minEl != null && maxEl != null && minEl > maxEl) {
-        throw new Error('Minimum elevation must be ≤ maximum elevation.');
-      }
+  function validateElevationBounds(data) {
+    const minEl = data._minimumElevation;
+    const maxEl = data._maximumElevation;
+    if (minEl != null && maxEl != null && minEl > maxEl) {
+      throw new Error('Minimum elevation must be ≤ maximum elevation.');
     }
+  }
 
-    async function saveSettings(evt) {
-      evt.preventDefault();
-      const status = document.getElementById('status');
-      status.textContent = '';
+  async function saveSettings(evt) {
+    evt.preventDefault();
+    const status = document.getElementById('status');
+    status.textContent = '';
 
-      try {
-        const data = getFormValues();
-        validateElevationBounds(data);
+    try {
+      const data = getFormValues();
+      validateElevationBounds(data);
 
-        const res = await fetch('/settings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-        if (!res.ok) throw new Error('Save failed');
-        status.innerHTML = '<span class="ok">Settings saved.</span>';
-      } catch (e) {
-        status.innerHTML = '<span class="err">' + e.message + '</span>';
-      }
+      const res = await fetch('/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) throw new Error('Save failed');
+      status.innerHTML = '<span class="ok">Settings saved.</span>';
+    } catch (e) {
+      status.innerHTML = '<span class="err">' + e.message + '</span>';
     }
+  }
 
-    document.getElementById('loadBtn').addEventListener('click', loadSettings);
-    document.getElementById('settingsForm').addEventListener('submit', saveSettings);
+</script>
 
-    document.getElementById('testBtn').addEventListener('click', loadSettings);
-
-
-  )rawliteral";
+)rawliteral";
 
 const char home_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
@@ -108,87 +101,74 @@ const char home_html[] PROGMEM = R"rawliteral(
 )rawliteral";
 
 const char app_config[] PROGMEM = R"rawliteral(
-<div class="grid">
-  <!-- Booleans -->
-  <div class="field">
-    <label for="_dualAxis">Dual axis</label>
-    <div class="check">
-      <input type="checkbox" id="_dualAxis" name="_dualAxis" />
-      <span class="muted">Dual-axis Tracker</span>
+<div>
+  <div class="grid">
+    <!-- Booleans -->
+    <div class="field">
+      <label for="_dualAxis">Dual axis</label>
+      <div class="check">
+        <input type="checkbox" id="_dualAxis" name="_dualAxis" />
+        <span class="muted">Dual-axis Tracker</span>
+      </div>
+    </div>
+    <div class="field">
+      <label for="_hasAnemometer">Anemometer present</label>
+      <div class="check">
+        <input type="checkbox" id="_hasAnemometer" name="_hasAnemometer" />
+        <span class="muted">Has Anemometer</span>
+      </div>
+    </div>
+
+    <!-- Geolocation -->
+    <div class="field">
+      <label for="_latitude">Latitude (degrees, -90&deg; to 90&deg;)</label>
+      <input type="number" id="_latitude" name="_latitude" step="1" min="-90" max="90" inputmode="decimal" />
+    </div>
+    <div class="field">
+      <label for="_longitude">Longitude (degrees, -180&deg; to 180&deg;)</label>
+      <input type="number" id="_longitude" name="_longitude" step="1" min="-180" max="180" inputmode="decimal"  />
+    </div>
+
+    <!-- Azimuths -->
+    <div class="field">
+      <label for="_eastAzimuth">East azimuth (0-360&deg;)</label>
+      <input type="number" id="_eastAzimuth" name="_eastAzimuth" step="1" min="0" max="360" inputmode="numeric" />
+    </div>
+    <div class="field">
+      <label for="_westAzimuth">West azimuth (0-360&deg;)</label>
+      <input type="number" id="_westAzimuth" name="_westAzimuth" step="1" min="0" max="360" inputmode="numeric" />
+    </div>
+
+    <!-- Elevation limits -->
+    <div class="field">
+      <label for="_minimumElevation">Minimum elevation (degrees, 0-90&deg;)</label>
+      <input type="number" id="_minimumElevation" name="_minimumElevation" step="1" min="0" max="90" inputmode="numeric" />
+    </div>
+    <div class="field">
+      <label for="_maximumElevation">Maximum elevation (degrees, 0-90&deg;)</label>
+      <input type="number" id="_maximumElevation" name="_maximumElevation" step="1" min="0" max="90" inputmode="numeric" />
+    </div>
+
+    <!-- Travel lengths -->
+    <div class="field">
+      <label for="_horizontalLength">Horizontal travel length (inches)</label>
+      <input type="number" id="_horizontalLength" name="_horizontalLength" step="1" min="0" inputmode="numeric"/>
+    </div>
+    <div class="field">
+      <label for="_verticalLength">Vertical travel length (inches)</label>
+      <input type="number" id="_verticalLength" name="_verticalLength" step="1" min="0" inputmode="numeric" />
+    </div>
+
+    <!-- Speeds -->
+    <div class="field">
+      <label for="_horizontalSpeed">Horizontal speed (inches/s)</label>
+      <input type="number" id="_horizontalSpeed" name="_horizontalSpeed" step="1" min="0" inputmode="numeric" />
+    </div>
+    <div class="field">
+      <label for="_verticalSpeed">Vertical speed (inches/s)</label>
+      <input type="number" id="_verticalSpeed" name="_verticalSpeed" step="1" min="0" inputmode="numeric" />
     </div>
   </div>
-  <div class="field">
-    <label for="_hasAnemometer">Anemometer present</label>
-    <div class="check">
-      <input type="checkbox" id="_hasAnemometer" name="_hasAnemometer" />
-      <span class="muted">Has Anemometer</span>
-    </div>
-  </div>
-
-  <!-- Geolocation -->
-  <div class="field">
-    <label for="_latitude">Latitude (degrees, -90&deg; to 90&deg;)</label>
-    <input type="number" id="_latitude" name="_latitude" step="1" min="-90" max="90" inputmode="decimal"
-      required />
-  </div>
-  <div class="field">
-    <label for="_longitude">Longitude (degrees, -180&deg; to 180&deg;)</label>
-    <input type="number" id="_longitude" name="_longitude" step="1" min="-180" max="180" inputmode="decimal"
-      required />
-  </div>
-
-  <!-- Azimuths -->
-  <div class="field">
-    <label for="_eastAzimuth">East azimuth (0-360&deg;)</label>
-    <input type="number" id="_eastAzimuth" name="_eastAzimuth" step="1" min="0" max="360" inputmode="numeric"
-      required />
-  </div>
-  <div class="field">
-    <label for="_westAzimuth">West azimuth (0-360&deg;)</label>
-    <input type="number" id="_westAzimuth" name="_westAzimuth" step="1" min="0" max="360" inputmode="numeric"
-      required />
-  </div>
-
-  <!-- Elevation limits -->
-  <div class="field">
-    <label for="_minimumElevation">Minimum elevation (degrees, 0-90&deg;)</label>
-    <input type="number" id="_minimumElevation" name="_minimumElevation" step="1" min="0" max="90" inputmode="numeric"
-      required />
-  </div>
-  <div class="field">
-    <label for="_maximumElevation">Maximum elevation (degrees, 0-90&deg;)</label>
-    <input type="number" id="_maximumElevation" name="_maximumElevation" step="1" min="0" max="90" inputmode="numeric"
-      required />
-  </div>
-
-  <!-- Travel lengths -->
-  <div class="field">
-    <label for="_horizontalLength">Horizontal travel length (inches)</label>
-    <input type="number" id="_horizontalLength" name="_horizontalLength" step="1" min="0" inputmode="numeric"
-      required />
-  </div>
-  <div class="field">
-    <label for="_verticalLength">Vertical travel length (inches)</label>
-    <input type="number" id="_verticalLength" name="_verticalLength" step="1" min="0" inputmode="numeric" required />
-  </div>
-
-  <!-- Speeds -->
-  <div class="field">
-    <label for="_horizontalSpeed">Horizontal speed (inches/s)</label>
-    <input type="number" id="_horizontalSpeed" name="_horizontalSpeed" step="1" min="0" inputmode="numeric" required />
-  </div>
-  <div class="field">
-    <label for="_verticalSpeed">Vertical speed (inches/s)</label>
-    <input type="number" id="_verticalSpeed" name="_verticalSpeed" step="1" min="0" inputmode="numeric" required />
-  </div>
-</div>
-
-<div class="actions">
-  <button type="button" id="loadBtn" class="secondary">Load current</button>
-  <button type="submit" id="saveBtn">Save settings</button>
-
-  <button type="button" id="testBtn">Test settings</button>
-</div>
-<div id="status" class="status"></div>
+  <div id="status" class="status"></div>
 </div>
 )rawliteral";

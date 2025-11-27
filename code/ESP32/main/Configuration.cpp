@@ -70,35 +70,35 @@ void Configuration::SetActuatorParameters(int horizontalLength, int verticalLeng
 }
 
 void Configuration::Load(JsonDocument &doc) {
-   JsonObject trk = doc["plc"].as<JsonObject>();
-   _dualAxis = trk["dualAxis"].isNull() ? 0 : trk["dualAxis"].as<bool>();
-   _eastAzimuth = trk["eastAzimuth"].isNull() ? 0 : trk["eastAzimuth"].as<int>();
-   _westAzimuth = trk["westAzimuth"].isNull() ? 0 : trk["westAzimuth"].as<int>();
-   _minimumElevation = trk["minimumElevation"].isNull() ? 0 : trk["minimumElevation"].as<int>();
-   _maximumElevation = trk["maximumElevation"].isNull() ? 0 : trk["maximumElevation"].as<int>();
-   _latitude = trk["latitude"].isNull() ? 0 : trk["latitude"].as<int>();
-   _longitude = trk["longitude"].isNull() ? 0 : trk["longitude"].as<int>();
-   _horizontalLength = trk["horizontalLength"].isNull() ? 0 : trk["horizontalLength"].as<int>();
-   _verticalLength = trk["verticalLength"].isNull() ? 0 : trk["verticalLength"].as<int>();
-   _horizontalSpeed = trk["horizontalSpeed"].isNull() ? 0 : trk["horizontalSpeed"].as<int>();
-   _verticalSpeed = trk["verticalSpeed"].isNull() ? 0 : trk["verticalSpeed"].as<int>();
-   _hasAnemometer = trk["hasAnemometer"].isNull() ? 0 : trk["hasAnemometer"].as<int>();
+   JsonObject trk = doc["tracker"].as<JsonObject>();
+   _dualAxis = trk["_dualAxis"].isNull() ? 0 : trk["_dualAxis"].as<bool>();
+   _eastAzimuth = trk["_eastAzimuth"].isNull() ? 0 : trk["_eastAzimuth"].as<int>();
+   _westAzimuth = trk["_westAzimuth"].isNull() ? 0 : trk["_westAzimuth"].as<int>();
+   _minimumElevation = trk["_minimumElevation"].isNull() ? 0 : trk["_minimumElevation"].as<int>();
+   _maximumElevation = trk["_maximumElevation"].isNull() ? 0 : trk["_maximumElevation"].as<int>();
+   _latitude = trk["_latitude"].isNull() ? 0 : trk["_latitude"].as<int>();
+   _longitude = trk["_longitude"].isNull() ? 0 : trk["_longitude"].as<int>();
+   _horizontalLength = trk["_horizontalLength"].isNull() ? 0 : trk["_horizontalLength"].as<int>();
+   _verticalLength = trk["_verticalLength"].isNull() ? 0 : trk["_verticalLength"].as<int>();
+   _horizontalSpeed = trk["_horizontalSpeed"].isNull() ? 0 : trk["_horizontalSpeed"].as<int>();
+   _verticalSpeed = trk["_verticalSpeed"].isNull() ? 0 : trk["_verticalSpeed"].as<int>();
+   _hasAnemometer = trk["_hasAnemometer"].isNull() ? 0 : trk["_hasAnemometer"].as<int>();
 }
 
 void Configuration::Save(JsonDocument &doc) {
    JsonObject trk = doc["tracker"].to<JsonObject>();
-   trk["dualAxis"] = _dualAxis;
-   trk["eastAzimuth"] = _eastAzimuth;
-   trk["westAzimuth"] = _westAzimuth;
-   trk["minimumElevation"] = _minimumElevation;
-   trk["maximumElevation"] = _maximumElevation;
-   trk["latitude"] = _latitude;
-   trk["longitude"] = _longitude;
-   trk["horizontalLength"] = _horizontalLength;
-   trk["verticalLength"] = _verticalLength;
-   trk["horizontalSpeed"] = _horizontalSpeed;
-   trk["verticalSpeed"] = _verticalSpeed;
-   trk["hasAnemometer"] = _hasAnemometer;
+   trk["_dualAxis"] = _dualAxis;
+   trk["_eastAzimuth"] = _eastAzimuth;
+   trk["_westAzimuth"] = _westAzimuth;
+   trk["_minimumElevation"] = _minimumElevation;
+   trk["_maximumElevation"] = _maximumElevation;
+   trk["_latitude"] = _latitude;
+   trk["_longitude"] = _longitude;
+   trk["_horizontalLength"] = _horizontalLength;
+   trk["_verticalLength"] = _verticalLength;
+   trk["_horizontalSpeed"] = _horizontalSpeed;
+   trk["_verticalSpeed"] = _verticalSpeed;
+   trk["_hasAnemometer"] = _hasAnemometer;
    logi("Saved settings");
 }
 

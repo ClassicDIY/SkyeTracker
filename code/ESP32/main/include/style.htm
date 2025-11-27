@@ -114,6 +114,10 @@ const char style[] PROGMEM = R"rawliteral(
         align-content: center;
     }
 
+    #hdr {
+        text-align: center;
+    }
+
     #home {
         width: 530px;
         margin: 0 auto;
@@ -124,11 +128,13 @@ const char style[] PROGMEM = R"rawliteral(
         display: flex;
         justify-content: space-between;
         padding: 10px;
+
     }
 
     .link-row a {
         text-decoration: none;
         font-weight: bold;
+        color: white;
     }
 
     .link-row a:hover {
@@ -175,18 +181,16 @@ const char style[] PROGMEM = R"rawliteral(
     .grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(200px, 1fr));
-        gap: 14px;
+        gap: 10px;
     }
 
     .field {
         display: flex;
         flex-direction: column;
-        gap: 6px;
     }
 
     .field label {
         font-size: 0.9rem;
-        color: var(--muted);
     }
 
     .field input[type="number"],
@@ -216,15 +220,16 @@ const char style[] PROGMEM = R"rawliteral(
     }
 
     .actions {
-        display: flex;
         gap: 10px;
-        margin-top: 18px;
+        margin-top: 10px;
+        text-align: center;
     }
 
     button {
         background: var(--accent);
         color: white;
         border: none;
+        width: 100%;
         border-radius: 10px;
         padding: 10px 14px;
         font-size: 0.95rem;

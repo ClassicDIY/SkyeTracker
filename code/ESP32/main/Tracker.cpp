@@ -57,8 +57,9 @@ void Tracker::Setup(ThreadController *controller) {
    _asyncServer.on("/appsettings", HTTP_GET, [this](AsyncWebServerRequest *request) {
       JsonDocument payload;
       _config.Save(payload);
+      JsonDocument app = payload["tracker"];
       String s;
-      serializeJson(payload, s);
+      serializeJson(app, s);
       logd("/appsettings: %s", s.c_str());
       request->send(200, "text/html", s);
    });
@@ -97,7 +98,11 @@ void Tracker::addApplicationConfigs(String &page) {
    String appFields = app_config;
    page += appFields;
    String appScript = app_script;
+   appScript.replace("<script>", "");
+   appScript.replace("</script>", "");
    page.replace("{script}", appScript);
+   appScript = onload_script;
+   page.replace("{onload}", appScript);
 }
 
 void Tracker::onSubmitForm(AsyncWebServerRequest *request) {}
