@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ArduinoJson.h>
+#include <ESPAsyncWebServer.h>
 
 // Factory default settings
 #define DualAxisEnabled true
@@ -27,8 +28,8 @@ class Configuration {
  private:
    bool _dualAxis = false;
    bool _hasAnemometer = false;
-   float _latitude;
-   float _longitude;
+   double _latitude;
+   double _longitude;
    int _eastAzimuth;
    int _westAzimuth;
    int _minimumElevation;
@@ -54,12 +55,13 @@ class Configuration {
    int getVerticalSpeed() { return _verticalSpeed; }
    void setDual(bool val);
    void setHasAnemometer(bool val);
-   void SetLocation(float lat, float lon);
+   void SetLocation(double lat, double lon);
    void SetLimits(int minAzimuth, int maxAzimuth, int minElevation, int maxElevation);
    void SetActuatorParameters(int horizontalLength, int verticalLength, int horizontalSpeed, int verticalSpeed);
    void Load(JsonDocument &doc);
    void Save(JsonDocument &doc);
    void GeoLocate();
+   void onSubmitForm(JsonDocument &doc);
 };
 
 } // namespace CLASSICDIY

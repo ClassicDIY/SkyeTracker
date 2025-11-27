@@ -114,6 +114,13 @@ const char style[] PROGMEM = R"rawliteral(
         align-content: center;
     }
 
+        
+    #home {
+        width: 530px;
+        margin: 0 auto;
+        align-content: center;
+    }
+
     #hdr {
         text-align: center;
     }
@@ -260,5 +267,19 @@ const char style[] PROGMEM = R"rawliteral(
             grid-template-columns: 1fr;
         }
     }
+    .controller {
+      display: grid;
+      grid-template-columns: 80px 80px 80px;
+      grid-template-rows: 80px 80px 80px;
+      gap: 10px;
+    }
+        /* Positioning the buttons */
+    .up    { grid-column: 2; grid-row: 1; }
+    .left  { grid-column: 1; grid-row: 2; }
+    .stop  { grid-column: 2; grid-row: 2; background: #ef4444; }
+    .right { grid-column: 3; grid-row: 2; }
+    .down  { grid-column: 2; grid-row: 3; }
+
+
 </style>
 )rawliteral";

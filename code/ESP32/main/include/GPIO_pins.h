@@ -187,6 +187,44 @@ void inline GPIO_Init() {
 #define ADC_Resolution 4095.0
 
 #endif
+
+#ifdef Lilygo_Relay_6CH
+
+#define FACTORY_RESET_PIN GPIO_NUM_2 // Clear NVRAM
+#define NUM_RELAYS 6
+
+// HT74HC595
+#define HT74HC595_CLOCK GPIO_NUM_5
+#define HT74HC595_LATCH GPIO_NUM_6
+#define HT74HC595_DATA GPIO_NUM_7
+#define HT74HC595_OUT_EN GPIO_NUM_4
+
+#define RTC_IRQ GPIO_NUM_18
+
+// I2C
+#define I2C_SDA GPIO_NUM_16
+#define I2C_SCL GPIO_NUM_17
+
+// OLED display definitions
+#define SCREEN_ADDRESS 0x3C // OLED 128X64 I2C address
+#define SCREEN_WIDTH 128    // OLED display width, in pixels
+#define SCREEN_HEIGHT 64    // OLED display height, in pixels
+#define OLED_RESET -1       // Reset pin # (or -1 if sharing Arduino reset pin)
+
+// Motor Controller
+#define PWMa_H GPIO_NUM_13
+#define ENABLE_H GPIO_NUM_12
+#define PWMb_H GPIO_NUM_14
+#define PWMa_V GPIO_NUM_27
+#define ENABLE_V GPIO_NUM_26
+#define PWMb_V GPIO_NUM_32
+
+// Anemometer
+#define AnemometerPin A0
+#define ADC_Resolution 4095.0
+
+#endif
+
 #ifdef ESP_32Dev
 
 #define WIFI_STATUS_PIN 2   // LED Pin

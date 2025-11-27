@@ -56,7 +56,7 @@ void Configuration::setDual(bool val) { _dualAxis = val; }
 
 void Configuration::setHasAnemometer(bool val) { _hasAnemometer = val; }
 
-void Configuration::SetLocation(float lat, float lon) {
+void Configuration::SetLocation(double lat, double lon) {
    _latitude = lat;
    _longitude = lon;
 }
@@ -138,8 +138,19 @@ void Configuration::Save(JsonDocument &doc) {
    logi("Saved settings");
 }
 
-/*
-        Configuration|{"_dual":true,"_lat":45.936527,"_long":75.091255,"_eastAz":90.0,"_westAz":270.0,"_minElevation":0.0,"_maxElevation":90.0,"_secondsTime":1444033308}
-        */
+void Configuration::onSubmitForm(JsonDocument &doc) {
+   _dualAxis = doc["_dualAxis"].isNull() ? false : doc["_dualAxis"].as<bool>();
+   _hasAnemometer = doc["_hasAnemometer"].isNull() ? false : doc["_hasAnemometer"].as<bool>();
+   _eastAzimuth = doc["_eastAzimuth"].isNull() ? AzimuthMin : doc["_eastAzimuth"].as<int>();
+   _westAzimuth = doc["_westAzimuth"].isNull() ? AzimuthMax : doc["_westAzimuth"].as<int>();
+   _minimumElevation = doc["_minimumElevation"].isNull() ? ElevationMin : doc["_minimumElevation"].as<int>();
+   _maximumElevation = doc["_maximumElevation"].isNull() ? ElevationMax : doc["_maximumElevation"].as<int>();
+   _latitude = doc["_latitude"].isNull() ? LocationLatitude : doc["_latitude"].as<double>();
+   _longitude = doc["_longitude"].isNull() ? LocationLongitude : doc["_longitude"].as<double>();
+   _horizontalLength = doc["_horizontalLength"].isNull() ? ActuatorHorizontalLength : doc["_horizontalLength"].as<int>();
+   _verticalLength = doc["_verticalLength"].isNull() ? ActuatorVerticalLength : doc["_verticalLength"].as<int>();
+   _horizontalSpeed = doc["_horizontalSpeed"].isNull() ? ActuatorHorizontalSpeed : doc["_horizontalSpeed"].as<int>();
+   _verticalSpeed = doc["_verticalSpeed"].isNull() ? ActuatorVerticalSpeed : doc["_verticalSpeed"].as<int>();
+}
 
 } // namespace CLASSICDIY

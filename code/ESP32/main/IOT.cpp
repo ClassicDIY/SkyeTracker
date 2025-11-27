@@ -152,7 +152,10 @@ void IOT::Init(IOTCallbackInterface *iotCB, AsyncWebServer *pwebServer) {
       RedirectToHome(request);
       _needToReboot = true;
    });
-   _pwebServer->onNotFound([this](AsyncWebServerRequest *request) { RedirectToHome(request); });
+   _pwebServer->onNotFound([this](AsyncWebServerRequest *request) {
+      logw("uri not found! %s", request->url());
+      RedirectToHome(request);
+   });
    basicAuth.setUsername("admin");
    basicAuth.setPassword(_AP_Password.c_str());
    basicAuth.setAuthFailureMessage("Authentication failed!");
@@ -255,119 +258,69 @@ void IOT::Init(IOTCallbackInterface *iotCB, AsyncWebServer *pwebServer) {
             })
        .addMiddleware(&basicAuth);
 
-   _pwebServer->on("/submit", HTTP_POST, [this](AsyncWebServerRequest *request) {
-      logd("submit");
-      if (request->hasParam("AP_SSID", true)) {
-         String ap_ssid = request->getParam("AP_SSID", true)->value();
-         ap_ssid.trim();
-         _AP_SSID = ap_ssid.c_str();
-      }
-      if (request->hasParam("AP_Pw", true)) {
-         _AP_Password = request->getParam("AP_Pw", true)->value().c_str();
-      }
-      if (request->hasParam("SSID", true)) {
-         String ssid = request->getParam("SSID", true)->value();
-         ssid.trim();
-         _SSID = ssid.c_str();
-      }
-      if (request->hasParam("networkSelector", true)) {
-         String sel = request->getParam("networkSelector", true)->value();
-         _NetworkSelection = sel == "APMode" ? APMode : sel == "wifi" ? WiFiMode : sel == "ethernet" ? EthernetMode : ModemMode;
-      }
-      if (request->hasParam("WiFi_Pw", true)) {
-         _WiFi_Password = request->getParam("WiFi_Pw", true)->value().c_str();
-      }
-      if (request->hasParam("APN", true)) {
-         _APN = request->getParam("APN", true)->value().c_str();
-      }
-      if (request->hasParam("SIM_USERNAME", true)) {
-         _SIM_Username = request->getParam("SIM_USERNAME", true)->value().c_str();
-      }
-      if (request->hasParam("SIM_PASSWORD", true)) {
-         _SIM_Password = request->getParam("SIM_PASSWORD", true)->value().c_str();
-      }
-      if (request->hasParam("SIM_PIN", true)) {
-         _SIM_PIN = request->getParam("SIM_PIN", true)->value().c_str();
-      }
-#ifdef HasEthernet
-      _useDHCP = request->hasParam("dhcpCheckbox", true);
-      if (request->hasParam("ETH_SIP", true)) {
-         _Static_IP = request->getParam("ETH_SIP", true)->value().c_str();
-      }
-      if (request->hasParam("ETH_SM", true)) {
-         _Subnet_Mask = request->getParam("ETH_SM", true)->value().c_str();
-      }
-      if (request->hasParam("ETH_GW", true)) {
-         _Gateway_IP = request->getParam("ETH_GW", true)->value().c_str();
-      }
-#endif
+   _pwebServer->on(
+       "/settings", HTTP_POST,
+       [this](AsyncWebServerRequest *request) {
+          // This callback is called after the body is processed
+          request->send(200, "application/json", "{\"status\":\"ok\"}");
+       },
+       NULL, // file upload handler (not used here)
+       [this](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
+          JsonDocument iot;
+          DeserializationError err = deserializeJson(iot, data, len);
+          if (err) {
+             loge("JSON parse failed!");
+             return;
+          }
+          String jsonString;
+          serializeJson(iot, jsonString);
+          Serial.println(jsonString.c_str());
+          String ap_ssid = iot["AP_SSID"].isNull() ? TAG : iot["AP_SSID"].as<String>();
+          ap_ssid.trim();
+          _AP_SSID = ap_ssid.c_str();
+          _AP_Password = iot["AP_Pw"].isNull() ? DEFAULT_AP_PASSWORD : iot["AP_Pw"].as<String>();
+          String ssid = iot["SSID"].isNull() ? "" : iot["SSID"].as<String>();
+          ssid.trim();
+          _SSID = ssid.c_str();
+          String sel = iot["networkSelector"].isNull() ? "APMode" : iot["networkSelector"].as<String>();
+          _NetworkSelection = sel == "APMode" ? APMode : sel == "wifi" ? WiFiMode : sel == "ethernet" ? EthernetMode : ModemMode;
+          _WiFi_Password = iot["WiFi_Pw"].isNull() ? "" : iot["WiFi_Pw"].as<String>();
+          _APN = iot["APN"].isNull() ? "" : iot["APN"].as<String>();
+          _SIM_Username = iot["SIM_USERNAME"].isNull() ? "" : iot["SIM_USERNAME"].as<String>();
+          _SIM_Password = iot["SIM_PASSWORD"].isNull() ? "" : iot["SIM_PASSWORD"].as<String>();
+          _SIM_PIN = iot["SIM_PIN"].isNull() ? "" : iot["SIM_PIN"].as<String>();
+          _useDHCP = iot["useDHCP"].isNull() ? false : iot["useDHCP"].as<bool>();
+          _Static_IP = iot["ETH_SIP"].isNull() ? "" : iot["ETH_SIP"].as<String>();
+          _Subnet_Mask = iot["ETH_SM"].isNull() ? "" : iot["ETH_SM"].as<String>();
+          _Gateway_IP = iot["ETH_GW"].isNull() ? "" : iot["ETH_GW"].as<String>();
 #ifdef HasMQTT
-      _useMQTT = request->hasParam("mqttCheckbox", true);
-      if (request->hasParam("mqttServer", true)) {
-         _mqttServer = request->getParam("mqttServer", true)->value().c_str();
-      }
-      if (request->hasParam("mqttPort", true)) {
-         _mqttPort = request->getParam("mqttPort", true)->value().toInt();
-      }
-      if (request->hasParam("mqttUser", true)) {
-         _mqttUserName = request->getParam("mqttUser", true)->value().c_str();
-      }
-      if (request->hasParam("mqttPw", true)) {
-         _mqttUserPassword = request->getParam("mqttPw", true)->value().c_str();
-      }
+          _useMQTT = iot["useMQTT"].isNull() ? false : iot["useMQTT"].as<bool>();
+          _mqttServer = iot["mqttServer"].isNull() ? "" : iot["mqttServer"].as<String>();
+          _mqttPort = iot["mqttPort"].isNull() ? 1883 : iot["mqttPort"].as<uint16_t>();
+          _mqttUserName = iot["mqttUser"].isNull() ? "" : iot["mqttUser"].as<String>();
+          _mqttUserPassword = iot["mqttPw"].isNull() ? "" : iot["mqttPw"].as<String>();
 #endif
 #ifdef HasModbus
-      _useModbus = request->hasParam("modbusCheckbox", true);
-      if (request->hasParam("modbusModeSelector", true)) {
-         String sel = request->getParam("modbusModeSelector", true)->value();
-         _ModbusMode = sel == "tcp" ? TCP : RTU;
-      }
-      if (request->hasParam("svrRTUBaud", true)) {
-         _modbusBaudRate = request->getParam("svrRTUBaud", true)->value().toInt();
-      }
-      if (request->hasParam("svrRTUParity", true)) {
-         String sel = request->getParam("svrRTUParity", true)->value().c_str();
-         _modbusParity = sel == "none" ? UART_PARITY_DISABLE : sel == "even" ? UART_PARITY_EVEN : UART_PARITY_ODD;
-      }
-      if (request->hasParam("svrRTUStopBits", true)) {
-         String sel = request->getParam("svrRTUStopBits", true)->value().c_str();
-         _modbusStopBits = sel == "1" ? UART_STOP_BITS_1 : UART_STOP_BITS_2;
-      }
-      if (request->hasParam("modbusPort", true)) {
-         _modbusPort = request->getParam("modbusPort", true)->value().toInt();
-      }
-      if (request->hasParam("modbusID", true)) {
-         _modbusID = request->getParam("modbusID", true)->value().toInt();
-      }
-      if (request->hasParam("inputRegBase", true)) {
-         _input_register_base_addr = request->getParam("inputRegBase", true)->value().toInt();
-      }
-      if (request->hasParam("coilBase", true)) {
-         _coil_base_addr = request->getParam("coilBase", true)->value().toInt();
-      }
-      if (request->hasParam("discreteBase", true)) {
-         _discrete_input_base_addr = request->getParam("discreteBase", true)->value().toInt();
-      }
-      if (request->hasParam("holdingRegBase", true)) {
-         _holding_register_base_addr = request->getParam("holdingRegBase", true)->value().toInt();
-      }
-      _useModbusBridge = request->hasParam("modbusBridgeCheckbox", true);
-      if (request->hasParam("clientRTUBaud", true)) {
-         _modbusClientBaudRate = request->getParam("clientRTUBaud", true)->value().toInt();
-      }
-      if (request->hasParam("clientRTUParity", true)) {
-         String sel = request->getParam("clientRTUParity", true)->value().c_str();
-         _modbusClientParity = sel == "none" ? UART_PARITY_DISABLE : sel == "even" ? UART_PARITY_EVEN : UART_PARITY_ODD;
-      }
-      if (request->hasParam("clientRTUStopBits", true)) {
-         String sel = request->getParam("clientRTUStopBits", true)->value().c_str();
-         _modbusClientStopBits = sel == "1" ? UART_STOP_BITS_1 : UART_STOP_BITS_2;
-      }
+          _useModbus = iot["useModbus"].isNull() ? false : iot["useModbus"].as<bool>();
+          _ModbusMode = iot["modbusMode"].isNull() ? TCP : iot["modbusMode"].as<ModbusMode>();
+          _modbusBaudRate = iot["svrRTUBaud"].isNull() ? 9600 : iot["svrRTUBaud"].as<uint32_t>();
+          _modbusParity = iot["svrRTUParity"].isNull() ? UART_PARITY_DISABLE : iot["svrRTUParity"].as<uart_parity_t>();
+          _modbusStopBits = iot["svrRTUStopBits"].isNull() ? UART_STOP_BITS_1 : iot["svrRTUStopBits"].as<uart_stop_bits_t>();
+          _modbusPort = iot["modbusPort"].isNull() ? 502 : iot["modbusPort"].as<uint16_t>();
+          _modbusID = iot["modbusID"].isNull() ? 1 : iot["modbusID"].as<uint16_t>();
+          _input_register_base_addr = iot["inputRegBase"].isNull() ? INPUT_REGISTER_BASE_ADDRESS : iot["inputRegBase"].as<uint16_t>();
+          _coil_base_addr = iot["coilBase"].isNull() ? COIL_BASE_ADDRESS : iot["coilBase"].as<uint16_t>();
+          _discrete_input_base_addr = iot["discreteBase"].isNull() ? DISCRETE_BASE_ADDRESS : iot["discreteBase"].as<uint16_t>();
+          _holding_register_base_addr = iot["holdingRegBase"].isNull() ? HOLDING_REGISTER_BASE_ADDRESS : iot["holdingRegBase"].as<uint16_t>();
+          _useModbusBridge = iot["useModbusBridge"].isNull() ? false : iot["useModbusBridge"].as<bool>();
+          _modbusClientBaudRate = iot["modbusClientBaudRate"].isNull() ? 9600 : iot["modbusClientBaudRate"].as<uint32_t>();
+          _modbusClientParity = iot["modbusClientParity"].isNull() ? UART_PARITY_DISABLE : iot["modbusClientParity"].as<uart_parity_t>();
+          _modbusClientStopBits = iot["modbusClientStopBits"].isNull() ? UART_STOP_BITS_1 : iot["modbusClientStopBits"].as<uart_stop_bits_t>();
 #endif
-      _iotCB->onSubmitForm(request);
-      RedirectToHome(request);
-      saveSettings();
-   });
+          _iotCB->onSubmitForm(iot);
+          RedirectToHome(request);
+          saveSettings();
+       });
 }
 
 void IOT::RedirectToHome(AsyncWebServerRequest *request) {
@@ -440,7 +393,7 @@ void IOT::loadSettings() {
 
 void IOT::saveSettings() {
    _NetworkSelection = WiFiMode;
-   _SSID= "SkyeNet";
+   _SSID = "SkyeNet";
    _WiFi_Password = "acura22546";
    JsonDocument doc;
    JsonObject iot = doc["iot"].to<JsonObject>();
@@ -532,17 +485,17 @@ void IOT::Run() {
       } else {
          Serial.read(); // discard data
       }
-      if ((now - _FlasherIPConfigStart) > FLASHER_TIMEOUT)  { // wait for flasher tool to send Wifi info
+      if ((now - _FlasherIPConfigStart) > FLASHER_TIMEOUT) { // wait for flasher tool to send Wifi info
          logd("Done waiting for flasher!");
          setState(ApState); // switch to AP mode for AP_TIMEOUT
       }
    } else if (_networkState == Boot) { // have network selection, start with wifiAP for AP_TIMEOUT then STA mode
-      setState(ApState); // switch to AP mode for AP_TIMEOUT
+      setState(ApState);               // switch to AP mode for AP_TIMEOUT
    } else if (_networkState == ApState) {
-      if (_NetworkSelection != APMode) { // don't try to connect if in APMode
-         if (_AP_Connected == false) {   // if AP client is connected, stay in AP mode
+      if (_NetworkSelection != APMode) {                   // don't try to connect if in APMode
+         if (_AP_Connected == false) {                     // if AP client is connected, stay in AP mode
             if ((now - _waitInAPTimeStamp) > AP_TIMEOUT) { // switch to selected network after waiting in APMode for AP_TIMEOUT duration
-               if (_SSID.length() > 0) { // is it setup yet?
+               if (_SSID.length() > 0) {                   // is it setup yet?
                   logd("Connecting to network: %d", _NetworkSelection);
                   setState(Connecting);
                }

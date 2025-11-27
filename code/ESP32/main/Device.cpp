@@ -230,11 +230,11 @@ void Device::Run() {
    }
 }
 
-void Device::SetRelay(const uint8_t index, const uint8_t value) { HT74HC595->set(index, value); }
+// void Device::SetRelay(const uint8_t index, const uint8_t value) { HT74HC595->set(index, value); }
 
-boolean Device::GetRelay(const uint8_t index) { return HT74HC595->get(index); }
+// boolean Device::GetRelay(const uint8_t index) { return HT74HC595->get(index); }
 
-bool Device::GetDigitalLevel(const uint8_t index) { return (bool)digitalRead(_DigitalSensors[index]); }
+// bool Device::GetDigitalLevel(const uint8_t index) { return (bool)digitalRead(_DigitalSensors[index]); }
 
 #endif
 #ifdef Lilygo_Relay_4CH

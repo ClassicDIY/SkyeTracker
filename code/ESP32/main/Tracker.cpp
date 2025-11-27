@@ -91,9 +91,7 @@ void Tracker::Setup(ThreadController *controller) {
    logd("Initialize done!");
 }
 
-void Tracker::onSaveSetting(JsonDocument &doc) { 
-   _config.Save(doc); 
-}
+void Tracker::onSaveSetting(JsonDocument &doc) { _config.Save(doc); }
 
 void Tracker::onLoadSetting(JsonDocument &doc) { _config.Load(doc); }
 
@@ -108,7 +106,9 @@ void Tracker::addApplicationConfigs(String &page) {
    page.replace("{onload}", appScript);
 }
 
-void Tracker::onSubmitForm(AsyncWebServerRequest *request) {}
+void Tracker::onSubmitForm(JsonDocument &doc) {
+   _config.onSubmitForm(doc);
+}
 
 void Tracker::Process() {
    _iot.Run();

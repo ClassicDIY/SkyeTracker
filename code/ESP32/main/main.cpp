@@ -53,9 +53,9 @@ void setup() {
 void loop() {
    _tracker.Process();
    _controller.run();
-   if (_tracker.getState() == TrackerState_Standby) {
-      _tracker.Track();
-   }
+   // if (_tracker.getState() == TrackerState_Standby) {
+   //    _tracker.Track();
+   // }
    esp_task_wdt_reset(); // Feed the watchdog
    delay(10);
 }

@@ -79,7 +79,6 @@ const char network_config_top[] PROGMEM = R"rawliteral(
               }
             }
             else {
-                console.log("Selected:", selectedValue);
                 document.getElementById(selectedValue + '-fields').classList.remove('hidden');
                 var mqttEl = document.getElementById('mqtt');
                 if (mqttEl) {
@@ -113,7 +112,7 @@ const char network_config_top[] PROGMEM = R"rawliteral(
             modbusBridgeFieldset(document.getElementById("modbusBridgeCheckbox"));
             toggleMDBridgeFieldset();
           }
-          var dhcpEl = document.getElementById('dhcpCheckbox');
+          var dhcpEl = document.getElementById('useDHCP');
           if (dhcpEl) {
             dhcpCheck(dhcpEl);
           }
@@ -177,7 +176,7 @@ const char network_config[] PROGMEM = R"rawliteral(
     <div id="ethernet-fields" class="hidden">
       <fieldset id="dhcp" class="fs">
         <legend>
-          <label><input type="checkbox" id="dhcpCheckbox" name="dhcpCheckbox" onclick="dhcpCheck(this)" {dhcpChecked}> Use DHCP</label>
+          <label><input type="checkbox" id="useDHCP" name="useDHCP" onclick="dhcpCheck(this)" {dhcpChecked}> Use DHCP</label>
         </legend>
         <div class="form-grid">
           <label for="ETH_SIP">Static IP</label>

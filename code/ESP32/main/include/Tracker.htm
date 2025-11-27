@@ -2,6 +2,10 @@
 
 const char onload_script[] PROGMEM = R"rawliteral(
   loadSettings();
+  const form = document.getElementById('settingsForm');
+  if (form) {
+    form.addEventListener('submit', saveSettings);
+  }
 )rawliteral";
 
 const char app_script[] PROGMEM = R"rawliteral(
@@ -62,6 +66,7 @@ const char app_script[] PROGMEM = R"rawliteral(
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
+      console.log("saveSettings:", JSON.stringify(data));
       if (!res.ok) throw new Error('Save failed');
       status.innerHTML = '<span class="ok">Settings saved.</span>';
     } catch (e) {
@@ -69,6 +74,19 @@ const char app_script[] PROGMEM = R"rawliteral(
     }
   }
 
+    function sendCommand(cmd) {
+      console.log("Command:", cmd);
+      // Example: send to device via HTTP
+      fetch('/control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: cmd })
+      })
+      .then(res => res.text())
+      .then(txt => console.log("Response:", txt))
+      .catch(err => console.error("Error:", err));
+    }
+    
 </script>
 
 )rawliteral";
@@ -88,12 +106,24 @@ const char home_html[] PROGMEM = R"rawliteral(
 </head>
 
 <body>
-  <h2>{n}</h2>
-  <div style='font-size: .6em;'>Firmware config version '{v}'</div>
-  <hr>
-  <div class="link-row">
-    <p><a href='settings'>Settings</a></p>
-    <p><a href='/log' target='_blank'>Web Log</a></p>
+  <div id="home">
+    <div id="hdr">
+      <h2>{n}</h2>
+      <div style='font-size: .6em;'>Firmware config version '{v}'</div>
+      <hr>
+      <div class="controller">
+        <button class="up"    onclick="sendCommand('up')">Up</button>
+        <button class="left"  onclick="sendCommand('left')">Left</button>
+        <button class="stop"  onclick="sendCommand('stop')">Stop</button>
+        <button class="right" onclick="sendCommand('right')">Right</button>
+        <button class="down"  onclick="sendCommand('down')">Down</button>
+      </div>
+
+      <div class="link-row">
+        <p><a href='settings'>Settings</a></p>
+        <p><a href='/log' target='_blank'>Web Log</a></p>
+      </div>
+    </div>
   </div>
 </body>
 

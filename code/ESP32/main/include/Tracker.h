@@ -58,7 +58,7 @@ class Tracker : public Device, public Thread, public IOTCallbackInterface {
    // IOTCallbackInterface
    void onNetworkState(NetworkState state);
    void addApplicationConfigs(String &page);
-   void onSubmitForm(AsyncWebServerRequest *request);
+   void onSubmitForm(JsonDocument &doc);
    void onSaveSetting(JsonDocument &doc);
    void onLoadSetting(JsonDocument &doc);
 #ifdef HasMQTT
