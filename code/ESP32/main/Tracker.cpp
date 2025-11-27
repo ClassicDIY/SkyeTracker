@@ -24,6 +24,7 @@ Tracker::Tracker() {
    _errorState = TrackerError_Ok;
    _waitingForMorning = false;
    _trackerState = TrackerState_Off;
+   _config = Configuration();
 }
 
 Tracker::~Tracker() {
@@ -90,7 +91,9 @@ void Tracker::Setup(ThreadController *controller) {
    logd("Initialize done!");
 }
 
-void Tracker::onSaveSetting(JsonDocument &doc) { _config.Save(doc); }
+void Tracker::onSaveSetting(JsonDocument &doc) { 
+   _config.Save(doc); 
+}
 
 void Tracker::onLoadSetting(JsonDocument &doc) { _config.Load(doc); }
 
@@ -116,7 +119,12 @@ void Tracker::Process() {
    return;
 }
 
-void Tracker::onNetworkState(NetworkState state) { _networkState = state; }
+void Tracker::onNetworkState(NetworkState state) {
+   _networkState = state;
+   if (_networkState == OnLine) {
+      _config.GeoLocate(); // try to find current location if not set by user
+   }
+}
 
 void Tracker::Move(Direction dir) {
    switch (dir) {

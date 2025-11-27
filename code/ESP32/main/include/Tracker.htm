@@ -122,11 +122,11 @@ const char app_config[] PROGMEM = R"rawliteral(
     <!-- Geolocation -->
     <div class="field">
       <label for="_latitude">Latitude (degrees, -90&deg; to 90&deg;)</label>
-      <input type="number" id="_latitude" name="_latitude" step="1" min="-90" max="90" inputmode="numeric" />
+      <input type="number" id="_latitude" name="_latitude" min="-90" max="90" step="any"/>
     </div>
     <div class="field">
       <label for="_longitude">Longitude (degrees, -180&deg; to 180&deg;)</label>
-      <input type="number" id="_longitude" name="_longitude" step="1" min="-180" max="180" inputmode="numeric"  />
+      <input type="number" id="_longitude" name="_longitude" min="-180" max="180" step="any"/>
     </div>
 
     <!-- Azimuths -->

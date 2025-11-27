@@ -1,3 +1,4 @@
+#include <HTTPClient.h>
 #include "Configuration.h"
 #include "defines.h"
 #include "GPIO_pins.h"
@@ -17,6 +18,39 @@ Configuration::Configuration() {
 }
 
 Configuration::~Configuration() {}
+
+void Configuration::GeoLocate() {
+   if (_geolocated == false) {
+      HTTPClient http;
+      http.begin("http://ip-api.com/json/"); // Free IP geolocation API
+      int httpCode = http.GET();
+
+      if (httpCode > 0) {
+         String payload = http.getString();
+         logd("Response: %s", payload.c_str());
+
+         // Parse JSON
+         JsonDocument doc;
+         DeserializationError error = deserializeJson(doc, payload);
+         if (!error) {
+            _latitude = doc["lat"];
+            _longitude = doc["lon"];
+            _geolocated = true;
+            const char *city = doc["city"];
+            const char *country = doc["country"];
+            logd("Latitude: %f", _latitude);
+            logd("Longitude: %f", _longitude);
+            logd("City: %s", city);
+            logd("Country: %s", country);
+         } else {
+            logd("JSON parsing failed!");
+         }
+      } else {
+         logd("HTTP request failed, code: %d\n", httpCode);
+      }
+      http.end();
+   }
+}
 
 void Configuration::setDual(bool val) { _dualAxis = val; }
 
@@ -76,13 +110,14 @@ void Configuration::Load(JsonDocument &doc) {
    _westAzimuth = trk["_westAzimuth"].isNull() ? 0 : trk["_westAzimuth"].as<int>();
    _minimumElevation = trk["_minimumElevation"].isNull() ? 0 : trk["_minimumElevation"].as<int>();
    _maximumElevation = trk["_maximumElevation"].isNull() ? 0 : trk["_maximumElevation"].as<int>();
-   _latitude = trk["_latitude"].isNull() ? 0 : trk["_latitude"].as<int>();
-   _longitude = trk["_longitude"].isNull() ? 0 : trk["_longitude"].as<int>();
+   _latitude = trk["_latitude"].isNull() ? 0 : trk["_latitude"].as<float>();
+   _longitude = trk["_longitude"].isNull() ? 0 : trk["_longitude"].as<float>();
    _horizontalLength = trk["_horizontalLength"].isNull() ? 0 : trk["_horizontalLength"].as<int>();
    _verticalLength = trk["_verticalLength"].isNull() ? 0 : trk["_verticalLength"].as<int>();
    _horizontalSpeed = trk["_horizontalSpeed"].isNull() ? 0 : trk["_horizontalSpeed"].as<int>();
    _verticalSpeed = trk["_verticalSpeed"].isNull() ? 0 : trk["_verticalSpeed"].as<int>();
-   _hasAnemometer = trk["_hasAnemometer"].isNull() ? 0 : trk["_hasAnemometer"].as<int>();
+   _hasAnemometer = trk["_hasAnemometer"].isNull() ? 0 : trk["_hasAnemometer"].as<bool>();
+   _geolocated = trk["_geolocated"].isNull() ? 0 : trk["_geolocated"].as<bool>();
 }
 
 void Configuration::Save(JsonDocument &doc) {
@@ -99,6 +134,7 @@ void Configuration::Save(JsonDocument &doc) {
    trk["_horizontalSpeed"] = _horizontalSpeed;
    trk["_verticalSpeed"] = _verticalSpeed;
    trk["_hasAnemometer"] = _hasAnemometer;
+   trk["_geolocated"] = _geolocated;
    logi("Saved settings");
 }
 

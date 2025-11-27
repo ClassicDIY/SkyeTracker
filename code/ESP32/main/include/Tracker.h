@@ -80,7 +80,7 @@ class Tracker : public Device, public Thread, public IOTCallbackInterface {
    void Cycle();
    void run();
 
-   Configuration _config = Configuration();
+   Configuration _config;
    boolean _discoveryPublished = false;
    String _lastMessagePublished;
    unsigned long _lastPublishTimeStamp = 0;

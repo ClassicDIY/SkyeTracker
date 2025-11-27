@@ -37,6 +37,7 @@ class Configuration {
    int _verticalLength;
    int _horizontalSpeed;
    int _verticalSpeed;
+   bool _geolocated = false;
 
  public:
    bool isDual() { return _dualAxis; }
@@ -58,6 +59,7 @@ class Configuration {
    void SetActuatorParameters(int horizontalLength, int verticalLength, int horizontalSpeed, int verticalSpeed);
    void Load(JsonDocument &doc);
    void Save(JsonDocument &doc);
+   void GeoLocate();
 };
 
 } // namespace CLASSICDIY
