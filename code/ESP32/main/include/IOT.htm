@@ -116,11 +116,70 @@ const char network_config_top[] PROGMEM = R"rawliteral(
           if (dhcpEl) {
             dhcpCheck(dhcpEl);
           }
-          {onload}
+          loadSettings();
+          const form = document.getElementById('settingsForm');
+          if (form) {
+            form.addEventListener('submit', saveSettings);
+          }
 		    }
         function validateInputs() {
             {validateInputs}
             return true;
+        }
+
+        async function loadSettings() {
+        const status = document.getElementById('status');
+          try {
+            const res = await fetch('/appsettings', { method: 'GET' });
+            if (!res.ok) throw new Error('Failed to load');
+            const cfg = await res.json();
+            setFormValues(cfg);
+          } catch (e) {
+            status.innerHTML = '<span class="err">Load failed.</span>';
+          }
+        }
+
+        function setFormValues(cfg) {
+          const form = document.getElementById('settingsForm');
+          for (const [k, v] of Object.entries(cfg)) {
+            const el = form.elements.namedItem(k);
+            if (!el) continue;
+            if (el.type === 'checkbox') el.checked = !!v;
+            else el.value = v;
+          }
+        }
+
+        function getFormValues() {
+          const form = document.getElementById('settingsForm');
+          const data = {};
+          for (const el of form.elements) {
+            if (!el.name) continue;
+            if (el.type === 'checkbox') data[el.name] = el.checked;
+            else if (el.type === 'number') data[el.name] = el.value === '' ? null : Number(el.value);
+            else data[el.name] = el.value;
+          }
+          return data;
+        }
+        async function saveSettings(evt) {
+          evt.preventDefault();
+          const status = document.getElementById('status');
+          status.textContent = '';
+
+          try {
+            const data = getFormValues();
+            {validate}
+
+            const res = await fetch('/settings', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data)
+            });
+            console.log("saveSettings:", JSON.stringify(data));
+            if (!res.ok) throw new Error('Save failed');
+            status.innerHTML = '<span class="ok">Settings saved.</span>';
+          } catch (e) {
+            status.innerHTML = '<span class="err">' + e.message + '</span>';
+          }
         }
     {script}
     </script>

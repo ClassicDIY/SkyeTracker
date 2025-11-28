@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <memory>
 #include "Wire.h"
 #include <ArduinoJson.h>
 #include "Log.h"
@@ -193,17 +192,15 @@ bool Device::GetDigitalLevel(const uint8_t index) { return (bool)digitalRead(_Di
 #endif
 #ifdef Lilygo_Relay_6CH
 
-#include <ShiftRegister74HC595.h>
-std::shared_ptr<ShiftRegister74HC595<1>> HT74HC595 =
-    std::make_shared<ShiftRegister74HC595<1>>(HT74HC595_DATA, HT74HC595_CLOCK, HT74HC595_LATCH);
+
 
 void Device::Init() {
+   _reg = std::make_shared<ShiftRegister74HC595<1>>(HT74HC595_DATA, HT74HC595_CLOCK, HT74HC595_LATCH);
    pinMode(HT74HC595_OUT_EN, OUTPUT);
    digitalWrite(HT74HC595_OUT_EN, HIGH);
-   HT74HC595->setAllLow();
+   _reg->setAllLow();
    logd("Set HT74HC595_OUT_EN to low level to enable relay output");
    digitalWrite(HT74HC595_OUT_EN, LOW);
-
    Wire.begin(I2C_SDA, I2C_SCL);
 #ifdef Has_OLED_Display
    if (!oled_display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
@@ -221,20 +218,18 @@ void Device::Run() {
       if (binkRate < now - _lastBlinkTime) {
          _blinkStateOn = !_blinkStateOn;
          _lastBlinkTime = now;
-         HT74HC595->set(7, _blinkStateOn ? HIGH : LOW);
+         _reg->set(7, _blinkStateOn ? HIGH : LOW);
       }
    } else if (!_running) {
-      HT74HC595->set(7, LOW);
-      HT74HC595->set(6, HIGH);
+      _reg->set(7, LOW);
+      _reg->set(6, HIGH);
       _running = true;
    }
 }
 
-// void Device::SetRelay(const uint8_t index, const uint8_t value) { HT74HC595->set(index, value); }
+void Device::SetRelay(const uint8_t index, const uint8_t value) { _reg->set(index, value); }
 
-// boolean Device::GetRelay(const uint8_t index) { return HT74HC595->get(index); }
-
-// bool Device::GetDigitalLevel(const uint8_t index) { return (bool)digitalRead(_DigitalSensors[index]); }
+boolean Device::GetRelay(const uint8_t index) { return _reg->get(index); }
 
 #endif
 #ifdef Lilygo_Relay_4CH

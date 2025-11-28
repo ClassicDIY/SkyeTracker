@@ -42,9 +42,14 @@ void Tracker::Setup(ThreadController *controller) {
    _sun = new Sun(_config.getLat(), _config.getLon());
    _cycleTime = getTime();
    _sun->calcSun(&_cycleTime);
+#ifdef Lilygo_Relay_6CH
+   _azimuth = new LinearActuatorNoPot("Horizontal", 0, 1, _reg);
+   _elevation = new LinearActuatorNoPot("Vertical", 2, 3, _reg);
+#else
    _azimuth = new LinearActuatorNoPot("Horizontal", ENABLE_H, PWMa_H, PWMb_H);
-   controller->add(_azimuth);
    _elevation = new LinearActuatorNoPot("Vertical", ENABLE_V, PWMa_V, PWMb_V);
+#endif
+   controller->add(_azimuth);
    controller->add(_elevation);
    controller->add(this);
    InitializeActuators();
@@ -102,13 +107,13 @@ void Tracker::addApplicationConfigs(String &page) {
    appScript.replace("<script>", "");
    appScript.replace("</script>", "");
    page.replace("{script}", appScript);
-   appScript = onload_script;
-   page.replace("{onload}", appScript);
+   String valScript = validate_script;
+   valScript.replace("<script>", "");
+   valScript.replace("</script>", "");
+   page.replace("{validate}", valScript);
 }
 
-void Tracker::onSubmitForm(JsonDocument &doc) {
-   _config.onSubmitForm(doc);
-}
+void Tracker::onSubmitForm(JsonDocument &doc) { _config.onSubmitForm(doc); }
 
 void Tracker::Process() {
    _iot.Run();

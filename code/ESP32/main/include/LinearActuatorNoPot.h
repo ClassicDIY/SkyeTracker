@@ -1,5 +1,6 @@
 #pragma once
-
+#include <memory>
+#include <ShiftRegister74HC595.h>
 #include <ThreadController.h>
 #include <Thread.h>
 #include "Enumerations.h"
@@ -13,8 +14,15 @@
 namespace CLASSICDIY {
 
 class LinearActuatorNoPot : public Thread {
+
+#ifdef Lilygo_Relay_6CH
+std::shared_ptr<ShiftRegister74HC595<1>> _reg;
+ public:
+   LinearActuatorNoPot(String name, int relayOne, int relayTwo, std::shared_ptr<ShiftRegister74HC595<1>> reg);
+#else
  public:
    LinearActuatorNoPot(String name, int8_t enable, int8_t PWMa, int8_t PWMb);
+#endif
    virtual ~LinearActuatorNoPot();
 
  private:

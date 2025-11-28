@@ -1,17 +1,22 @@
 #pragma once
 #include <Arduino.h>
+#include <memory>
 #include "GPIO_pins.h"
 #include "Enumerations.h"
+#ifdef Lilygo_Relay_6CH
+#include <ShiftRegister74HC595.h>
+#endif
 
 namespace CLASSICDIY {
 class Device {
  protected:
    void Init();
    void Run();
-   // void SetRelay(const uint8_t index, const uint8_t value);
-   // boolean GetRelay(const uint8_t index);
-   // bool GetDigitalLevel(const uint8_t index);
-
+   void SetRelay(const uint8_t index, const uint8_t value);
+   boolean GetRelay(const uint8_t index);
+#ifdef Lilygo_Relay_6CH
+   std::shared_ptr<ShiftRegister74HC595<1>> _reg;
+#endif
    NetworkState _networkState = Boot;
    unsigned long _lastBlinkTime = 0;
    bool _blinkStateOn = false;
