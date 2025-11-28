@@ -12,10 +12,20 @@ const char validate_script[] PROGMEM = R"rawliteral(
   </script>
 )rawliteral";
 
-const char app_script[] PROGMEM = R"rawliteral(
-<script>
+const char home_html[] PROGMEM = R"rawliteral(
+<!DOCTYPE html>
+<html lang=\"en\">
 
-  function sendCommand(cmd) {
+<head>
+  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\" />
+  <title>{n}</title>
+
+  <script>
+
+  window.onload = function() {
+    initWebSocket();
+  }
+    function sendCommand(cmd) {
     console.log("Command:", cmd);
     // Example: send to device via HTTP
     fetch('/control', {
@@ -27,21 +37,17 @@ const char app_script[] PROGMEM = R"rawliteral(
     .then(txt => console.log("Response:", txt))
     .catch(err => console.error("Error:", err));
   }
-    
-</script>
-
-)rawliteral";
-
-const char home_html[] PROGMEM = R"rawliteral(
-<!DOCTYPE html>
-<html lang=\"en\">
-
-<head>
-  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\" />
-  <title>{n}</title>
-
-  <script>
-
+  function initWebSocket() {
+    const socket = new WebSocket('ws://' + window.location.hostname + '/ws_home');
+    socket.onmessage = function(event) {
+      const stateVal = JSON.parse(event.data);
+      document.getElementById('TrackerState').innerHTML = stateVal.state;
+    };
+    socket.onerror = function(error) {
+      console.error('WebSocket error:', error);
+    };
+    window.addEventListener('beforeunload', function() { if (socket) { socket.close(); } });
+  }
   </script>
   {style}
 </head>
@@ -60,6 +66,13 @@ const char home_html[] PROGMEM = R"rawliteral(
         <button class="down"  onclick="sendCommand('down')">Down</button>
       </div>
 
+      <div class="state">
+        <button class="track" onclick="sendCommand('track')">Track</button>
+        <button class="cycle" onclick="sendCommand('cycle')">Cycle</button>
+        <button class="park" onclick="sendCommand('park')">Park</button>
+        <button class="protect" onclick="sendCommand('protect')">Protect</button>
+      </div>
+      <div class="state_box" id="TrackerState">  </div>
       <div class="link-row">
         <p><a href='settings'>Settings</a></p>
         <p><a href='/log' target='_blank'>Web Log</a></p>

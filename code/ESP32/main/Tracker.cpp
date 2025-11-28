@@ -37,7 +37,7 @@ Tracker::~Tracker() {
 void Tracker::Setup(ThreadController *controller) {
    Init();
    _iot.Init(this, &_asyncServer);
-   setState(TrackerState_Initializing);
+   _trackerState = TrackerState_Off;
    _lastWindEvent = 0;
    _sun = new Sun(_config.getLat(), _config.getLon());
    _cycleTime = getTime();
@@ -52,7 +52,6 @@ void Tracker::Setup(ThreadController *controller) {
    controller->add(_azimuth);
    controller->add(_elevation);
    controller->add(this);
-   InitializeActuators();
    _asyncServer.on("/", HTTP_GET, [this](AsyncWebServerRequest *request) {
       String page = home_html;
       page.replace("{style}", style);
@@ -69,6 +68,48 @@ void Tracker::Setup(ThreadController *controller) {
       logd("/appsettings: %s", s.c_str());
       request->send(200, "text/html", s);
    });
+
+   _asyncServer.on(
+       "/control", HTTP_POST,
+       [this](AsyncWebServerRequest *request) {
+          // This callback is called after the body is processed
+          request->send(200, "application/json", "{\"status\":\"ok\"}");
+       },
+       NULL, // file upload handler (not used here)
+       [this](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
+          JsonDocument doc;
+          DeserializationError err = deserializeJson(doc, data, len);
+          if (err) {
+             loge("JSON parse failed!");
+             return;
+          }
+          String jsonString;
+          serializeJson(doc, jsonString);
+
+          String command = doc["command"];
+          logd("/control: %s => %s", jsonString.c_str(), command);
+          if (command == "up") {
+             Move(Direction_Up);
+          } else if (command == "down") {
+             Move(Direction_Down);
+          } else if (command == "left") {
+             Move(Direction_East);
+          } else if (command == "right") {
+             Move(Direction_West);
+          } else if (command == "stop") {
+             setState(TrackerState_Manual);
+             Stop();
+          } else if (command == "track") {
+             Track();
+          } else if (command == "cycle") {
+             Cycle();
+          } else if (command == "park") {
+             Park(false);
+          } else if (command == "protect") {
+             Park(true);
+          }
+       });
+
    _asyncServer.addHandler(&_webSocket).addMiddleware([this](AsyncWebServerRequest *request, ArMiddlewareNext next) {
       // ws.count() is the current count of WS clients: this one is trying to upgrade its HTTP connection
       if (_webSocket.count() > 1) {
@@ -86,14 +127,14 @@ void Tracker::Setup(ThreadController *controller) {
          client->setCloseClientOnQueueFull(false);
          client->ping();
       } else if (type == WS_EVT_DISCONNECT) {
-         // logi("Home Page Disconnected!");
+         logi("Home Page Disconnected!");
       } else if (type == WS_EVT_ERROR) {
          loge("ws error");
-         // } else if (type == WS_EVT_PONG) {
-         // 	logd("ws pong");
+      } else if (type == WS_EVT_PONG) {
+         logd("ws pong");
       }
    });
-   logd("Initialize done!");
+   logd("Setup done!");
 }
 
 void Tracker::onSaveSetting(JsonDocument &doc) { _config.Save(doc); }
@@ -103,10 +144,6 @@ void Tracker::onLoadSetting(JsonDocument &doc) { _config.Load(doc); }
 void Tracker::addApplicationConfigs(String &page) {
    String appFields = app_config;
    page += appFields;
-   String appScript = app_script;
-   appScript.replace("<script>", "");
-   appScript.replace("</script>", "");
-   page.replace("{script}", appScript);
    String valScript = validate_script;
    valScript.replace("<script>", "");
    valScript.replace("</script>", "");
@@ -118,6 +155,9 @@ void Tracker::onSubmitForm(JsonDocument &doc) { _config.onSubmitForm(doc); }
 void Tracker::Process() {
    _iot.Run();
    Run(); // base class
+   if (_trackerState == TrackerState_Off) {
+      InitializeActuators();
+   }
 #ifdef HasMQTT
    _iot.Publish("readings", s.c_str(), false);
 #endif
@@ -166,6 +206,7 @@ void Tracker::Cycle() {
 void Tracker::Track() {
    logd("Tracker track");
    if (_errorState != TrackerError_Ok) {
+      logd("Tracker error state: %s", describeTrackerError(_errorState));
       // traceln(_stm, F("Error detected, Tracker moving to default position"));
       // move array to face south as a default position when an error exists
       Park(true);
@@ -177,6 +218,7 @@ void Tracker::Track() {
       }
       enabled = true;
       setInterval(POSITION_UPDATE_INTERVAL);
+      logd("Track setState");
       setState(TrackerState_Tracking);
       this->run();
    }
@@ -274,7 +316,19 @@ void Tracker::setState(TrackerState state) {
    return;
 }
 
+void Tracker::UpdateState(String &st) {
+   if (_webSocket.enabled()) {
+      JsonDocument doc;
+      doc["state"] = st.c_str();
+      String s;
+      serializeJson(doc, s);
+      _webSocket.textAll(s);
+      logd("_webSocket Sent %s", s.c_str());
+   }
+}
+
 void Tracker::InitializeActuators() {
+   logd("InitializeActuators");
    _azimuth->Initialize(_config.getEastAzimuth(), _config.getWestAzimuth(), _config.getHorizontalLength(), _config.getHorizontalSpeed(),
                         _config.getLat() < 0);
    if (_config.isDual()) {
@@ -283,12 +337,15 @@ void Tracker::InitializeActuators() {
    }
    setInterval(POSITION_UPDATE_INTERVAL);
    setState(TrackerState_Standby);
+   String stateStr = "Initializing Actuators";
+   UpdateState(stateStr);
 }
 
 void Tracker::run() {
    runned();
    TrackerState state = getState();
    _cycleTime = getTime();
+   String stateStr;
    switch (state) {
    case TrackerState_Cycling:
       if (_azimuth->getState() == ActuatorState_Stopped && _elevation->getState() == ActuatorState_Stopped) {
@@ -301,18 +358,22 @@ void Tracker::run() {
          _cycleTime = mktime(ptm);
          _sun->calcSun(&_cycleTime);
       }
+      stateStr = "Cycling";
       break;
    case TrackerState_Tracking:
       _sun->calcSun(&_cycleTime);
+      stateStr = "Tracking";
       break;
    default:
       return;
    }
    if (_sun->ItsDark()) {
       WaitForMorning();
+      stateStr = "Waiting for Morning";
    } else {
       _waitingForMorning = false;
       TrackToSun();
+      stateStr = "Track To Sun";
    }
    if (_config.hasAnemometer()) {
       float windSpeed = _anemometer.WindSpeed();
@@ -327,6 +388,8 @@ void Tracker::run() {
             _recordedWindSpeedAtLastEvent = windSpeed;
             Park(true);
             _protectCountdown = 300; // 10 minute countdown to resume tracking
+
+            stateStr = "High winds detected";
          }
       }
       if (getState() == TrackerState_Parked && --_protectCountdown <= 0) {
@@ -334,6 +397,7 @@ void Tracker::run() {
          Resume();
       }
    }
+   UpdateState(stateStr);
 };
 
 /// <summary>

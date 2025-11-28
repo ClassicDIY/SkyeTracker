@@ -72,6 +72,7 @@ class Tracker : public Device, public Thread, public IOTCallbackInterface {
    boolean PublishDiscoverySub(const char *component, const char *entityName, const char *jsonElement, const char *device_class,
                                const char *unit_of_meas, const char *icon = "");
    bool ReadyToPublish() { return (!_discoveryPublished); }
+   void UpdateState(String &s);
 
  private:
    void InitializeActuators();

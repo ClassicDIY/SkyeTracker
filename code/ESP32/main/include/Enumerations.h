@@ -30,4 +30,20 @@ enum TrackerError {
    TrackerError_HorizontalActuator,
    TrackerError_VerticalActuator
 };
+
+inline const char *describeTrackerError(TrackerError val) {
+   switch (val) {
+   case TrackerError_Ok:
+      return "Ok";
+   case TrackerError_SerialPort:
+      return "SerialPort";
+   case TrackerError_FailedToAccessRTC:
+      return "FailedToAccessRTC";
+   case TrackerError_HorizontalActuator:
+      return "HorizontalActuator";
+   case TrackerError_VerticalActuator:
+      return "VerticalActuator";
+   }
+   return "Unknown";
+}
 } // namespace CLASSICDIY

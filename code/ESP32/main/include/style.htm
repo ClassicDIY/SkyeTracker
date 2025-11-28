@@ -158,6 +158,7 @@ const char style[] PROGMEM = R"rawliteral(
         --danger: #ef4444;
         --ok: #10b981;
         --border: #2a2f3a;
+        --status: #10a0b9;
     }
 
     body {
@@ -270,8 +271,9 @@ const char style[] PROGMEM = R"rawliteral(
     .controller {
       display: grid;
       grid-template-columns: 80px 80px 80px;
-      grid-template-rows: 80px 80px 80px;
+      grid-template-rows: 80px 80px 80px 40px;
       gap: 10px;
+      justify-content: center;
     }
         /* Positioning the buttons */
     .up    { grid-column: 2; grid-row: 1; }
@@ -280,6 +282,26 @@ const char style[] PROGMEM = R"rawliteral(
     .right { grid-column: 3; grid-row: 2; }
     .down  { grid-column: 2; grid-row: 3; }
 
+    .state {
+      display: grid;
+      grid-template-columns: 80px 80px 80px 80px;
+      grid-template-rows: 40px;
+      gap: 10px;
+      justify-content: center;
+    }
+        /* Positioning the buttons */
+    .track { grid-column: 1; grid-row: 1; background: #07421e;  }
+    .cycle { grid-column: 2; grid-row: 1; }
+    .park  { grid-column: 3; grid-row: 1; }
+    .protect { grid-column: 4; grid-row: 1; }
 
+    .state_box {
+        margin: 10px;
+        color: var(--status);
+        display: inline-flex; /* Changed to inline-flex to allow the use of Flexbox */
+        align-items: center;  /* Vertically center the content */
+        justify-content: center; /* Horizontally center the content */
+        font-size:1.5rem;
+    }
 </style>
 )rawliteral";
