@@ -9,8 +9,17 @@
 #include <Adafruit_SSD1306.h>
 Adafruit_SSD1306 oled_display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 #endif
+
+#ifdef HasRTC
+#include "RTClib.h"
+RTC_PCF8563 rtc;
+#endif
+
+#ifdef EDGEBOX
 #include <Adafruit_ADS1X15.h>
 Adafruit_ADS1115 ads; /* Use this for the 16-bit version */
+#endif
+
 namespace CLASSICDIY {
 
 #ifdef ESP_32Dev
@@ -145,19 +154,6 @@ void Device::Init() {
       oled_display.clearDisplay();
    }
 #endif
-#ifdef HasRTC
-   if (!rtc.begin(&Wire)) {
-      loge("Couldn't find RTC");
-   }
-   if (rtc.lostPower()) {
-      logw("RTC is NOT initialized, let's set the time!");
-      rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-   }
-   // rtc.adjust(DateTime("Apr 16 2020","18:34:56"));
-   rtc.start();
-   DateTime now = rtc.now();
-   logi("Date Time: %s", now.timestamp().c_str());
-#endif
    for (int i = 0; i < DO_PINS; i++) {
       pinMode(_Coils[i], OUTPUT);
    }
@@ -192,8 +188,6 @@ bool Device::GetDigitalLevel(const uint8_t index) { return (bool)digitalRead(_Di
 #endif
 #ifdef Lilygo_Relay_6CH
 
-
-
 void Device::Init() {
    _reg = std::make_shared<ShiftRegister74HC595<1>>(HT74HC595_DATA, HT74HC595_CLOCK, HT74HC595_LATCH);
    pinMode(HT74HC595_OUT_EN, OUTPUT);
@@ -208,6 +202,28 @@ void Device::Init() {
    } else {
       oled_display.clearDisplay();
    }
+#endif
+#ifdef HasRTC
+   if (!rtc.begin(&Wire)) {
+      loge("Couldn't find RTC");
+   }
+   if (rtc.lostPower()) {
+      logw("RTC is NOT initialized, let's set the time!");
+      rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+   }
+   rtc.start();
+   DateTime dt = rtc.now();
+   logi("Date Time: %s", dt.timestamp().c_str());
+   struct tm tm;
+   tm.tm_year = dt.year() - 1900;
+   tm.tm_mon = dt.month() - 1;
+   tm.tm_mday = dt.day();
+   tm.tm_hour = dt.hour();
+   tm.tm_min = dt.minute();
+   tm.tm_sec = dt.second();
+   time_t t = mktime(&tm);
+   struct timeval tv = {.tv_sec = t, .tv_usec = 0};
+   settimeofday(&tv, nullptr);
 #endif
 }
 
@@ -225,6 +241,19 @@ void Device::Run() {
       _reg->set(6, HIGH);
       _running = true;
    }
+}
+void Device::SetRTC(struct tm *tm) {
+      // ✅ Write back to RTC
+      DateTime dt(
+        tm->tm_year + 1900,
+        tm->tm_mon + 1,
+        tm->tm_mday,
+        tm->tm_hour,
+        tm->tm_min,
+        tm->tm_sec
+      );
+      rtc.adjust(dt);
+
 }
 
 void Device::SetRelay(const uint8_t index, const uint8_t value) { _reg->set(index, value); }

@@ -51,6 +51,7 @@ void IOT::Init(IOTCallbackInterface *iotCB, AsyncWebServer *pwebServer) {
    pinMode(WIFI_STATUS_PIN,
            OUTPUT); // use LED for wifi AP status (note:edgeBox shares the LED pin with the serial TX gpio)
 #endif
+   pinMode(GPIO_NUM_0, INPUT_PULLUP);
 #ifdef FACTORY_RESET_PIN // use digital input pin for factory reset
    pinMode(FACTORY_RESET_PIN, INPUT_PULLUP);
    EEPROM.begin(EEPROM_SIZE);
@@ -153,7 +154,7 @@ void IOT::Init(IOTCallbackInterface *iotCB, AsyncWebServer *pwebServer) {
       _needToReboot = true;
    });
    _pwebServer->onNotFound([this](AsyncWebServerRequest *request) {
-      logw("uri not found! %s", request->url());
+      logw("uri not found! %s", request->url().c_str());
       RedirectToHome(request);
    });
    basicAuth.setUsername("admin");
@@ -161,6 +162,7 @@ void IOT::Init(IOTCallbackInterface *iotCB, AsyncWebServer *pwebServer) {
    basicAuth.setAuthFailureMessage("Authentication failed!");
    basicAuth.setAuthType(_NetworkSelection <= APMode ? AsyncAuthType::AUTH_NONE : AsyncAuthType::AUTH_BASIC); // skip credentials in APMode
    basicAuth.generateHash();
+
    _pwebServer
        ->on("/settings", HTTP_GET,
             [this](AsyncWebServerRequest *request) {
@@ -257,67 +259,43 @@ void IOT::Init(IOTCallbackInterface *iotCB, AsyncWebServer *pwebServer) {
                request->send(200, "text/html", page);
             })
        .addMiddleware(&basicAuth);
-
+   _pwebServer->on("/canonical", HTTP_POST, [this](AsyncWebServerRequest *request) {
+      logd("/canonical called with %d args", request->args());
+      request->send(200, "application/json", "{\"status\":\"ok\"}");
+   });
+   _pwebServer->on("/connect", HTTP_POST, [this](AsyncWebServerRequest *request) {
+      logd("/connect called with %d args", request->args());
+      request->send(200, "application/json", "{\"status\":\"ok\"}");
+   });
+   _pwebServer->on("/submit", HTTP_POST, [this](AsyncWebServerRequest *request) {
+      logd("/ **************************** submit called with %d args", request->args());
+   });
    _pwebServer->on(
        "/settings", HTTP_POST,
        [this](AsyncWebServerRequest *request) {
           // This callback is called after the body is processed
-          request->send(200, "application/json", "{\"status\":\"ok\"}");
+          logd("/settings HTTP_POST called with %d args", request->args());
+
+          JsonDocument doc;
+          int params = request->params();
+          if (params > 0) {
+             for (int i = 0; i < params; i++) {
+                doc[request->getParam(i)->name()] = request->getParam(i)->value();
+             }
+             loadSettingsFromJson(doc);
+             saveSettings();
+          }
        },
        NULL, // file upload handler (not used here)
        [this](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
-          JsonDocument iot;
-          DeserializationError err = deserializeJson(iot, data, len);
+          logd("/settings POST with %d bytes of data", len);
+          JsonDocument doc;
+          DeserializationError err = deserializeJson(doc, data, len);
           if (err) {
              loge("JSON parse failed!");
              return;
           }
-          String jsonString;
-          serializeJson(iot, jsonString);
-          Serial.println(jsonString.c_str());
-          String ap_ssid = iot["AP_SSID"].isNull() ? TAG : iot["AP_SSID"].as<String>();
-          ap_ssid.trim();
-          _AP_SSID = ap_ssid.c_str();
-          _AP_Password = iot["AP_Pw"].isNull() ? DEFAULT_AP_PASSWORD : iot["AP_Pw"].as<String>();
-          String ssid = iot["SSID"].isNull() ? "" : iot["SSID"].as<String>();
-          ssid.trim();
-          _SSID = ssid.c_str();
-          String sel = iot["networkSelector"].isNull() ? "APMode" : iot["networkSelector"].as<String>();
-          _NetworkSelection = sel == "APMode" ? APMode : sel == "wifi" ? WiFiMode : sel == "ethernet" ? EthernetMode : ModemMode;
-          _WiFi_Password = iot["WiFi_Pw"].isNull() ? "" : iot["WiFi_Pw"].as<String>();
-          _APN = iot["APN"].isNull() ? "" : iot["APN"].as<String>();
-          _SIM_Username = iot["SIM_USERNAME"].isNull() ? "" : iot["SIM_USERNAME"].as<String>();
-          _SIM_Password = iot["SIM_PASSWORD"].isNull() ? "" : iot["SIM_PASSWORD"].as<String>();
-          _SIM_PIN = iot["SIM_PIN"].isNull() ? "" : iot["SIM_PIN"].as<String>();
-          _useDHCP = iot["useDHCP"].isNull() ? false : iot["useDHCP"].as<bool>();
-          _Static_IP = iot["ETH_SIP"].isNull() ? "" : iot["ETH_SIP"].as<String>();
-          _Subnet_Mask = iot["ETH_SM"].isNull() ? "" : iot["ETH_SM"].as<String>();
-          _Gateway_IP = iot["ETH_GW"].isNull() ? "" : iot["ETH_GW"].as<String>();
-#ifdef HasMQTT
-          _useMQTT = iot["useMQTT"].isNull() ? false : iot["useMQTT"].as<bool>();
-          _mqttServer = iot["mqttServer"].isNull() ? "" : iot["mqttServer"].as<String>();
-          _mqttPort = iot["mqttPort"].isNull() ? 1883 : iot["mqttPort"].as<uint16_t>();
-          _mqttUserName = iot["mqttUser"].isNull() ? "" : iot["mqttUser"].as<String>();
-          _mqttUserPassword = iot["mqttPw"].isNull() ? "" : iot["mqttPw"].as<String>();
-#endif
-#ifdef HasModbus
-          _useModbus = iot["useModbus"].isNull() ? false : iot["useModbus"].as<bool>();
-          _ModbusMode = iot["modbusMode"].isNull() ? TCP : iot["modbusMode"].as<ModbusMode>();
-          _modbusBaudRate = iot["svrRTUBaud"].isNull() ? 9600 : iot["svrRTUBaud"].as<uint32_t>();
-          _modbusParity = iot["svrRTUParity"].isNull() ? UART_PARITY_DISABLE : iot["svrRTUParity"].as<uart_parity_t>();
-          _modbusStopBits = iot["svrRTUStopBits"].isNull() ? UART_STOP_BITS_1 : iot["svrRTUStopBits"].as<uart_stop_bits_t>();
-          _modbusPort = iot["modbusPort"].isNull() ? 502 : iot["modbusPort"].as<uint16_t>();
-          _modbusID = iot["modbusID"].isNull() ? 1 : iot["modbusID"].as<uint16_t>();
-          _input_register_base_addr = iot["inputRegBase"].isNull() ? INPUT_REGISTER_BASE_ADDRESS : iot["inputRegBase"].as<uint16_t>();
-          _coil_base_addr = iot["coilBase"].isNull() ? COIL_BASE_ADDRESS : iot["coilBase"].as<uint16_t>();
-          _discrete_input_base_addr = iot["discreteBase"].isNull() ? DISCRETE_BASE_ADDRESS : iot["discreteBase"].as<uint16_t>();
-          _holding_register_base_addr = iot["holdingRegBase"].isNull() ? HOLDING_REGISTER_BASE_ADDRESS : iot["holdingRegBase"].as<uint16_t>();
-          _useModbusBridge = iot["useModbusBridge"].isNull() ? false : iot["useModbusBridge"].as<bool>();
-          _modbusClientBaudRate = iot["modbusClientBaudRate"].isNull() ? 9600 : iot["modbusClientBaudRate"].as<uint32_t>();
-          _modbusClientParity = iot["modbusClientParity"].isNull() ? UART_PARITY_DISABLE : iot["modbusClientParity"].as<uart_parity_t>();
-          _modbusClientStopBits = iot["modbusClientStopBits"].isNull() ? UART_STOP_BITS_1 : iot["modbusClientStopBits"].as<uart_stop_bits_t>();
-#endif
-          _iotCB->onSubmitForm(iot);
+          loadSettingsFromJson(doc);
           RedirectToHome(request);
           saveSettings();
        });
@@ -329,6 +307,58 @@ void IOT::RedirectToHome(AsyncWebServerRequest *request) {
    page.replace("{n}", _SSID);
    page.replace("{ip}", _Current_IP);
    request->send(200, "text/html", page);
+}
+
+void IOT::loadSettingsFromJson(JsonDocument &doc) {
+   JsonObject iot;
+   if (doc["iot"].is<JsonObject>()) {
+      iot = doc["iot"].as<JsonObject>();
+   } else { // from web page?
+      doc["Network"] = networkSelectionFromString(doc["Network"]);
+      iot = doc.as<JsonObject>();
+   }
+   printFormattedJson(doc);
+   _AP_SSID = iot["AP_SSID"].isNull() ? TAG : iot["AP_SSID"].as<String>();
+   _AP_Password = iot["AP_Pw"].isNull() ? DEFAULT_AP_PASSWORD : iot["AP_Pw"].as<String>();
+   _NetworkSelection = iot["Network"].isNull() ? APMode : iot["Network"].as<NetworkSelection>();
+   String ssid = iot["SSID"].isNull() ? "" : iot["SSID"].as<String>();
+   ssid.trim();
+   _SSID = ssid.c_str();
+   _WiFi_Password = iot["WiFi_Pw"].isNull() ? "" : iot["WiFi_Pw"].as<String>();
+   _APN = iot["APN"].isNull() ? "" : iot["APN"].as<String>();
+   _SIM_Username = iot["SIM_USERNAME"].isNull() ? "" : iot["SIM_USERNAME"].as<String>();
+   _SIM_Password = iot["SIM_PASSWORD"].isNull() ? "" : iot["SIM_PASSWORD"].as<String>();
+   _SIM_PIN = iot["SIM_PIN"].isNull() ? "" : iot["SIM_PIN"].as<String>();
+   _useDHCP = iot["useDHCP"].isNull() ? false : iot["useDHCP"].as<bool>();
+   _Static_IP = iot["ETH_SIP"].isNull() ? "" : iot["ETH_SIP"].as<String>();
+   _Subnet_Mask = iot["ETH_SM"].isNull() ? "" : iot["ETH_SM"].as<String>();
+   _Gateway_IP = iot["ETH_GW"].isNull() ? "" : iot["ETH_GW"].as<String>();
+#ifdef HasMQTT
+   _useMQTT = iot["useMQTT"].isNull() ? false : iot["useMQTT"].as<bool>();
+   _mqttServer = iot["mqttServer"].isNull() ? "" : iot["mqttServer"].as<String>();
+   _mqttPort = iot["mqttPort"].isNull() ? 1883 : iot["mqttPort"].as<uint16_t>();
+   _mqttUserName = iot["mqttUser"].isNull() ? "" : iot["mqttUser"].as<String>();
+   _mqttUserPassword = iot["mqttPw"].isNull() ? "" : iot["mqttPw"].as<String>();
+#endif
+#ifdef HasModbus
+   _useModbus = iot["useModbus"].isNull() ? false : iot["useModbus"].as<bool>();
+   _ModbusMode = iot["modbusMode"].isNull() ? TCP : iot["modbusMode"].as<ModbusMode>();
+   _modbusBaudRate = iot["svrRTUBaud"].isNull() ? 9600 : iot["svrRTUBaud"].as<uint32_t>();
+   _modbusParity =
+       iot["svrRTUParity"].isNull() ? UART_PARITY_DISABLE : iot["svrRTUParity"].as<uart_parity_t>(); // ToDo handle string enums from web page
+   _modbusStopBits = iot["svrRTUStopBits"].isNull() ? UART_STOP_BITS_1 : iot["svrRTUStopBits"].as<uart_stop_bits_t>();
+   _modbusPort = iot["modbusPort"].isNull() ? 502 : iot["modbusPort"].as<uint16_t>();
+   _modbusID = iot["modbusID"].isNull() ? 1 : iot["modbusID"].as<uint16_t>();
+   _input_register_base_addr = iot["inputRegBase"].isNull() ? INPUT_REGISTER_BASE_ADDRESS : iot["inputRegBase"].as<uint16_t>();
+   _coil_base_addr = iot["coilBase"].isNull() ? COIL_BASE_ADDRESS : iot["coilBase"].as<uint16_t>();
+   _discrete_input_base_addr = iot["discreteBase"].isNull() ? DISCRETE_BASE_ADDRESS : iot["discreteBase"].as<uint16_t>();
+   _holding_register_base_addr = iot["holdingRegBase"].isNull() ? HOLDING_REGISTER_BASE_ADDRESS : iot["holdingRegBase"].as<uint16_t>();
+   _useModbusBridge = iot["useModbusBridge"].isNull() ? false : iot["useModbusBridge"].as<bool>();
+   _modbusClientBaudRate = iot["modbusClientBaudRate"].isNull() ? 9600 : iot["modbusClientBaudRate"].as<uint32_t>();
+   _modbusClientParity = iot["modbusClientParity"].isNull() ? UART_PARITY_DISABLE : iot["modbusClientParity"].as<uart_parity_t>();
+   _modbusClientStopBits = iot["modbusClientStopBits"].isNull() ? UART_STOP_BITS_1 : iot["modbusClientStopBits"].as<uart_stop_bits_t>();
+#endif
+   _iotCB->onLoadSetting(doc);
 }
 
 void IOT::loadSettings() {
@@ -348,53 +378,11 @@ void IOT::loadSettings() {
       saveSettings(); // save default values
    } else {
       logd("JSON loaded from EEPROM: %d", jsonString.length());
-      printFormattedJson(doc);
-      JsonObject iot = doc["iot"].as<JsonObject>();
-      _AP_SSID = iot["AP_SSID"].isNull() ? TAG : iot["AP_SSID"].as<String>();
-      _AP_Password = iot["AP_Pw"].isNull() ? DEFAULT_AP_PASSWORD : iot["AP_Pw"].as<String>();
-      _NetworkSelection = iot["Network"].isNull() ? WiFiMode : iot["Network"].as<NetworkSelection>();
-      _SSID = iot["SSID"].isNull() ? "" : iot["SSID"].as<String>();
-      _WiFi_Password = iot["WiFi_Pw"].isNull() ? "" : iot["WiFi_Pw"].as<String>();
-      _APN = iot["APN"].isNull() ? "" : iot["APN"].as<String>();
-      _SIM_Username = iot["SIM_USERNAME"].isNull() ? "" : iot["SIM_USERNAME"].as<String>();
-      _SIM_Password = iot["SIM_PASSWORD"].isNull() ? "" : iot["SIM_PASSWORD"].as<String>();
-      _SIM_PIN = iot["SIM_PIN"].isNull() ? "" : iot["SIM_PIN"].as<String>();
-      _useDHCP = iot["useDHCP"].isNull() ? false : iot["useDHCP"].as<bool>();
-      _Static_IP = iot["ETH_SIP"].isNull() ? "" : iot["ETH_SIP"].as<String>();
-      _Subnet_Mask = iot["ETH_SM"].isNull() ? "" : iot["ETH_SM"].as<String>();
-      _Gateway_IP = iot["ETH_GW"].isNull() ? "" : iot["ETH_GW"].as<String>();
-#ifdef HasMQTT
-      _useMQTT = iot["useMQTT"].isNull() ? false : iot["useMQTT"].as<bool>();
-      _mqttServer = iot["mqttServer"].isNull() ? "" : iot["mqttServer"].as<String>();
-      _mqttPort = iot["mqttPort"].isNull() ? 1883 : iot["mqttPort"].as<uint16_t>();
-      _mqttUserName = iot["mqttUser"].isNull() ? "" : iot["mqttUser"].as<String>();
-      _mqttUserPassword = iot["mqttPw"].isNull() ? "" : iot["mqttPw"].as<String>();
-#endif
-#ifdef HasModbus
-      _useModbus = iot["useModbus"].isNull() ? false : iot["useModbus"].as<bool>();
-      _ModbusMode = iot["modbusMode"].isNull() ? TCP : iot["modbusMode"].as<ModbusMode>();
-      _modbusBaudRate = iot["svrRTUBaud"].isNull() ? 9600 : iot["svrRTUBaud"].as<uint32_t>();
-      _modbusParity = iot["svrRTUParity"].isNull() ? UART_PARITY_DISABLE : iot["svrRTUParity"].as<uart_parity_t>();
-      _modbusStopBits = iot["svrRTUStopBits"].isNull() ? UART_STOP_BITS_1 : iot["svrRTUStopBits"].as<uart_stop_bits_t>();
-      _modbusPort = iot["modbusPort"].isNull() ? 502 : iot["modbusPort"].as<uint16_t>();
-      _modbusID = iot["modbusID"].isNull() ? 1 : iot["modbusID"].as<uint16_t>();
-      _input_register_base_addr = iot["inputRegBase"].isNull() ? INPUT_REGISTER_BASE_ADDRESS : iot["inputRegBase"].as<uint16_t>();
-      _coil_base_addr = iot["coilBase"].isNull() ? COIL_BASE_ADDRESS : iot["coilBase"].as<uint16_t>();
-      _discrete_input_base_addr = iot["discreteBase"].isNull() ? DISCRETE_BASE_ADDRESS : iot["discreteBase"].as<uint16_t>();
-      _holding_register_base_addr = iot["holdingRegBase"].isNull() ? HOLDING_REGISTER_BASE_ADDRESS : iot["holdingRegBase"].as<uint16_t>();
-      _useModbusBridge = iot["useModbusBridge"].isNull() ? false : iot["useModbusBridge"].as<bool>();
-      _modbusClientBaudRate = iot["modbusClientBaudRate"].isNull() ? 9600 : iot["modbusClientBaudRate"].as<uint32_t>();
-      _modbusClientParity = iot["modbusClientParity"].isNull() ? UART_PARITY_DISABLE : iot["modbusClientParity"].as<uart_parity_t>();
-      _modbusClientStopBits = iot["modbusClientStopBits"].isNull() ? UART_STOP_BITS_1 : iot["modbusClientStopBits"].as<uart_stop_bits_t>();
-#endif
-      _iotCB->onLoadSetting(doc);
    }
+   loadSettingsFromJson(doc);
 }
 
 void IOT::saveSettings() {
-   _NetworkSelection = WiFiMode;
-   _SSID = "SkyeNet";
-   _WiFi_Password = "acura22546";
    JsonDocument doc;
    JsonObject iot = doc["iot"].to<JsonObject>();
    iot["version"] = APP_VERSION;
@@ -436,16 +424,16 @@ void IOT::saveSettings() {
    iot["modbusClientStopBits"] = _modbusClientStopBits;
 #endif
    _iotCB->onSaveSetting(doc);
+
+   printFormattedJson(doc);
    String jsonString;
    serializeJson(doc, jsonString);
-   // Serial.println(jsonString.c_str());
    uint32_t sum = 0;
    for (int i = 0; i < jsonString.length(); ++i) {
       int8_t byte = jsonString[i];
       EEPROM.write(i, byte);
       sum += byte;
    }
-
    EEPROM.write(jsonString.length(), '\0'); // Null-terminate the string
    EEPROM.commit();
    logd("JSON saved, required EEPROM size: %d", jsonString.length());
@@ -546,7 +534,15 @@ void IOT::Run() {
       RGB_Light(0, 0, 60);
    }
 #endif
-
+   if (digitalRead(GPIO_NUM_0) != LOW) { // GPIO0 pressed for GPIO0_FactoryResetCountdown? initiate a factory reset
+      _GPIO0_PressedCountdown = millis();
+   }
+   if (GPIO0_FactoryResetCountdown < millis() - _GPIO0_PressedCountdown) {
+      logi("Factory Reset");
+      EEPROM.write(0, 0);
+      EEPROM.commit();
+      _needToReboot = true;
+   }
    if (_needToReboot) {
       GoOffline();
       delay(500);
@@ -717,7 +713,7 @@ void IOT::setState(NetworkState newState) {
          delay(100);
       }
       WiFi.mode(WIFI_AP);
-      if (WiFi.softAP(_AP_SSID, _AP_Password)) {
+      if (WiFi.softAP(_AP_SSID, _AP_Password, 1, false)) {
          IPAddress IP = WiFi.softAPIP();
          logi("WiFi AP SSID: %s PW: %s", _AP_SSID.c_str(), _AP_Password.c_str());
          logd("AP IP address: %s", IP.toString().c_str());

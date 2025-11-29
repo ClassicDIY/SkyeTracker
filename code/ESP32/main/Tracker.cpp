@@ -123,7 +123,6 @@ void Tracker::Setup(ThreadController *controller) {
    _webSocket.onEvent([this](AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
       (void)len;
       if (type == WS_EVT_CONNECT) {
-         _lastMessagePublished.clear(); // force a broadcast
          client->setCloseClientOnQueueFull(false);
          client->ping();
       } else if (type == WS_EVT_DISCONNECT) {
@@ -132,6 +131,7 @@ void Tracker::Setup(ThreadController *controller) {
          loge("ws error");
       } else if (type == WS_EVT_PONG) {
          logd("ws pong");
+         _lastMessagePublished.clear(); // force a broadcast
       }
    });
    logd("Setup done!");
@@ -150,8 +150,6 @@ void Tracker::addApplicationConfigs(String &page) {
    page.replace("{validate}", valScript);
 }
 
-void Tracker::onSubmitForm(JsonDocument &doc) { _config.onSubmitForm(doc); }
-
 void Tracker::Process() {
    _iot.Run();
    Run(); // base class
@@ -161,6 +159,15 @@ void Tracker::Process() {
 #ifdef HasMQTT
    _iot.Publish("readings", s.c_str(), false);
 #endif
+   if (_webSocket.count() > 0) { // any clients?
+      String s;
+      serializeJson(_ws_home_doc, s);
+      if (_lastMessagePublished != s) {
+         _lastMessagePublished = s;
+         _webSocket.textAll(s);
+         logd("_webSocket Sent %s", s.c_str());
+      }
+   }
    return;
 }
 
@@ -168,6 +175,11 @@ void Tracker::onNetworkState(NetworkState state) {
    _networkState = state;
    if (_networkState == OnLine) {
       _config.GeoLocate(); // try to find current location if not set by user
+      time_t now = time(nullptr);
+      if (now > 1600000000) { // sanity check: valid epoch (>2020)
+         // Write back to RTC
+         SetRTC(localtime(&now));
+      }
    }
 }
 
@@ -316,17 +328,6 @@ void Tracker::setState(TrackerState state) {
    return;
 }
 
-void Tracker::UpdateState(String &st) {
-   if (_webSocket.enabled()) {
-      JsonDocument doc;
-      doc["state"] = st.c_str();
-      String s;
-      serializeJson(doc, s);
-      _webSocket.textAll(s);
-      logd("_webSocket Sent %s", s.c_str());
-   }
-}
-
 void Tracker::InitializeActuators() {
    logd("InitializeActuators");
    _azimuth->Initialize(_config.getEastAzimuth(), _config.getWestAzimuth(), _config.getHorizontalLength(), _config.getHorizontalSpeed(),
@@ -337,15 +338,13 @@ void Tracker::InitializeActuators() {
    }
    setInterval(POSITION_UPDATE_INTERVAL);
    setState(TrackerState_Standby);
-   String stateStr = "Initializing Actuators";
-   UpdateState(stateStr);
+   _ws_home_doc["state"] = "Initializing Actuators";
 }
 
 void Tracker::run() {
    runned();
    TrackerState state = getState();
    _cycleTime = getTime();
-   String stateStr;
    switch (state) {
    case TrackerState_Cycling:
       if (_azimuth->getState() == ActuatorState_Stopped && _elevation->getState() == ActuatorState_Stopped) {
@@ -358,22 +357,22 @@ void Tracker::run() {
          _cycleTime = mktime(ptm);
          _sun->calcSun(&_cycleTime);
       }
-      stateStr = "Cycling";
+      _ws_home_doc["state"] = "Cycling";
       break;
    case TrackerState_Tracking:
       _sun->calcSun(&_cycleTime);
-      stateStr = "Tracking";
+      _ws_home_doc["state"] = "Tracking";
       break;
    default:
-      return;
+      break;
    }
    if (_sun->ItsDark()) {
       WaitForMorning();
-      stateStr = "Waiting for Morning";
+      _ws_home_doc["state"] = "Waiting for Morning";
    } else {
       _waitingForMorning = false;
       TrackToSun();
-      stateStr = "Track To Sun";
+      _ws_home_doc["state"] = "Track To Sun";
    }
    if (_config.hasAnemometer()) {
       float windSpeed = _anemometer.WindSpeed();
@@ -389,7 +388,7 @@ void Tracker::run() {
             Park(true);
             _protectCountdown = 300; // 10 minute countdown to resume tracking
 
-            stateStr = "High winds detected";
+            _ws_home_doc["state"] = "High winds detected";
          }
       }
       if (getState() == TrackerState_Parked && --_protectCountdown <= 0) {
@@ -397,7 +396,6 @@ void Tracker::run() {
          Resume();
       }
    }
-   UpdateState(stateStr);
 };
 
 /// <summary>

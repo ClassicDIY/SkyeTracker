@@ -58,7 +58,6 @@ class Tracker : public Device, public Thread, public IOTCallbackInterface {
    // IOTCallbackInterface
    void onNetworkState(NetworkState state);
    void addApplicationConfigs(String &page);
-   void onSubmitForm(JsonDocument &doc);
    void onSaveSetting(JsonDocument &doc);
    void onLoadSetting(JsonDocument &doc);
 #ifdef HasMQTT
@@ -72,7 +71,6 @@ class Tracker : public Device, public Thread, public IOTCallbackInterface {
    boolean PublishDiscoverySub(const char *component, const char *entityName, const char *jsonElement, const char *device_class,
                                const char *unit_of_meas, const char *icon = "");
    bool ReadyToPublish() { return (!_discoveryPublished); }
-   void UpdateState(String &s);
 
  private:
    void InitializeActuators();
@@ -98,6 +96,7 @@ class Tracker : public Device, public Thread, public IOTCallbackInterface {
    int _protectCountdown = 0;
    float _recordedWindSpeedAtLastEvent = 0;
    time_t _lastWindEvent;
+   JsonDocument _ws_home_doc; // home page ws socket message
 };
 
 } // namespace CLASSICDIY

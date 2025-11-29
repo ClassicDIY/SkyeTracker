@@ -119,7 +119,25 @@ const char network_config_top[] PROGMEM = R"rawliteral(
           loadSettings();
           const form = document.getElementById('settingsForm');
           if (form) {
-            form.addEventListener('submit', saveSettings);
+            form.addEventListener('submit', async (e) => {
+              e.preventDefault();
+              const status = document.getElementById('status');
+              status.textContent = '';
+              try {
+                const data = getFormValues();
+                const res = await fetch('/settings', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(data)
+                });
+                console.log(await res.text());
+                if (!res.ok) throw new Error('Save failed');
+                status.innerHTML = '<span class="ok">Settings saved.</span>';
+              } catch (e) {
+                status.innerHTML = '<span class="err">' + e.message + '</span>';
+              }
+            });
+
           }
 		    }
         function validateInputs() {
@@ -196,7 +214,7 @@ const char network_config_top[] PROGMEM = R"rawliteral(
 )rawliteral";
 
 const char network_config[] PROGMEM = R"rawliteral(
-<form id="settingsForm" onsubmit="return validateInputs()" action='/submit' method='post'>
+<form id="settingsForm" method='post'>
 <fieldset id="network" class="fs">
   <legend>Network</legend>
 
@@ -212,16 +230,16 @@ const char network_config[] PROGMEM = R"rawliteral(
 
   <div class="form-grid">
     <label for="networkSelector">Network Mode</label>
-    <select id="networkSelector" name="networkSelector" onchange="showFields()">
+    <select id="networkSelector" name="Network" onchange="showFields()">
       <option value="APMode" {APMode}>AP Mode</option>
-      <option value="wifi" {WIFI}>WiFi</option>
-      <option value="ethernet" {ETH}>Ethernet</option>
-      <option value="modem" {4G}>4G Modem</option>
+      <option value="WiFiMode" {WIFI}>WiFi</option>
+      <option value="EthernetMode" {ETH}>Ethernet</option>
+      <option value="ModemMode" {4G}>4G Modem</option>
     </select>
   </div>
 
   <div id="networkSelector-container">
-    <div id="wifi-fields" class="hidden">
+    <div id="WiFiMode-fields" class="hidden">
       <div class="form-grid">
         <label for="SSID">WiFi SSID</label>
         <input type="text" id="SSID" name="SSID" value="{SSID}" maxlength="32">
@@ -232,7 +250,7 @@ const char network_config[] PROGMEM = R"rawliteral(
       </div>
     </div>
 
-    <div id="ethernet-fields" class="hidden">
+    <div id="EthernetMode-fields" class="hidden">
       <fieldset id="dhcp" class="fs">
         <legend>
           <label><input type="checkbox" id="useDHCP" name="useDHCP" onclick="dhcpCheck(this)" {dhcpChecked}> Use DHCP</label>
@@ -252,7 +270,7 @@ const char network_config[] PROGMEM = R"rawliteral(
       </fieldset>
     </div>
 
-    <div id="modem-fields" class="hidden">
+    <div id="ModemMode-fields" class="hidden">
       <div class="form-grid">
         <label for="APN">APN</label>
         <input type="text" id="APN" name="APN" value="{APN}" maxlength="32">

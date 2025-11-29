@@ -132,12 +132,14 @@ class IOT : public IOTServiceInterface {
    unsigned long _lastBootTimeStamp = millis();
    unsigned long _waitInAPTimeStamp = millis();
    unsigned long _NetworkConnectionStart = 0;
+   unsigned long _GPIO0_PressedCountdown = 0;
    unsigned long _FlasherIPConfigStart = millis();
    void RedirectToHome(AsyncWebServerRequest *request);
    void UpdateOledDisplay();
    void GoOffline();
    void saveSettings();
    void loadSettings();
+   void loadSettingsFromJson(JsonDocument &doc);
    void setState(NetworkState newState);
 #ifdef HasLTE
    void wakeup_modem(void);

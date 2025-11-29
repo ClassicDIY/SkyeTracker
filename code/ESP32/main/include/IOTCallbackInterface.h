@@ -8,7 +8,6 @@ class IOTCallbackInterface {
  public:
    virtual void onNetworkState(NetworkState state) = 0;
    virtual void addApplicationConfigs(String &page);
-   virtual void onSubmitForm(JsonDocument &doc);
    virtual void onSaveSetting(JsonDocument &doc);
    virtual void onLoadSetting(JsonDocument &doc);
 #ifdef HasMQTT

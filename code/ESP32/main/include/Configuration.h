@@ -61,7 +61,6 @@ class Configuration {
    void Load(JsonDocument &doc);
    void Save(JsonDocument &doc);
    void GeoLocate();
-   void onSubmitForm(JsonDocument &doc);
 };
 
 } // namespace CLASSICDIY
