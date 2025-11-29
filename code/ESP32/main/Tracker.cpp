@@ -144,6 +144,7 @@ void Tracker::onLoadSetting(JsonDocument &doc) { _config.Load(doc); }
 void Tracker::addApplicationConfigs(String &page) {
    String appFields = app_config;
    page += appFields;
+   page.replace("{script}", ""); // future app script
    String valScript = validate_script;
    valScript.replace("<script>", "");
    valScript.replace("</script>", "");

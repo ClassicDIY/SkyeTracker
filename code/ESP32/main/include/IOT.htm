@@ -68,7 +68,7 @@ const char network_config_top[] PROGMEM = R"rawliteral(
             document.querySelectorAll('#networkSelector-container > div').forEach(div => div.classList.add('hidden'));
             // Get selected value
             var selectedValue = document.getElementById('networkSelector').value.trim();
-            if (selectedValue === "apmode") {
+            if (selectedValue === "APMode") {
               var modbusEl = document.getElementById('modbus');
               if (modbusEl) {
                 modbusEl.classList.add('hidden');

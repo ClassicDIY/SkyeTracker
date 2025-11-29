@@ -8,6 +8,8 @@
 #include <esp_eth.h>
 #include "esp_eth_mac.h"
 #include "driver/spi_master.h"
+#include "esp_wifi.h"
+
 #endif
 #ifdef HasLTE
 #include "network_dce.h"
@@ -29,7 +31,7 @@ extern Adafruit_SSD1306 oled_display;
 
 namespace CLASSICDIY {
 
-static DNSServer _dnsServer;
+// static DNSServer _dnsServer;
 static WebLog _webLog;
 #ifdef HasMQTT
 TimerHandle_t mqttReconnectTimer;
@@ -154,8 +156,8 @@ void IOT::Init(IOTCallbackInterface *iotCB, AsyncWebServer *pwebServer) {
       _needToReboot = true;
    });
    _pwebServer->onNotFound([this](AsyncWebServerRequest *request) {
-      logw("uri not found! %s", request->url().c_str());
-      RedirectToHome(request);
+      // logw("uri not found! %s", request->url().c_str());
+      // RedirectToHome(request);
    });
    basicAuth.setUsername("admin");
    basicAuth.setPassword(_AP_Password.c_str());
@@ -302,7 +304,7 @@ void IOT::Init(IOTCallbackInterface *iotCB, AsyncWebServer *pwebServer) {
 }
 
 void IOT::RedirectToHome(AsyncWebServerRequest *request) {
-   logd("Redirecting from: %s", request->url().c_str());
+   // logd("Redirecting from: %s", request->url().c_str());
    String page = redirect_html;
    page.replace("{n}", _SSID);
    page.replace("{ip}", _Current_IP);
@@ -492,7 +494,7 @@ void IOT::Run() {
             }
          }
       }
-      _dnsServer.processNextRequest();
+      // _dnsServer.processNextRequest();
       _webLog.process();
    } else if (_networkState == Connecting) {
       if ((millis() - _NetworkConnectionStart) > WIFI_CONNECTION_TIMEOUT) {
@@ -657,7 +659,7 @@ void IOT::GoOffline() {
    StopMQTT();
 #endif
    _webLog.end();
-   _dnsServer.stop();
+   // _dnsServer.stop();
 
 #ifdef HasModbus
    logd("GoOffline RTU");
@@ -717,8 +719,8 @@ void IOT::setState(NetworkState newState) {
          IPAddress IP = WiFi.softAPIP();
          logi("WiFi AP SSID: %s PW: %s", _AP_SSID.c_str(), _AP_Password.c_str());
          logd("AP IP address: %s", IP.toString().c_str());
-         _dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
-         _dnsServer.start(DNS_PORT, "*", IP);
+         // _dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
+         // _dnsServer.start(DNS_PORT, "*", IP);
       }
       _waitInAPTimeStamp = millis();
       break;
