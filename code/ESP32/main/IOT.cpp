@@ -31,7 +31,7 @@ extern Adafruit_SSD1306 oled_display;
 
 namespace CLASSICDIY {
 
-// static DNSServer _dnsServer;
+static DNSServer _dnsServer;
 static WebLog _webLog;
 #ifdef HasMQTT
 TimerHandle_t mqttReconnectTimer;
@@ -107,8 +107,11 @@ void IOT::Init(IOTCallbackInterface *iotCB, AsyncWebServer *pwebServer) {
       switch (event) {
       case ARDUINO_EVENT_WIFI_AP_STADISCONNECTED:
          logd("AP_STADISCONNECTED");
-         _AP_Connected = false;
-         GoOffline();
+         if (WiFi.softAPgetStationNum() == 0) {
+            _AP_Connected = false;
+            GoOffline();
+         }
+
          break;
       case ARDUINO_EVENT_WIFI_AP_STAIPASSIGNED:
          logd("AP_STAIPASSIGNED");
@@ -494,8 +497,10 @@ void IOT::Run() {
             }
          }
       }
-      // _dnsServer.processNextRequest();
-      _webLog.process();
+      if (_AP_Connected) {
+         _dnsServer.processNextRequest();
+         _webLog.process();
+      }
    } else if (_networkState == Connecting) {
       if ((millis() - _NetworkConnectionStart) > WIFI_CONNECTION_TIMEOUT) {
          // -- Network not available, fall back to AP mode.
@@ -603,6 +608,9 @@ void IOT::GoOnline() {
 #ifdef HasOTA
    _OTA.begin(_pwebServer);
 #endif
+   if (_AP_Connected) {
+      _dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
+   }
    if (_networkState > ApState) {
       if (_NetworkSelection == EthernetMode || _NetworkSelection == WiFiMode) {
          MDNS.begin(_AP_SSID.c_str());
@@ -659,7 +667,7 @@ void IOT::GoOffline() {
    StopMQTT();
 #endif
    _webLog.end();
-   // _dnsServer.stop();
+   _dnsServer.stop();
 
 #ifdef HasModbus
    logd("GoOffline RTU");
@@ -719,8 +727,6 @@ void IOT::setState(NetworkState newState) {
          IPAddress IP = WiFi.softAPIP();
          logi("WiFi AP SSID: %s PW: %s", _AP_SSID.c_str(), _AP_Password.c_str());
          logd("AP IP address: %s", IP.toString().c_str());
-         // _dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
-         // _dnsServer.start(DNS_PORT, "*", IP);
       }
       _waitInAPTimeStamp = millis();
       break;
