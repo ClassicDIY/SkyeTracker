@@ -30,7 +30,6 @@ void setup() {
          break;
       }
    }
-   esp_err_t ret = ESP_OK;
 
    logd("------------ESP32 specifications ---------------");
    logd("Chip Model: %s", ESP.getChipModel());
