@@ -140,6 +140,7 @@ class IOT : public IOTServiceInterface {
    void saveSettings();
    void loadSettings();
    void loadSettingsFromJson(JsonDocument &doc);
+   void saveSettingsToJson(JsonDocument &doc);
    void setState(NetworkState newState);
 #ifdef HasLTE
    void wakeup_modem(void);

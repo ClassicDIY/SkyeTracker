@@ -103,13 +103,7 @@ void Configuration::SetActuatorParameters(int horizontalLength, int verticalLeng
    _verticalSpeed = verticalSpeed;
 }
 
-void Configuration::Load(JsonDocument &doc) {
-   JsonObject trk;
-   if (doc["tracker"].is<JsonObject>()) {
-      trk = doc["tracker"].as<JsonObject>();
-   } else {
-      trk = doc.as<JsonObject>();
-   }
+void Configuration::Load(JsonDocument &trk) {
    _dualAxis = trk["_dualAxis"].isNull() ? 0 : trk["_dualAxis"].as<bool>();
    _eastAzimuth = trk["_eastAzimuth"].isNull() ? 0 : trk["_eastAzimuth"].as<int>();
    _westAzimuth = trk["_westAzimuth"].isNull() ? 0 : trk["_westAzimuth"].as<int>();
@@ -125,8 +119,7 @@ void Configuration::Load(JsonDocument &doc) {
    _geolocated = trk["_geolocated"].isNull() ? 0 : trk["_geolocated"].as<bool>();
 }
 
-void Configuration::Save(JsonDocument &doc) {
-   JsonObject trk = doc["tracker"].to<JsonObject>();
+void Configuration::Save(JsonDocument &trk) {
    trk["_dualAxis"] = _dualAxis;
    trk["_eastAzimuth"] = _eastAzimuth;
    trk["_westAzimuth"] = _westAzimuth;

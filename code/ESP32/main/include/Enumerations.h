@@ -46,14 +46,5 @@ inline const char *describeTrackerError(TrackerError val) {
    }
    return "Unknown";
 }
-inline NetworkSelection networkSelectionFromString(const String& str) {
-  if (str.equalsIgnoreCase("NotConnected")) return NotConnected;
-  if (str.equalsIgnoreCase("APMode"))       return APMode;
-  if (str.equalsIgnoreCase("WiFiMode"))     return WiFiMode;
-  if (str.equalsIgnoreCase("EthernetMode")) return EthernetMode;
-  if (str.equalsIgnoreCase("ModemMode"))    return ModemMode;
-  // Default / fallback
-  return NotConnected;
-}
 
 } // namespace CLASSICDIY

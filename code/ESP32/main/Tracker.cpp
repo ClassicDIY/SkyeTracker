@@ -60,9 +60,8 @@ void Tracker::Setup(ThreadController *controller) {
       request->send(200, "text/html", page);
    });
    _asyncServer.on("/appsettings", HTTP_GET, [this](AsyncWebServerRequest *request) {
-      JsonDocument payload;
-      _config.Save(payload);
-      JsonDocument app = payload["tracker"];
+      JsonDocument app;
+      _config.Save(app);
       String s;
       serializeJson(app, s);
       logd("/appsettings: %s", s.c_str());
