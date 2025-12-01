@@ -3,16 +3,15 @@
 
 static AsyncWebSocket _webSocket("/ws_log");
 
-#define BUFFER_SIZE 1024
 int weblog_log_printfv(const char *format, va_list arg) {
-   static char loc_buf[BUFFER_SIZE];
+   static char loc_buf[LOG_BUFFER_SIZE];
    uint32_t len;
    va_list copy;
    va_copy(copy, arg);
    len = vsnprintf(NULL, 0, format, copy);
    va_end(copy);
-   if (len >= (BUFFER_SIZE - 1)) {
-      len = BUFFER_SIZE - 5; // truncate log msg
+   if (len >= (LOG_BUFFER_SIZE - 1)) {
+      len = LOG_BUFFER_SIZE - 5; // truncate log msg
       vsnprintf(loc_buf, len, format, arg);
       strcat(loc_buf, "...\n");
    } else {

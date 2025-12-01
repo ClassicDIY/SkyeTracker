@@ -138,16 +138,34 @@ void Tracker::Setup(ThreadController *controller) {
 
 void Tracker::onSaveSetting(JsonDocument &doc) { _config.Save(doc); }
 
-void Tracker::onLoadSetting(JsonDocument &doc) { _config.Load(doc); }
+void Tracker::onLoadSetting(JsonDocument &doc) {
+   _config.Load(doc);
+   if (doc["_date"].isNull() == false && doc["_time"].isNull() == false) {
+      struct tm tm{};
+      sscanf(doc["_date"], "%d-%d-%d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday);
+      sscanf(doc["_time"], "%d:%d", &tm.tm_hour, &tm.tm_min);
+      tm.tm_year -= 1900; // struct tm years since 1900
+      tm.tm_mon -= 1;     // struct tm months 0-11
+      SetRTC(&tm);
+      time_t t = mktime(&tm);
+      struct timeval tv = {.tv_sec = t, .tv_usec = 0};
+      settimeofday(&tv, nullptr);
+      printLocalTime();
+   }
+}
 
 void Tracker::addApplicationConfigs(String &page) {
    String appFields = app_config;
    page += appFields;
    page.replace("{script}", ""); // future app script
-   String valScript = validate_script;
-   valScript.replace("<script>", "");
-   valScript.replace("</script>", "");
-   page.replace("{validate}", valScript);
+   String script = onLoadScript;
+   script.replace("<script>", "");
+   script.replace("</script>", "");
+   page.replace("{onload}", script);
+   script = validate_script;
+   script.replace("<script>", "");
+   script.replace("</script>", "");
+   page.replace("{validate}", script);
 }
 
 void Tracker::Process() {
@@ -398,10 +416,6 @@ void Tracker::run() {
    }
 };
 
-/// <summary>
-///  Process commands received from android app
-/// </summary>
-/// <param name="input"></param>
 void Tracker::ProcessCommand(const char *input) {
    boolean afterDelimiter = false;
    char command[32];

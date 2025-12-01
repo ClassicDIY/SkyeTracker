@@ -58,3 +58,15 @@ void inline printLocalTime() {
    logi("Date Time: %s", buf);
 #endif
 }
+
+inline String formattedJson(const JsonDocument &doc) {
+#if APP_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_DEBUG
+   size_t size = measureJsonPretty(doc);
+   String out;
+   out.reserve(size + 1); // +1 for null terminator
+   serializeJsonPretty(doc, out);
+   return out;
+#else
+   return "";
+#endif
+}

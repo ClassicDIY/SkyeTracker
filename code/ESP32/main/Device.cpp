@@ -126,7 +126,7 @@ void Device::Init() {
       loge("Couldn't find RTC");
    }
    if (rtc.lostPower()) {
-      logw("RTC is NOT initialized, let's set the time!");
+      logw("RTC is NOT initialized");
       rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
    }
    rtc.start();

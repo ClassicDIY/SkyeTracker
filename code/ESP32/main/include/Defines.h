@@ -5,12 +5,14 @@
 
 #define TAG "SkyeTracker"
 
-#define NTP_SERVER "pool.ntp.org"
+#define NTP_SERVER1 "pool.ntp.org"
+#define NTP_SERVER2 "time.nist.gov"
 #define HOME_ASSISTANT_PREFIX "homeassistant" // Home Assistant Auto discovery root topic
 
 #define WATCHDOG_TIMEOUT 10 // time in seconds to trigger the watchdog reset
 #define STR_LEN 64
 #define EEPROM_SIZE 2048
+#define LOG_BUFFER_SIZE 1024
 #define AP_BLINK_RATE 600
 #define NC_BLINK_RATE 100
 

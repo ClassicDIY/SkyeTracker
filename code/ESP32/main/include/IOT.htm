@@ -126,7 +126,7 @@ const char network_config_top[] PROGMEM = R"rawliteral(
 
       window.onload = function() {
         loadSettings();
-
+        {onload}
         const form = document.getElementById('settingsForm');
         if (form) {
           form.addEventListener('submit', async (e) => {
@@ -315,9 +315,9 @@ const char network_config[] PROGMEM = R"rawliteral(
     <label for="networkSelector">Network Mode</label>
     <select id="networkSelector" name="Network" onchange="showFields()">
       <option value="APMode" >AP Mode</option>
-      <option value="WiFiMode" >WiFi</option>
-      <option value="EthernetMode" >Ethernet</option>
-      <option value="ModemMode" >4G Modem</option>
+      <option value="WiFiMode">WiFi</option>
+      <option value="EthernetMode" {ETH}>Ethernet</option>
+      <option value="ModemMode" {4G}>4G Modem</option>
     </select>
   </div>
 

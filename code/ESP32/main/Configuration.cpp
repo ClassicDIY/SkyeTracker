@@ -28,27 +28,16 @@ void Configuration::GeoLocate() {
          String payload = http.getString();
          JsonDocument doc;
          DeserializationError error = deserializeJson(doc, payload);
-         String output;
-         serializeJsonPretty(doc, output);
-         logd("Response: %s", output.c_str());
          if (!error) {
+            logd("%s", formattedJson(doc).c_str());
             _latitude = doc["lat"];
             _longitude = doc["lon"];
             _geolocated = true;
-            const char *city = doc["city"];
-            const char *country = doc["country"];
-            logd("Latitude: %f", _latitude);
-            logd("Longitude: %f", _longitude);
-            logd("City: %s", city);
-            logd("Country: %s", country);
-              // Set timezone from geolocation result
-            setenv("TZ", doc["timezone"], 1);
-            tzset();
          } else {
-            logd("JSON parsing failed!");
+            logw("JSON parsing failed!");
          }
       } else {
-         logd("HTTP request failed, code: %d\n", httpCode);
+         logw("HTTP request failed, code: %d\n", httpCode);
       }
       http.end();
    }
@@ -137,6 +126,5 @@ void Configuration::Save(JsonDocument &trk) {
    trk["_geolocated"] = _geolocated;
    logi("Saved settings");
 }
-
 
 } // namespace CLASSICDIY
