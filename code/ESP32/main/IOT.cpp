@@ -113,7 +113,6 @@ void IOT::Init(IOTCallbackInterface *iotCB, AsyncWebServer *pwebServer) {
             _AP_Connected = false;
             GoOffline();
          }
-
          break;
       case ARDUINO_EVENT_WIFI_AP_STAIPASSIGNED:
          logd("AP_STAIPASSIGNED");
