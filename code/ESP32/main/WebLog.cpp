@@ -3,7 +3,7 @@
 
 static AsyncWebSocket _webSocket("/ws_log");
 
-#define BUFFER_SIZE 255
+#define BUFFER_SIZE 1024
 int weblog_log_printfv(const char *format, va_list arg) {
    static char loc_buf[BUFFER_SIZE];
    uint32_t len;

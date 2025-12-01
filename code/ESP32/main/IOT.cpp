@@ -183,12 +183,12 @@ void IOT::Init(IOTCallbackInterface *iotCB, AsyncWebServer *pwebServer) {
                fields.replace("{n}", _AP_SSID);
                fields.replace("{v}", APP_VERSION);
 #ifdef HasEthernet
-               // fields.replace("{ETH}", _NetworkSelection == EthernetMode ? "selected" : "");
+      // fields.replace("{ETH}", _NetworkSelection == EthernetMode ? "selected" : "");
 #else
 			fields.replace("{ETH}", "class='hidden'");
 #endif
 #ifdef HasLTE
-               // fields.replace("{4G}", _NetworkSelection == ModemMode ? "selected" : "");
+      // fields.replace("{4G}", _NetworkSelection == ModemMode ? "selected" : "");
 #else
                fields.replace("{4G}", "class='hidden'");
 #endif
@@ -269,8 +269,9 @@ void IOT::RedirectToHome(AsyncWebServerRequest *request) {
 }
 
 void IOT::loadSettingsFromJson(JsonDocument &iot) {
-   logd("json:");
-   printFormattedJson(iot);
+   String output;
+   serializeJsonPretty(iot, output);
+   logd("Loading: %s", output.c_str());
    _AP_SSID = iot["AP_SSID"].isNull() ? TAG : iot["AP_SSID"].as<String>();
    _AP_Password = iot["AP_Pw"].isNull() ? DEFAULT_AP_PASSWORD : iot["AP_Pw"].as<String>();
    _NetworkSelection = iot["Network"].isNull() ? APMode : iot["Network"].as<NetworkSelection>();
@@ -380,8 +381,9 @@ void IOT::saveSettings() {
    JsonDocument doc;
    saveSettingsToJson(doc);
    _iotCB->onSaveSetting(doc);
-   logd("json:");
-   printFormattedJson(doc);
+   String output;
+   serializeJsonPretty(doc, output);
+   logd("Saving: %s", output.c_str());
    String jsonString;
    serializeJson(doc, jsonString);
    uint32_t sum = 0;

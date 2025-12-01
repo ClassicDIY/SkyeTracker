@@ -24,14 +24,13 @@ void Configuration::GeoLocate() {
       HTTPClient http;
       http.begin("http://ip-api.com/json/"); // Free IP geolocation API
       int httpCode = http.GET();
-
       if (httpCode > 0) {
          String payload = http.getString();
-         logd("Response: %s", payload.c_str());
-
-         // Parse JSON
          JsonDocument doc;
          DeserializationError error = deserializeJson(doc, payload);
+         String output;
+         serializeJsonPretty(doc, output);
+         logd("Response: %s", output.c_str());
          if (!error) {
             _latitude = doc["lat"];
             _longitude = doc["lon"];
@@ -42,6 +41,9 @@ void Configuration::GeoLocate() {
             logd("Longitude: %f", _longitude);
             logd("City: %s", city);
             logd("Country: %s", country);
+              // Set timezone from geolocation result
+            setenv("TZ", doc["timezone"], 1);
+            tzset();
          } else {
             logd("JSON parsing failed!");
          }
