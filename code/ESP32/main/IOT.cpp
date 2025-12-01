@@ -180,14 +180,10 @@ void IOT::Init(IOTCallbackInterface *iotCB, AsyncWebServer *pwebServer) {
                String fields = network_config;
                fields.replace("{n}", _AP_SSID);
                fields.replace("{v}", APP_VERSION);
-#ifdef HasEthernet
-      // fields.replace("{ETH}", _NetworkSelection == EthernetMode ? "selected" : "");
-#else
-			fields.replace("{ETH}", "class='hidden'");
+#ifndef HasEthernet
+               fields.replace("{ETH}", "class='hidden'");
 #endif
-#ifdef HasLTE
-      // fields.replace("{4G}", _NetworkSelection == ModemMode ? "selected" : "");
-#else
+#ifndef HasLTE
                fields.replace("{4G}", "class='hidden'");
 #endif
 #ifdef HasMQTT
@@ -218,7 +214,7 @@ void IOT::Init(IOTCallbackInterface *iotCB, AsyncWebServer *pwebServer) {
 #ifdef HasOTA
                page += config_links;
 #else 
-			page += config_links_no_ota;
+			      page += config_links_no_ota;
 #endif
                request->send(200, "text/html", page);
             })
