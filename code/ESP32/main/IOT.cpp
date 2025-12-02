@@ -22,7 +22,7 @@
 #include "IOT.htm"
 #include "HelperFunctions.h"
 
-#ifdef Has_OLED_Display
+#ifdef Has_OLED
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
@@ -501,7 +501,7 @@ void IOT::Run() {
 }
 
 void IOT::UpdateOledDisplay() {
-#ifdef Has_OLED_Display
+#ifdef Has_OLED
    oled_display.clearDisplay();
    oled_display.setTextSize(2);
    oled_display.setTextColor(SSD1306_WHITE);

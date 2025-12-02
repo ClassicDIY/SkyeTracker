@@ -4,7 +4,7 @@
 #include "Log.h"
 #include "Device.h"
 
-#ifdef Has_OLED_Display
+#ifdef Has_OLED
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 Adafruit_SSD1306 oled_display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
@@ -26,7 +26,7 @@ namespace CLASSICDIY {
 
 void Device::Init() {
    Wire.begin(I2C_SDA, I2C_SCL);
-#ifdef Has_OLED_Display
+#ifdef Has_OLED
    if (!oled_display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
       loge("SSD1306 allocation failed");
    } else {
@@ -65,7 +65,7 @@ void Device::Run() {
 
 void Device::Init() {
    Wire.begin(I2C_SDA, I2C_SCL);
-#ifdef Has_OLED_Display
+#ifdef Has_OLED
    if (!oled_display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
       loge("SSD1306 allocation failed");
    } else {
@@ -114,7 +114,7 @@ void Device::Init() {
    logd("Set HT74HC595_OUT_EN to low level to enable relay output");
    digitalWrite(HT74HC595_OUT_EN, LOW);
    Wire.begin(I2C_SDA, I2C_SCL);
-#ifdef Has_OLED_Display
+#ifdef Has_OLED
    if (!oled_display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
       loge("SSD1306 allocation failed");
    } else {
@@ -183,7 +183,7 @@ boolean Device::GetRelay(const uint8_t index) { return _reg->get(index); }
 
 void Device::Init() {
    Wire.begin(I2C_SDA, I2C_SCL);
-#ifdef Has_OLED_Display
+#ifdef Has_OLED
    if (!oled_display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
       loge("SSD1306 allocation failed");
    } else {
