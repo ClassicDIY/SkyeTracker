@@ -1,6 +1,6 @@
 {
   "build": {
-    "partitions": "partitions/min_spiffs.csv",
+    "partitions": "partitions/default_4MB.csv",
     "arduino":{
       "ldscript": "esp32_out.ld"
     },

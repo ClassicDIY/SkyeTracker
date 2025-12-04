@@ -57,9 +57,9 @@ class Tracker : public Device, public Thread, public IOTCallbackInterface {
 
    // IOTCallbackInterface
    void onNetworkState(NetworkState state);
-   void addApplicationConfigs(String &page);
    void onSaveSetting(JsonDocument &doc);
    void onLoadSetting(JsonDocument &doc);
+   String appTemplateProcessor(const String &var);
 #ifdef HasMQTT
    void onMqttConnect();
    void onMqttMessage(char *topic, char *payload);
@@ -97,6 +97,7 @@ class Tracker : public Device, public Thread, public IOTCallbackInterface {
    float _recordedWindSpeedAtLastEvent = 0;
    time_t _lastWindEvent;
    JsonDocument _ws_home_doc; // home page ws socket message
+   String _bodyBuffer;
 };
 
 } // namespace CLASSICDIY

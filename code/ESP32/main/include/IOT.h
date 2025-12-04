@@ -73,6 +73,7 @@ class IOT : public IOTServiceInterface {
    String _Gateway_IP;
    uint32_t _settingsChecksum = 0;
    bool _needToReboot = false;
+   String _bodyBuffer;
 
 #ifdef HasMQTT
    bool _useMQTT = false;
@@ -111,9 +112,9 @@ class IOT : public IOTServiceInterface {
    uint16_t _modbusID = 1;
 
    bool _useModbusBridge = false;
-   unsigned long _modbusClientBaudRate = 9600;
-   uart_parity_t _modbusClientParity = UART_PARITY_DISABLE;
-   uart_stop_bits_t _modbusClientStopBits = UART_STOP_BITS_1;
+   unsigned long _clientRTUBaud = 9600;
+   uart_parity_t _clientRTUParity = UART_PARITY_DISABLE;
+   uart_stop_bits_t _clientRTUStopBits = UART_STOP_BITS_1;
    uint32_t _Token = 1000;
    uint32_t nextToken() {
       _Token++;

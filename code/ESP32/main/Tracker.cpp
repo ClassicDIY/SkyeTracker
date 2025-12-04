@@ -9,8 +9,8 @@
 #include "Anemometer.h"
 #include <ESPAsyncWebServer.h>
 #include <AsyncTCP.h>
-#include "style.htm"
 #include "Tracker.htm"
+#include "app_script.js"
 
 namespace CLASSICDIY {
 
@@ -54,7 +54,6 @@ void Tracker::Setup(ThreadController *controller) {
    controller->add(this);
    _asyncServer.on("/", HTTP_GET, [this](AsyncWebServerRequest *request) {
       String page = home_html;
-      page.replace("{style}", style);
       page.replace("{n}", _iot.getThingName().c_str());
       page.replace("{v}", APP_VERSION);
       request->send(200, "text/html", page);
@@ -67,7 +66,35 @@ void Tracker::Setup(ThreadController *controller) {
       logd("/appsettings: %s", s.c_str());
       request->send(200, "text/html", s);
    });
-
+   _asyncServer.on(
+       "/app_fields", HTTP_POST,
+       [this](AsyncWebServerRequest *request) {
+          // Called after all chunks are received
+          logv("Full body received: %s", _bodyBuffer.c_str());
+          // Parse JSON safely
+          JsonDocument doc; // adjust size to expected payload
+          DeserializationError err = deserializeJson(doc, _bodyBuffer);
+          if (err) {
+             logd("JSON parse failed: %s", err.c_str());
+          } else {
+             logd("HTTP_POST /app_fields: %s", formattedJson(doc).c_str());
+             onLoadSetting(doc);
+          }
+          request->send(200, "application/json", "{\"status\":\"ok\"}");
+          _bodyBuffer = ""; // clear for next request
+       },
+       NULL, // file upload handler (not used here)
+       [this](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
+          logv("Chunk received: len=%d, index=%d, total=%d", len, index, total);
+          // Append chunk to buffer
+          _bodyBuffer.reserve(total); // reserve once for efficiency
+          for (size_t i = 0; i < len; i++) {
+             _bodyBuffer += (char)data[i];
+          }
+          if (index + len == total) {
+             logd("Upload complete!");
+          }
+       });
    _asyncServer.on(
        "/control", HTTP_POST,
        [this](AsyncWebServerRequest *request) {
@@ -154,18 +181,22 @@ void Tracker::onLoadSetting(JsonDocument &doc) {
    }
 }
 
-void Tracker::addApplicationConfigs(String &page) {
-   String appFields = app_config;
-   page += appFields;
-   page.replace("{script}", ""); // future app script
-   String script = onLoadScript;
-   script.replace("<script>", "");
-   script.replace("</script>", "");
-   page.replace("{onload}", script);
-   script = validate_script;
-   script.replace("<script>", "");
-   script.replace("</script>", "");
-   page.replace("{validate}", script);
+String Tracker::appTemplateProcessor(const String &var) {
+   
+   if (var == "app_fields") {
+      return String(app_config);
+   }
+   if (var == "onload") {
+      return String(onLoadScript);
+   }
+   if (var == "validateInputs") {
+      return String(validate_script);
+   }
+   if (var == "app_script_js") {
+      return String(app_script_js);
+   }
+   logd("Did not find app template for: %s", var.c_str());
+   return String("");
 }
 
 void Tracker::Process() {

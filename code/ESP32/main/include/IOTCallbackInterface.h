@@ -7,7 +7,7 @@ namespace CLASSICDIY {
 class IOTCallbackInterface {
  public:
    virtual void onNetworkState(NetworkState state) = 0;
-   virtual void addApplicationConfigs(String &page);
+   virtual String appTemplateProcessor(const String &var);
    virtual void onSaveSetting(JsonDocument &doc);
    virtual void onLoadSetting(JsonDocument &doc);
 #ifdef HasMQTT

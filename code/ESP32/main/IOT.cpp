@@ -2,6 +2,12 @@
 #include <thread>
 #include <chrono>
 #include <ESPmDNS.h>
+#ifdef UseLittleFS
+#include <LittleFS.h>
+#else
+#include "iot_script.js"
+#include "style.css"
+#endif
 #ifdef HasEthernet
 #include <SPI.h>
 #include <Ethernet.h>
@@ -9,7 +15,6 @@
 #include "esp_eth_mac.h"
 #include "driver/spi_master.h"
 #include "esp_wifi.h"
-
 #endif
 #ifdef HasLTE
 #include "network_dce.h"
@@ -18,7 +23,7 @@
 #include "Log.h"
 #include "WebLog.h"
 #include "IOT.h"
-#include "style.htm"
+
 #include "IOT.htm"
 #include "HelperFunctions.h"
 
@@ -44,8 +49,6 @@ static ModbusServerRTU _MBRTUserver(MODBUS_RTU_TIMEOUT);
 ModbusClientRTU _MBclientRTU(RS485_RTS, MODBUS_RTU_REQUEST_QUEUE_SIZE);
 #endif
 static AsyncAuthenticationMiddleware basicAuth;
-
-String bodyBuffer;
 
 // #pragma region Setup
 void IOT::Init(IOTCallbackInterface *iotCB, AsyncWebServer *pwebServer) {
@@ -93,9 +96,9 @@ void IOT::Init(IOTCallbackInterface *iotCB, AsyncWebServer *pwebServer) {
    } else if (_useModbusBridge) {
       // Set up Serial2 connected to Modbus RTU Client
       RTUutils::prepareHardwareSerial(Serial2);
-      SerialConfig conf = getSerialConfig(_modbusClientParity, _modbusClientStopBits);
-      logd("Serial baud: %d conf: 0x%x", _modbusClientBaudRate, conf);
-      Serial2.begin(_modbusClientBaudRate, conf, RS485_RXD, RS485_TXD);
+      SerialConfig conf = getSerialConfig(_clientRTUParity, _clientRTUStopBits);
+      logd("Serial baud: %d conf: 0x%x", _clientRTUBaud, conf);
+      Serial2.begin(_clientRTUBaud, conf, RS485_RXD, RS485_TXD);
       while (!Serial2) {
       }
    }
@@ -158,93 +161,138 @@ void IOT::Init(IOTCallbackInterface *iotCB, AsyncWebServer *pwebServer) {
       _needToReboot = true;
    });
    _pwebServer->onNotFound([this](AsyncWebServerRequest *request) {
-      // logw("uri not found! %s", request->url().c_str());
-      // RedirectToHome(request);
+      logw("uri not found! %s", request->url().c_str());
+      RedirectToHome(request);
    });
    basicAuth.setUsername("admin");
    basicAuth.setPassword(_AP_Password.c_str());
    basicAuth.setAuthFailureMessage("Authentication failed!");
    basicAuth.setAuthType(_NetworkSelection <= APMode ? AsyncAuthType::AUTH_NONE : AsyncAuthType::AUTH_BASIC); // skip credentials in APMode
    basicAuth.generateHash();
-   _pwebServer->on("/iotsettings", HTTP_GET, [this](AsyncWebServerRequest *request) {
-      JsonDocument doc;
-      saveSettingsToJson(doc);
-      String s;
-      serializeJson(doc, s);
-      request->send(200, "text/html", s);
+   // Serve favicon.ico
+   //   server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request){
+   //     request->send_P(200, "image/x-icon", (const char*)favicon_ico, sizeof(favicon_ico));
+   //   });
+
+   _pwebServer->on("/style.css", HTTP_GET, [this](AsyncWebServerRequest *request) {
+#ifdef UseLittleFS
+      if (LittleFS.exists("/style.css")) {
+         // Serve from filesystem
+         request->send(LittleFS, "/style.css", "text/css");
+      }
+#else
+      request->send(200, "text/css", iot_style);
+#endif
    });
+   _pwebServer->on("/script.js", HTTP_GET, [this](AsyncWebServerRequest *request) {
+#ifdef UseLittleFS
+      if (LittleFS.exists("/iot_script.js")) {
+         // Serve from filesystem
+         request->send(LittleFS, "/iot_script.js", "application/javascript", true, [this](const String &var) {
+            logd("script template: %s", var.c_str());
+            return _iotCB->appTemplateProcessor(var);
+         });
+      }
+#else
+      request->send(200, "application/javascript", iot_script, [this](const String &var) {
+         logd("script template: %s", var.c_str());
+         return _iotCB->appTemplateProcessor(var);
+      });
+#endif
+   });
+   // Return the /settings web page
    _pwebServer
        ->on("/settings", HTTP_GET,
             [this](AsyncWebServerRequest *request) {
-               String fields = network_config;
-               fields.replace("{n}", _AP_SSID);
-               fields.replace("{v}", APP_VERSION);
+               request->send(200, "text/html", network_config_top, [this](const String &var) {
+                  // logd("html template: %s", var.c_str());
+                  if (var == "title") {
+                     return _AP_SSID;
+                  }
+                  if (var == "header") {
+                     return _AP_SSID;
+                  }
+                  if (var == "version") {
+                     return String(APP_VERSION);
+                  }
+                  if (var == "iot_fields") {
+                     String fields = network_config;
+                     fields.replace("%n%", _AP_SSID);
+                     fields.replace("%version%", APP_VERSION);
 #ifndef HasEthernet
-               fields.replace("{ETH}", "class='hidden'");
+                     fields.replace("%ETH%", "class='hidden'");
 #endif
 #ifndef HasLTE
-               fields.replace("{4G}", "class='hidden'");
+                     fields.replace("%4G%", "class='hidden'");
 #endif
 #ifdef HasMQTT
-               String mqtt = config_mqtt;
-               fields += mqtt;
+                     String mqtt = config_mqtt;
+                     fields += mqtt;
 #endif
 #ifdef HasModbus
-               String modbus = config_modbus;
-               // hide unused modbus functions
-               modbus.replace("{inputRegDivClass}", InputRegistersDiv);
-               modbus.replace("{coilDivClass}", CoilsDiv);
-               modbus.replace("{discreteDivClass}", DiscretesDiv);
-               modbus.replace("{holdingRegDivClass}", HoldingRegistersDiv);
-               fields += modbus;
+                     String modbus = config_modbus;
+                     // hide unused modbus functions
+                     modbus.replace("{inputRegDivClass}", InputRegistersDiv);
+                     modbus.replace("{coilDivClass}", CoilsDiv);
+                     modbus.replace("{discreteDivClass}", DiscretesDiv);
+                     modbus.replace("{holdingRegDivClass}", HoldingRegistersDiv);
+                     fields += modbus;
 #ifdef HasRS485
-               String modbusBridge = config_modbusBridge;
-               fields += modbusBridge;
+                     String modbusBridge = config_modbusBridge;
+                     fields += modbusBridge;
 #endif
 #endif
-               String page = network_config_top;
-               page.replace("{style}", style);
-               page.replace("{n}", _AP_SSID);
-               page.replace("{v}", APP_VERSION);
-               page += fields;
-               _iotCB->addApplicationConfigs(page);
-               String apply_button = config_apply_button;
-               page += apply_button;
+                     return fields;
+                  }
+                  if (var == "config_links") {
 #ifdef HasOTA
-               page += config_links;
+                     return String(config_links);
 #else 
-			      page += config_links_no_ota;
+            return String(config_links_no_ota);
 #endif
-               request->send(200, "text/html", page);
+                  }
+                  return _iotCB->appTemplateProcessor(var);
+               });
             })
        .addMiddleware(&basicAuth);
    _pwebServer->on("/submit", HTTP_POST, [this](AsyncWebServerRequest *request) {
       logd("/ **************************** submit called with %d args", request->args());
    });
+
+   _pwebServer->on("/iot_fields", HTTP_GET, [this](AsyncWebServerRequest *request) {
+      JsonDocument doc;
+      saveSettingsToJson(doc);
+      logd("HTTP_GET iot_fields: %s", formattedJson(doc).c_str());
+      String s;
+      serializeJson(doc, s);
+      request->send(200, "text/html", s);
+   });
    _pwebServer->on(
-       "/settings", HTTP_POST,
+       "/iot_fields", HTTP_POST,
        [this](AsyncWebServerRequest *request) {
           // Called after all chunks are received
-          logv("Full body received: %s", bodyBuffer.c_str());
+          logv("Full body received: %s", _bodyBuffer.c_str());
           // Parse JSON safely
           JsonDocument doc; // adjust size to expected payload
-          DeserializationError err = deserializeJson(doc, bodyBuffer);
+          DeserializationError err = deserializeJson(doc, _bodyBuffer);
           if (err) {
              logd("JSON parse failed: %s", err.c_str());
           } else {
+             logd("HTTP_POST iot_fields: %s", formattedJson(doc).c_str());
              loadSettingsFromJson(doc);
              saveSettings();
              RedirectToHome(request);
           }
-          bodyBuffer = ""; // clear for next request
+          request->send(200, "application/json", "{\"status\":\"ok\"}");
+          _bodyBuffer = ""; // clear for next request
        },
        NULL, // file upload handler (not used here)
        [this](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
           logv("Chunk received: len=%d, index=%d, total=%d", len, index, total);
           // Append chunk to buffer
-          bodyBuffer.reserve(total); // reserve once for efficiency
+          _bodyBuffer.reserve(total); // reserve once for efficiency
           for (size_t i = 0; i < len; i++) {
-             bodyBuffer += (char)data[i];
+             _bodyBuffer += (char)data[i];
           }
           if (index + len == total) {
              logd("Upload complete!");
@@ -255,13 +303,12 @@ void IOT::Init(IOTCallbackInterface *iotCB, AsyncWebServer *pwebServer) {
 void IOT::RedirectToHome(AsyncWebServerRequest *request) {
    // logd("Redirecting from: %s", request->url().c_str());
    String page = redirect_html;
-   page.replace("{n}", _SSID);
+   page.replace("%n%", _SSID);
    page.replace("{ip}", _Current_IP);
    request->send(200, "text/html", page);
 }
 
 void IOT::loadSettingsFromJson(JsonDocument &iot) {
-   logd("Loading: %s", formattedJson(iot).c_str());
    _AP_SSID = iot["AP_SSID"].isNull() ? TAG : iot["AP_SSID"].as<String>();
    _AP_Password = iot["AP_Pw"].isNull() ? DEFAULT_AP_PASSWORD : iot["AP_Pw"].as<String>();
    _NetworkSelection = iot["Network"].isNull() ? APMode : iot["Network"].as<NetworkSelection>();
@@ -298,11 +345,10 @@ void IOT::loadSettingsFromJson(JsonDocument &iot) {
    _discrete_input_base_addr = iot["discreteBase"].isNull() ? DISCRETE_BASE_ADDRESS : iot["discreteBase"].as<uint16_t>();
    _holding_register_base_addr = iot["holdingRegBase"].isNull() ? HOLDING_REGISTER_BASE_ADDRESS : iot["holdingRegBase"].as<uint16_t>();
    _useModbusBridge = iot["useModbusBridge"].isNull() ? false : iot["useModbusBridge"].as<bool>();
-   _modbusClientBaudRate = iot["modbusClientBaudRate"].isNull() ? 9600 : iot["modbusClientBaudRate"].as<uint32_t>();
-   _modbusClientParity = iot["modbusClientParity"].isNull() ? UART_PARITY_DISABLE : iot["modbusClientParity"].as<uart_parity_t>();
-   _modbusClientStopBits = iot["modbusClientStopBits"].isNull() ? UART_STOP_BITS_1 : iot["modbusClientStopBits"].as<uart_stop_bits_t>();
+   _clientRTUBaud = iot["clientRTUBaud"].isNull() ? 9600 : iot["clientRTUBaud"].as<uint32_t>();
+   _clientRTUParity = iot["clientRTUParity"].isNull() ? UART_PARITY_DISABLE : iot["clientRTUParity"].as<uart_parity_t>();
+   _clientRTUStopBits = iot["clientRTUStopBits"].isNull() ? UART_STOP_BITS_1 : iot["clientRTUStopBits"].as<uart_stop_bits_t>();
 #endif
-   _iotCB->onLoadSetting(iot);
 }
 
 void IOT::loadSettings() {
@@ -324,6 +370,7 @@ void IOT::loadSettings() {
       logd("JSON loaded from EEPROM: %d", jsonString.length());
    }
    loadSettingsFromJson(doc);
+   _iotCB->onLoadSetting(doc); // load app settings
 }
 
 void IOT::saveSettingsToJson(JsonDocument &iot) {
@@ -361,9 +408,9 @@ void IOT::saveSettingsToJson(JsonDocument &iot) {
    iot["discreteBase"] = _discrete_input_base_addr;
    iot["holdingRegBase"] = _holding_register_base_addr;
    iot["useModbusBridge"] = _useModbusBridge;
-   iot["modbusClientBaudRate"] = _modbusClientBaudRate;
-   iot["modbusClientParity"] = _modbusClientParity;
-   iot["modbusClientStopBits"] = _modbusClientStopBits;
+   iot["clientRTUBaud"] = _clientRTUBaud;
+   iot["clientRTUParity"] = _clientRTUParity;
+   iot["clientRTUStopBits"] = _clientRTUStopBits;
 #endif
 }
 
