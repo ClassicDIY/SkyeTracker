@@ -43,19 +43,15 @@ class IOT : public IOTServiceInterface {
 #endif
 
 #ifdef HasModbus
-   boolean ModbusBridgeEnabled();
    void registerMBTCPWorkers(FunctionCode fc, MBSworker worker);
-   Modbus::Error SendToModbusBridgeAsync(ModbusMessage &request);
    uint16_t getMBBaseAddress(IOTypes type);
-#else
-   boolean ModbusBridgeEnabled() { return false; };
 #endif
 
  private:
    OTA _OTA = OTA();
    AsyncWebServer *_pwebServer;
    NetworkState _networkState = Boot;
-   NetworkSelection _NetworkSelection = NotConnected;
+   NetworkSelection _NetworkSelection = APMode;
    bool _blinkStateOn = false;
    String _AP_SSID = TAG;
    String _AP_Password = DEFAULT_AP_PASSWORD;
@@ -110,17 +106,6 @@ class IOT : public IOTServiceInterface {
    uart_parity_t _modbusParity = UART_PARITY_DISABLE;
    uart_stop_bits_t _modbusStopBits = UART_STOP_BITS_1;
    uint16_t _modbusID = 1;
-
-   bool _useModbusBridge = false;
-   unsigned long _clientRTUBaud = 9600;
-   uart_parity_t _clientRTUParity = UART_PARITY_DISABLE;
-   uart_stop_bits_t _clientRTUStopBits = UART_STOP_BITS_1;
-   uint32_t _Token = 1000;
-   uint32_t nextToken() {
-      _Token++;
-      _Token %= 65535;
-      return _Token;
-   }
    uint16_t _input_register_base_addr = INPUT_REGISTER_BASE_ADDRESS;
    uint16_t _coil_base_addr = COIL_BASE_ADDRESS;
    uint16_t _discrete_input_base_addr = DISCRETE_BASE_ADDRESS;

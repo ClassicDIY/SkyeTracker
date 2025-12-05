@@ -70,19 +70,6 @@ const char iot_style[] PROGMEM = R"rawliteral(
         /* Horizontally center the content */
     }
 
-    .modbus-bridge-row {
-        display: grid;
-        grid-template-columns: 80px 40px 50px 60px 80px 60px 40px;
-        gap: 6px 6px;
-        align-items: center;
-        margin-bottom: 10px;
-    }
-
-    .modbus-bridge-row label {
-        font-size: 0.9em;
-        text-align: right;
-    }
-
     .desc {
         font-size: .8em;
     }
@@ -201,8 +188,6 @@ const char iot_style[] PROGMEM = R"rawliteral(
         font-size: 0.9rem;
     }
 
-    .field input[type="date"],
-    .field input[type="time"],
     .field input[type="number"],
     .field input[type="text"] {
         background: #0e1016;
@@ -211,6 +196,10 @@ const char iot_style[] PROGMEM = R"rawliteral(
         border-radius: 8px;
         padding: 10px;
         font-size: 0.95rem;
+    }
+
+    .fld {
+        margin-bottom: 8px;
     }
 
     .check {

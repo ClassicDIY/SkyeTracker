@@ -1,5 +1,6 @@
 const char iot_script[] PROGMEM = R"rawliteral(
 const NetworkSelection = ["NotConnected", "APMode", "WiFiMode", "EthernetMode", "ModemMode"];
+
 const NetworkSelectionEnum = {
     NotConnected: 0,
     APMode: 1,
@@ -7,17 +8,21 @@ const NetworkSelectionEnum = {
     EthernetMode: 3,
     ModemMode: 4
 };
+
 const ModbusMode = ["tcp", "rtu"];
+
 const ModbusModeEnum = {
     tcp: 0,
     rtu: 1
 };
+
 const UART_Parity = ["none", "", "even", "odd"];
 const UART_ParityEnum = {
     none: 0,
     even: 2,
     odd: 3
 };
+
 const UART_StopBits = ["", "1", "1.5", "2", "max"];
 const UART_StopBitsEnum = {
     1: 1,
@@ -28,26 +33,25 @@ function dhcpCheck(checkbox) {
     const fieldset = document.getElementById("dhcp");
     fieldset.disabled = checkbox.checked;
 }
+
 function mqttFieldset(checkbox) {
     const fieldset = document.getElementById("mqtt");
     fieldset.disabled = !checkbox.checked;
 }
+
 function modbusFieldset(checkbox) {
     const fieldset = document.getElementById("modbus");
     fieldset.disabled = !checkbox.checked;
 }
-function modbusBridgeFieldset(checkbox) {
-    const fieldset = document.getElementById("modbusBridge");
-    fieldset.disabled = !checkbox.checked;
-}
+
 function showMBFields() {
     document.querySelectorAll('#modbusSelector-container > div').forEach(div => div.classList.add('hidden'));
     var selectedFld = document.getElementById('modbusModeSelector');
     if (selectedFld) {
         document.getElementById(selectedFld.value + '-fields').classList.remove('hidden');
     }
-    toggleMDBridgeFieldset();
 }
+
 function showFields() {
     // Hide all fields
     document.querySelectorAll('#networkSelector-container > div').forEach(div => div.classList.add('hidden'));
@@ -74,14 +78,6 @@ function showFields() {
             modbusEl.classList.remove('hidden');
         }
         showMBFields();
-    }
-}
-
-function toggleMDBridgeFieldset() {
-    const selector = document.getElementById("modbusModeSelector");
-    const fieldset = document.getElementById("modbusBridge");
-    if (fieldset) {
-        fieldset.classList.toggle("hidden", selector.value === "rtu");
     }
 }
 
@@ -112,6 +108,7 @@ window.onload = function () {
 
     }
 }
+    
 function validateInputs() {
     %validateInputs%
     return true;
@@ -140,11 +137,6 @@ async function loadSettings() {
         var modbusEl = document.getElementById('modbusCheckbox');
         if (modbusEl) {
             modbusFieldset(modbusEl);
-            var modbusBcb = document.getElementById('modbusBridgeCheckbox');
-            if (modbusBcb) {
-                modbusBridgeFieldset(document.getElementById("modbusBridgeCheckbox"));
-            }
-            toggleMDBridgeFieldset();
         }
         var dhcpEl = document.getElementById('useDHCP');
         if (dhcpEl) {
@@ -171,10 +163,6 @@ function setIotValues(cfg) {
             } else if (k === "svrRTUParity") {
                 el.value = UART_Parity[v];
             } else if (k === "svrRTUStopBits") {
-                el.value = UART_StopBits[v];
-            } else if (k === "clientRTUParity") {
-                el.value = UART_Parity[v];
-            } else if (k === "clientRTUStopBits") {
                 el.value = UART_StopBits[v];
             } else {
                 el.value = v;
@@ -236,10 +224,6 @@ function getFormValues(section) {
             } else if (el.name === "svrRTUParity") {
                 data[el.name] = UART_ParityEnum[el.value];
             } else if (el.name === "svrRTUStopBits") {
-                data[el.name] = UART_StopBitsEnum[el.value];
-            } else if (el.name === "clientRTUParity") {
-                data[el.name] = UART_ParityEnum[el.value];
-            } else if (el.name === "clientRTUStopBits") {
                 data[el.name] = UART_StopBitsEnum[el.value];
             } 
             else {

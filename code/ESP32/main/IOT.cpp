@@ -93,14 +93,6 @@ void IOT::Init(IOTCallbackInterface *iotCB, AsyncWebServer *pwebServer) {
       Serial2.begin(_modbusBaudRate, conf, RS485_RXD, RS485_TXD);
       while (!Serial2) {
       }
-   } else if (_useModbusBridge) {
-      // Set up Serial2 connected to Modbus RTU Client
-      RTUutils::prepareHardwareSerial(Serial2);
-      SerialConfig conf = getSerialConfig(_clientRTUParity, _clientRTUStopBits);
-      logd("Serial baud: %d conf: 0x%x", _clientRTUBaud, conf);
-      Serial2.begin(_clientRTUBaud, conf, RS485_RXD, RS485_TXD);
-      while (!Serial2) {
-      }
    }
 #endif
 #ifdef HasMQTT
@@ -161,7 +153,7 @@ void IOT::Init(IOTCallbackInterface *iotCB, AsyncWebServer *pwebServer) {
       _needToReboot = true;
    });
    _pwebServer->onNotFound([this](AsyncWebServerRequest *request) {
-      logw("uri not found! %s", request->url().c_str());
+      logv("uri not found! %s", request->url().c_str());
       RedirectToHome(request);
    });
    basicAuth.setUsername("admin");
@@ -237,10 +229,6 @@ void IOT::Init(IOTCallbackInterface *iotCB, AsyncWebServer *pwebServer) {
                      modbus.replace("{discreteDivClass}", DiscretesDiv);
                      modbus.replace("{holdingRegDivClass}", HoldingRegistersDiv);
                      fields += modbus;
-#ifdef HasRS485
-                     String modbusBridge = config_modbusBridge;
-                     fields += modbusBridge;
-#endif
 #endif
                      return fields;
                   }
@@ -255,9 +243,7 @@ void IOT::Init(IOTCallbackInterface *iotCB, AsyncWebServer *pwebServer) {
                });
             })
        .addMiddleware(&basicAuth);
-   _pwebServer->on("/submit", HTTP_POST, [this](AsyncWebServerRequest *request) {
-      logd("/ **************************** submit called with %d args", request->args());
-   });
+   _pwebServer->on("/submit", HTTP_POST, [this](AsyncWebServerRequest *request) { logd("/ **************************** submit called with %d args", request->args()); });
 
    _pwebServer->on("/iot_fields", HTTP_GET, [this](AsyncWebServerRequest *request) {
       JsonDocument doc;
@@ -335,8 +321,7 @@ void IOT::loadSettingsFromJson(JsonDocument &iot) {
    _useModbus = iot["useModbus"].isNull() ? false : iot["useModbus"].as<bool>();
    _ModbusMode = iot["modbusMode"].isNull() ? TCP : iot["modbusMode"].as<ModbusMode>();
    _modbusBaudRate = iot["svrRTUBaud"].isNull() ? 9600 : iot["svrRTUBaud"].as<uint32_t>();
-   _modbusParity =
-       iot["svrRTUParity"].isNull() ? UART_PARITY_DISABLE : iot["svrRTUParity"].as<uart_parity_t>(); // ToDo handle string enums from web page
+   _modbusParity = iot["svrRTUParity"].isNull() ? UART_PARITY_DISABLE : iot["svrRTUParity"].as<uart_parity_t>();
    _modbusStopBits = iot["svrRTUStopBits"].isNull() ? UART_STOP_BITS_1 : iot["svrRTUStopBits"].as<uart_stop_bits_t>();
    _modbusPort = iot["modbusPort"].isNull() ? 502 : iot["modbusPort"].as<uint16_t>();
    _modbusID = iot["modbusID"].isNull() ? 1 : iot["modbusID"].as<uint16_t>();
@@ -344,10 +329,6 @@ void IOT::loadSettingsFromJson(JsonDocument &iot) {
    _coil_base_addr = iot["coilBase"].isNull() ? COIL_BASE_ADDRESS : iot["coilBase"].as<uint16_t>();
    _discrete_input_base_addr = iot["discreteBase"].isNull() ? DISCRETE_BASE_ADDRESS : iot["discreteBase"].as<uint16_t>();
    _holding_register_base_addr = iot["holdingRegBase"].isNull() ? HOLDING_REGISTER_BASE_ADDRESS : iot["holdingRegBase"].as<uint16_t>();
-   _useModbusBridge = iot["useModbusBridge"].isNull() ? false : iot["useModbusBridge"].as<bool>();
-   _clientRTUBaud = iot["clientRTUBaud"].isNull() ? 9600 : iot["clientRTUBaud"].as<uint32_t>();
-   _clientRTUParity = iot["clientRTUParity"].isNull() ? UART_PARITY_DISABLE : iot["clientRTUParity"].as<uart_parity_t>();
-   _clientRTUStopBits = iot["clientRTUStopBits"].isNull() ? UART_STOP_BITS_1 : iot["clientRTUStopBits"].as<uart_stop_bits_t>();
 #endif
 }
 
@@ -407,10 +388,6 @@ void IOT::saveSettingsToJson(JsonDocument &iot) {
    iot["coilBase"] = _coil_base_addr;
    iot["discreteBase"] = _discrete_input_base_addr;
    iot["holdingRegBase"] = _holding_register_base_addr;
-   iot["useModbusBridge"] = _useModbusBridge;
-   iot["clientRTUBaud"] = _clientRTUBaud;
-   iot["clientRTUParity"] = _clientRTUParity;
-   iot["clientRTUStopBits"] = _clientRTUStopBits;
 #endif
 }
 
@@ -562,10 +539,7 @@ void IOT::UpdateOledDisplay() {
    if (_networkState == OnLine) {
 
       if (_networkState == OnLine) {
-         oled_display.println(_NetworkSelection == APMode         ? "AP Mode"
-                              : _NetworkSelection == WiFiMode     ? "WiFi: "
-                              : _NetworkSelection == EthernetMode ? "Ethernet"
-                                                                  : "LTE: ");
+         oled_display.println(_NetworkSelection == APMode ? "AP Mode" : _NetworkSelection == WiFiMode ? "WiFi: " : _NetworkSelection == EthernetMode ? "Ethernet" : "LTE: ");
          oled_display.setTextSize(1);
          oled_display.println(_Current_IP);
       } else if (_networkState == Connecting) {
@@ -612,28 +586,6 @@ void IOT::GoOnline() {
                _MBserver.start(_modbusPort, 5, 0); // listen for modbus requests
                logd("Modbus TCP started");
             }
-
-#ifdef HasRS485
-            if (ModbusBridgeEnabled()) {
-               _MBclientRTU.setTimeout(MODBUS_RTU_TIMEOUT);
-               _MBclientRTU.begin(Serial2);
-               _MBclientRTU.useModbusRTU();
-               _MBclientRTU.onDataHandler([this](ModbusMessage response, uint32_t token) {
-                  logv("RTU Response: serverID=%d, FC=%d, Token=%08X, length=%d", response.getServerID(), response.getFunctionCode(), token,
-                       response.size());
-                  return _iotCB->onModbusMessage(response);
-               });
-               _MBclientRTU.onErrorHandler([this](Modbus::Error mbError, uint32_t token) {
-                  logd("Modbus RTU (Token: %d) Error response: %02X - %s", token, (int)mbError, (const char *)ModbusError(mbError));
-                  if (_MBclientRTU.pendingRequests() > 2) {
-                     logd("Modbus RTU clearing queue!");
-                     _MBclientRTU.clearQueue();
-                     Serial2.flush();
-                  }
-                  return true;
-               });
-            }
-#endif
          } else {
             _MBRTUserver.begin(Serial2);
             _MBRTUserver.useModbusRTU();
@@ -805,8 +757,7 @@ esp_err_t IOT::ConnectEthernet() {
    if ((ret = esp_efuse_mac_get_default(base_mac_addr)) == ESP_OK) {
       uint8_t local_mac_1[6];
       esp_derive_local_mac(local_mac_1, base_mac_addr);
-      logi("ETH MAC: %02X:%02X:%02X:%02X:%02X:%02X", local_mac_1[0], local_mac_1[1], local_mac_1[2], local_mac_1[3], local_mac_1[4],
-           local_mac_1[5]);
+      logi("ETH MAC: %02X:%02X:%02X:%02X:%02X:%02X", local_mac_1[0], local_mac_1[1], local_mac_1[2], local_mac_1[3], local_mac_1[4], local_mac_1[5]);
       eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG(); // Init common MAC and PHY configs to default
       eth_phy_config_t phy_config = ETH_PHY_DEFAULT_CONFIG();
       phy_config.phy_addr = 1;
@@ -974,26 +925,6 @@ void IOT::registerMBTCPWorkers(FunctionCode fc, MBSworker worker) {
    } else {
       _MBRTUserver.registerWorker(_modbusID, fc, worker);
    }
-}
-
-boolean IOT::ModbusBridgeEnabled() { return _useModbusBridge && (_ModbusMode == TCP); }
-
-Modbus::Error IOT::SendToModbusBridgeAsync(ModbusMessage &request) {
-   Modbus::Error mbError = INVALID_SERVER;
-#ifdef HasRS485
-   if (ModbusBridgeEnabled()) {
-      uint32_t token = nextToken();
-      logv("SendToModbusBridge Token=%08X FC%d", token, request.getFunctionCode());
-      if (_MBclientRTU.pendingRequests() < MODBUS_RTU_REQUEST_QUEUE_SIZE) {
-         mbError = _MBclientRTU.addRequest(request, token);
-         mbError = SUCCESS;
-      } else {
-         mbError = REQUEST_QUEUE_FULL;
-      }
-      delay(100);
-   }
-#endif
-   return mbError;
 }
 
 uint16_t IOT::getMBBaseAddress(IOTypes type) {

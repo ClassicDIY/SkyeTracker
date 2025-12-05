@@ -229,37 +229,6 @@ const char config_modbus[] PROGMEM = R"rawliteral(
     </fieldset>  
 )rawliteral";
 
-const char config_modbusBridge[] PROGMEM = R"rawliteral(
-  <fieldset id="modbusBridge" class="fs">
-    <legend><label><input type="checkbox" id="modbusBridgeCheckbox" name="useModbusBridge" onclick="modbusBridgeFieldset(this)" {modbusBridgechecked}> Modbus Bridge</label></legend>
-    <div class="form-grid">
-      <label for="clientRTUBaud">RTU Baud Rate</label>
-      <select id="clientRTUBaud" name="clientRTUBaud">
-        <option value="9600" {RTU_CLIENT_9600} >9600</option>
-        <option value="19200" {RTU_CLIENT_19200} >19200</option>
-        <option value="38400" {RTU_CLIENT_38400} >38400</option>
-        <option value="115200" {RTU_CLIENT_115200} >115200</option>
-      </select>
-    </div>
-    <div class="form-grid">
-      <label for="clientRTUParity">RTU Parity</label>
-      <select id="clientRTUParity" name="clientRTUParity">
-        <option value="none" {RTU_CLIENT_Parity_None}>None</option>
-        <option value="even" {RTU_CLIENT_Parity_Even}>Even</option>
-        <option value="odd" {RTU_CLIENT_Parity_Odd}>Odd</option>
-      </select>
-    </div>
-    <div class="form-grid">
-      <label for="clientRTUStopBits">RTU Stop Bits</label>
-      <select id="clientRTUStopBits" name="clientRTUStopBits">
-        <option value="1" {RTU_CLIENT_1Stop}>1</option>
-        <option value="2" {RTU_CLIENT_2Stop}>2</option>
-      </select>
-    </div>
-    %modbusBridgeAppSettings%
-  </fieldset>
-)rawliteral";
-
 const char config_links[] PROGMEM = R"rawliteral(
   <div class="link-row">
     <a href='/'>Home page</a>

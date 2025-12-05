@@ -18,9 +18,7 @@ class IOTServiceInterface {
 #ifdef Modbus
    // Modbus related methods
    virtual uint16_t getMBBaseAddress(IOTypes type) = 0;
-   virtual boolean ModbusBridgeEnabled() = 0;
    virtual void registerMBTCPWorkers(FunctionCode fc, MBSworker worker) = 0;
-   virtual Modbus::Error SendToModbusBridgeAsync(ModbusMessage &request);
 #endif
 };
 } // namespace CLASSICDIY
