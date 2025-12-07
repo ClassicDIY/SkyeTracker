@@ -45,9 +45,7 @@ TimerHandle_t mqttReconnectTimer;
 static ModbusServerTCPasync _MBserver;
 static ModbusServerRTU _MBRTUserver(MODBUS_RTU_TIMEOUT);
 #endif
-#ifdef HasRS485
-ModbusClientRTU _MBclientRTU(RS485_RTS, MODBUS_RTU_REQUEST_QUEUE_SIZE);
-#endif
+
 static AsyncAuthenticationMiddleware basicAuth;
 
 // #pragma region Setup
