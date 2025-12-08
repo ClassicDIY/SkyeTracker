@@ -4,12 +4,6 @@
 #include "Log.h"
 #include "Device.h"
 
-#ifdef Has_OLED
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-Adafruit_SSD1306 oled_display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-#endif
-
 #ifdef HasRTC
 #include "RTClib.h"
 RTC_PCF8563 rtc;
@@ -22,10 +16,22 @@ Adafruit_ADS1115 ads; /* Use this for the 16-bit version */
 
 namespace CLASSICDIY {
 
+void Device::InitCommon() {
+   Wire.begin(I2C_SDA, I2C_SCL);
+#ifdef UseLittleFS
+   if (!LittleFS.begin()) {
+      loge("LittleFS mount failed");
+   }
+#endif
+#ifdef Has_OLED
+   _oled.Init();
+#endif
+}
+
 #ifdef ESP_32Dev
 
 void Device::Init() {
-   Wire.begin(I2C_SDA, I2C_SCL);
+   InitCommon();
 #ifdef Has_OLED
    if (!oled_display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
       loge("SSD1306 allocation failed");
@@ -64,7 +70,7 @@ void Device::Run() {
 #ifdef Waveshare_Relay_6CH
 
 void Device::Init() {
-   Wire.begin(I2C_SDA, I2C_SCL);
+   InitCommon();
 #ifdef Has_OLED
    if (!oled_display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
       loge("SSD1306 allocation failed");
@@ -107,13 +113,13 @@ bool Device::GetDigitalLevel(const uint8_t index) { return (bool)digitalRead(_Di
 #ifdef Lilygo_Relay_6CH
 
 void Device::Init() {
+   InitCommon();
    _reg = std::make_shared<ShiftRegister74HC595<1>>(HT74HC595_DATA, HT74HC595_CLOCK, HT74HC595_LATCH);
    pinMode(HT74HC595_OUT_EN, OUTPUT);
    digitalWrite(HT74HC595_OUT_EN, HIGH);
    _reg->setAllLow();
    logd("Set HT74HC595_OUT_EN to low level to enable relay output");
    digitalWrite(HT74HC595_OUT_EN, LOW);
-   Wire.begin(I2C_SDA, I2C_SCL);
 #ifdef Has_OLED
    if (!oled_display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
       loge("SSD1306 allocation failed");
@@ -182,7 +188,7 @@ boolean Device::GetRelay(const uint8_t index) { return _reg->get(index); }
 #ifdef Lilygo_Relay_4CH
 
 void Device::Init() {
-   Wire.begin(I2C_SDA, I2C_SCL);
+   InitCommon();
 #ifdef Has_OLED
    if (!oled_display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
       loge("SSD1306 allocation failed");

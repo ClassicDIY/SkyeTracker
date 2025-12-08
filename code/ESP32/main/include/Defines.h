@@ -16,8 +16,8 @@
 #define AP_BLINK_RATE 600
 #define NC_BLINK_RATE 100
 
-#define AP_TIMEOUT 1000
-// #define AP_TIMEOUT 30000 //set back to 1000 in production
+// #define AP_TIMEOUT 1000 //set back to 30000 in production
+#define AP_TIMEOUT 30000 
 #define FLASHER_TIMEOUT 10000
 #define GPIO0_FactoryResetCountdown 5000 // do a factory reset if GPIO0 is pressed for GPIO0_FactoryResetCountdown
 #define WS_CLIENT_CLEANUP 5000
@@ -25,6 +25,12 @@
 #define DEFAULT_AP_PASSWORD "12345678"
 
 #define SAMPLESIZE 5
+
+#define SCREEN_ADDRESS 0x3C // OLED 128X64 I2C address
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_RESET    -1
+
 #define MQTT_PUBLISH_RATE_LIMIT 500 // delay between MQTT publishes
 
 #define MODBUS_POLL_RATE 1000

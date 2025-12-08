@@ -53,10 +53,7 @@ void Tracker::Setup(ThreadController *controller) {
    controller->add(_elevation);
    controller->add(this);
    _asyncServer.on("/", HTTP_GET, [this](AsyncWebServerRequest *request) {
-      String page = home_html;
-      page.replace("{n}", _iot.getThingName().c_str());
-      page.replace("{v}", APP_VERSION);
-      request->send(200, "text/html", page);
+      request->send(200, "text/html", home_html, [this](const String &var) { return appTemplateProcessor(var); });
    });
    _asyncServer.on("/appsettings", HTTP_GET, [this](AsyncWebServerRequest *request) {
       JsonDocument app;
@@ -182,7 +179,12 @@ void Tracker::onLoadSetting(JsonDocument &doc) {
 }
 
 String Tracker::appTemplateProcessor(const String &var) {
-   
+   if (var == "title") {
+      return String(_iot.getThingName().c_str());
+   }
+   if (var == "version") {
+      return String(APP_VERSION);
+   }
    if (var == "app_fields") {
       return String(app_config);
    }

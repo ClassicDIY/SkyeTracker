@@ -30,12 +30,12 @@ class IOT : public IOTServiceInterface {
    void Init(IOTCallbackInterface *iotCB, AsyncWebServer *pwebServer);
    void Run();
    u_int getUniqueId() { return _uniqueId; };
-   std::string getThingName();
+   String getThingName();
    NetworkState getNetworkState() { return _networkState; }
    void GoOnline();
 
 #ifdef HasMQTT
-   std::string getRootTopicPrefix();
+   String getRootTopicPrefix();
    boolean Publish(const char *subtopic, const char *value, boolean retained = false);
    boolean Publish(const char *subtopic, JsonDocument &payload, boolean retained = false);
    boolean Publish(const char *subtopic, float value, boolean retained = false);
@@ -121,7 +121,6 @@ class IOT : public IOTServiceInterface {
    unsigned long _GPIO0_PressedCountdown = 0;
    unsigned long _FlasherIPConfigStart = millis();
    void RedirectToHome(AsyncWebServerRequest *request);
-   void UpdateOledDisplay();
    void GoOffline();
    void saveSettings();
    void loadSettings();

@@ -45,16 +45,16 @@ void setup() {
    _tracker.Setup(&_controller);
    esp_task_wdt_init(60, true); // 60-second timeout, panic on timeout
    esp_task_wdt_add(NULL);
-   // _tracker.Track();
-   logd("Setup Done");
+   logd("Free Heap after setup: %d KB", ESP.getFreeHeap() / 1024);
+   logd("------------Setup Done ---------------");
 }
 
 void loop() {
    _tracker.Process();
    _controller.run();
-   // if (_tracker.getState() == TrackerState_Standby) {
-   //    _tracker.Track();
-   // }
+   if (_tracker.getState() == TrackerState_Standby) {
+      _tracker.Track();
+   }
    esp_task_wdt_reset(); // Feed the watchdog
    delay(10);
 }
