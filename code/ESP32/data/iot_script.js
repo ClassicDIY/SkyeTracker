@@ -50,6 +50,7 @@ function showMBFields() {
     if (selectedFld) {
         document.getElementById(selectedFld.value + '-fields').classList.remove('hidden');
     }
+    %appshowMBFields%
 }
 
 function showFields() {
@@ -90,25 +91,27 @@ window.onload = function () {
             e.preventDefault();
             const status = document.getElementById('status');
             status.textContent = '';
-            %app_script_js%
-            try {
-                const iot = getFormValues("#iot_fields input, #iot_fields select");
-                const res = await fetch('/iot_fields', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(iot)
-                });
-                console.log(await res.text());
-                if (!res.ok) throw new Error('Save failed');
-                status.innerHTML = '<span class="ok">IOT Settings saved.</span>';
-            } catch (e) {
-                status.innerHTML = '<span class="err">' + e.message + '</span>';
+            if (validateInputs() == true) {
+                %app_script_js%
+                try {
+                    const iot = getFormValues("#iot_fields input, #iot_fields select");
+                    const res = await fetch('/iot_fields', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(iot)
+                    });
+                    console.log(await res.text());
+                    if (!res.ok) throw new Error('Save failed');
+                    status.innerHTML = '<span class="ok">IOT Settings saved.</span>';
+                } catch (e) {
+                    status.innerHTML = '<span class="err">' + e.message + '</span>';
+                }
             }
         });
 
     }
 }
-    
+
 function validateInputs() {
     %validateInputs%
     return true;
@@ -137,6 +140,7 @@ async function loadSettings() {
         var modbusEl = document.getElementById('modbusCheckbox');
         if (modbusEl) {
             modbusFieldset(modbusEl);
+            %setModbusBridgeFieldset%
         }
         var dhcpEl = document.getElementById('useDHCP');
         if (dhcpEl) {
@@ -174,36 +178,38 @@ function setIotValues(cfg) {
 }
 
 function setAppValues(cfg, prefix = "") {
-  const form = document.getElementById("settingsForm");
+    const form = document.getElementById("settingsForm");
 
-  for (const [k, v] of Object.entries(cfg)) {
-    const keyPath = prefix ? `${prefix}.${k}` : k;
+    for (const [k, v] of Object.entries(cfg)) {
+        const keyPath = prefix ? `${prefix}.${k}` : k;
 
-    if (Array.isArray(v)) {
-      // Handle arrays: expect form fields named like conversions[0].minV
-      v.forEach((item, i) => {
-        if (typeof item === "object") {
-          // recurse into object elements
-          setAppValues(item, `${keyPath}[${i}]`);
+        if (Array.isArray(v)) {
+            // Handle arrays: expect form fields named like conversions[0].minV
+            v.forEach((item, i) => {
+                if (typeof item === "object") {
+                    // recurse into object elements
+                    setAppValues(item, `${keyPath}[${i}]`);
+                } else {
+                    const el = form.elements.namedItem(`${keyPath}[${i}]`);
+                    if (el) el.value = item;
+                }
+            });
+        } else if (typeof v === "object" && v !== null) {
+            // Handle nested objects
+            setAppValues(v, keyPath);
         } else {
-          const el = form.elements.namedItem(`${keyPath}[${i}]`);
-          if (el) el.value = item;
+            // Handle scalars
+            const el = form.elements.namedItem(keyPath);
+            if (!el) continue;
+            if (el.type === "checkbox") {
+                el.checked = !!v;
+            } else if (el.tagName === 'SELECT') {
+                %setClientRTUValues%
+            } else {
+                el.value = v;
+            }
         }
-      });
-    } else if (typeof v === "object" && v !== null) {
-      // Handle nested objects
-      setAppValues(v, keyPath);
-    } else {
-      // Handle scalars
-      const el = form.elements.namedItem(keyPath);
-      if (!el) continue;
-      if (el.type === "checkbox") {
-        el.checked = !!v;
-      } else {
-        el.value = v;
-      }
     }
-  }
 }
 
 function getFormValues(section) {
@@ -225,9 +231,10 @@ function getFormValues(section) {
                 data[el.name] = UART_ParityEnum[el.value];
             } else if (el.name === "svrRTUStopBits") {
                 data[el.name] = UART_StopBitsEnum[el.value];
-            } 
+            %getClientRTUValues%
+            }
             else {
-                 data[el.name] = el.value;
+                data[el.name] = el.value;
             }
         } else {
             data[el.name] = el.value;

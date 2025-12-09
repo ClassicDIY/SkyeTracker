@@ -55,8 +55,11 @@ void Device::Run() {
          digitalWrite(WIFI_STATUS_PIN, _blinkStateOn ? HIGH : LOW);
       }
    } else {
-      digitalWrite(WIFI_STATUS_PIN, HIGH);
+      digitalWrite(WIFI_STATUS_PIN, LOW);
    }
+}
+
+void Device::SetRTC(struct tm *tm) { // stub, no rtc on this device
 }
 
 // void Device::SetRelay(const uint8_t index, const uint8_t value) { digitalWrite(_Coils[index], value); }
@@ -101,6 +104,9 @@ void Device::Run() {
       neopixelWrite(RGB_LED_PIN, 0, 0, 60);
       _running = true;
    }
+}
+
+void Device::SetRTC(struct tm *tm) { // stub, no rtc on this device
 }
 
 void Device::SetRelay(const uint8_t index, const uint8_t value) { digitalWrite(_Coils[index], value); }
@@ -214,8 +220,11 @@ void Device::Run() {
          digitalWrite(WIFI_STATUS_PIN, _blinkStateOn ? HIGH : LOW);
       }
    } else {
-      digitalWrite(WIFI_STATUS_PIN, HIGH);
+      digitalWrite(WIFI_STATUS_PIN, LOW);
    }
+}
+
+void Device::SetRTC(struct tm *tm) { // stub, no rtc on this device
 }
 
 void Device::SetRelay(const uint8_t index, const uint8_t value) { digitalWrite(_Coils[index], value); }
