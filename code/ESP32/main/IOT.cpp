@@ -471,33 +471,6 @@ void IOT::Run() {
    } else if (_networkState == OnLine) {
       _webLog.process();
    }
-#ifdef WIFI_STATUS_PIN
-   // use LED if the log level is none (edgeBox shares the LED pin with the serial TX gpio)
-   // handle blink led, fast : NotConnected slow: AP connected On: Station connected
-   if (_networkState != OnLine) {
-      unsigned long binkRate = _networkState == ApState ? AP_BLINK_RATE : NC_BLINK_RATE;
-      unsigned long now = millis();
-      if (binkRate < now - _lastBlinkTime) {
-         _blinkStateOn = !_blinkStateOn;
-         _lastBlinkTime = now;
-         digitalWrite(WIFI_STATUS_PIN, _blinkStateOn ? HIGH : LOW);
-      }
-   } else {
-      digitalWrite(WIFI_STATUS_PIN, HIGH);
-   }
-#elif RGB_LED_PIN
-   if (_networkState != OnLine) {
-      unsigned long binkRate = _networkState == ApState ? AP_BLINK_RATE : NC_BLINK_RATE;
-      unsigned long now = millis();
-      if (binkRate < now - _lastBlinkTime) {
-         _blinkStateOn = !_blinkStateOn;
-         _lastBlinkTime = now;
-         RGB_Light(_blinkStateOn ? 60 : 0, _blinkStateOn ? 0 : 60, 0);
-      }
-   } else {
-      RGB_Light(0, 0, 60);
-   }
-#endif
    if (digitalRead(GPIO_NUM_0) != LOW) { // GPIO0 pressed for GPIO0_FactoryResetCountdown? initiate a factory reset
       _GPIO0_PressedCountdown = millis();
    }
