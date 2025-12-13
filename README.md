@@ -47,6 +47,14 @@ New version 3 for the <a href='https://lilygo.cc/products/t-relay-s3'>Lilygo T-R
   <img src="./Pictures/Lilygo_T-Relay_S3.png" width="800">
 </p>
 
+<p align="center">
+  <img src="./Pictures/V3_HomePage.png" width="800">
+</p>
+
+<p align="center">
+  <img src="./Pictures/V3_Settings.png" width="800">
+</p>
+
 ## Development tools:
 
 <ul>
