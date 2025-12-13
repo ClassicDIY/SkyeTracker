@@ -14,6 +14,7 @@
 
 namespace CLASSICDIY {
 
+const char *TrackerStateStrings[] = {"Off", "Initializing", "Standby", "Manual", "Cycling", "Tracking", "Parked"};
 static AsyncWebServer _asyncServer(ASYNC_WEBSERVER_PORT);
 static AsyncWebSocket _webSocket("/ws_home");
 IOT _iot = IOT();
@@ -447,6 +448,7 @@ void Tracker::run() {
          Resume();
       }
    }
+   _tft.Update(TrackerStateStrings[getState()], _sun, _azimuth, _elevation);
 };
 
 void Tracker::ProcessCommand(const char *input) {

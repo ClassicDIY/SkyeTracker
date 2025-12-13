@@ -25,6 +25,14 @@ void Device::InitCommon() {
 #endif
 #ifdef Has_OLED
    _oled.Init();
+   if (!oled_display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
+      loge("SSD1306 allocation failed");
+   } else {
+      oled_display.clearDisplay();
+   }
+#endif
+#ifdef Has_TFT
+   _tft.Init();
 #endif
 }
 
@@ -32,14 +40,6 @@ void Device::InitCommon() {
 
 void Device::Init() {
    InitCommon();
-#ifdef Has_OLED
-   if (!oled_display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
-      loge("SSD1306 allocation failed");
-   } else {
-      oled_display.clearDisplay();
-   }
-#endif
-
    pinMode(FACTORY_RESET_PIN, INPUT_PULLUP);
    pinMode(WIFI_STATUS_PIN, OUTPUT);
 }
@@ -74,13 +74,6 @@ void Device::SetRTC(struct tm *tm) { // stub, no rtc on this device
 
 void Device::Init() {
    InitCommon();
-#ifdef Has_OLED
-   if (!oled_display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
-      loge("SSD1306 allocation failed");
-   } else {
-      oled_display.clearDisplay();
-   }
-#endif
    for (int i = 0; i < DO_PINS; i++) {
       pinMode(_Coils[i], OUTPUT);
    }
@@ -126,13 +119,6 @@ void Device::Init() {
    _reg->setAllLow();
    logd("Set HT74HC595_OUT_EN to low level to enable relay output");
    digitalWrite(HT74HC595_OUT_EN, LOW);
-#ifdef Has_OLED
-   if (!oled_display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
-      loge("SSD1306 allocation failed");
-   } else {
-      oled_display.clearDisplay();
-   }
-#endif
 #ifdef HasRTC
    if (!rtc.begin(&Wire)) {
       loge("Couldn't find RTC");
@@ -195,13 +181,6 @@ boolean Device::GetRelay(const uint8_t index) { return _reg->get(index); }
 
 void Device::Init() {
    InitCommon();
-#ifdef Has_OLED
-   if (!oled_display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
-      loge("SSD1306 allocation failed");
-   } else {
-      oled_display.clearDisplay();
-   }
-#endif
    for (int i = 0; i < DO_PINS; i++) {
       pinMode(_Coils[i], OUTPUT);
    }

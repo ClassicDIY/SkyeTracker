@@ -1,8 +1,10 @@
 #pragma once
 #include <memory>
-#include <ShiftRegister74HC595.h>
 #include <ThreadController.h>
 #include <Thread.h>
+#ifdef Lilygo_Relay_6CH
+#include <ShiftRegister74HC595.h>
+#endif
 #include "Enumerations.h"
 
 #define noise 2

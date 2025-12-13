@@ -11,6 +11,7 @@
 #include "Position.h"
 #include "LinearActuatorNoPot.h"
 #include "IOTCallbackInterface.h"
+#include "IOledServiceInterface.h"
 #include "Enumerations.h"
 
 extern CLASSICDIY::Configuration _config;
@@ -66,6 +67,12 @@ class Tracker : public Device, public Thread, public IOTCallbackInterface {
 #endif
 #ifdef HasModbus
    bool onModbusMessage(ModbusMessage &msg);
+#endif
+#ifdef Has_OLED
+   IOledServiceInterface& getOledInterface() override {  return _oled; };
+#endif
+#ifdef Has_TFT
+   IOledServiceInterface& getOledInterface() override {  return _tft; };
 #endif
  protected:
    boolean PublishDiscoverySub(const char *component, const char *entityName, const char *jsonElement, const char *device_class,

@@ -205,11 +205,13 @@ void inline GPIO_Init() {
 #define I2C_SDA GPIO_NUM_16
 #define I2C_SCL GPIO_NUM_17
 
+#ifdef Has_OLED
 // OLED display definitions
 #define SCREEN_ADDRESS 0x3C // OLED 128X64 I2C address
 #define SCREEN_WIDTH 128    // OLED display width, in pixels
 #define SCREEN_HEIGHT 64    // OLED display height, in pixels
 #define OLED_RESET -1       // Reset pin # (or -1 if sharing Arduino reset pin)
+#endif
 
 // Motor Controller
 // #define PWMa_H GPIO_NUM_13

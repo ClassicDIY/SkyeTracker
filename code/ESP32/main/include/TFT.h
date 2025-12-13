@@ -1,11 +1,11 @@
 
 #pragma once
-#ifdef Has_OLED
-#include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+#ifdef Has_TFT
+#include <TFT_eSPI.h> // Graphics library
 #include "IOledServiceInterface.h"
 #include "Enumerations.h"
+#include "Sun.h"
+#include "LinearActuatorNoPot.h"
 
 namespace CLASSICDIY {
 #define LEVEL_FONT 5
@@ -19,15 +19,17 @@ namespace CLASSICDIY {
 #define STATUS_Y 0
 #define BUF_SIZE 32
 
-class Oled : public IOledServiceInterface {
+class TFT : public IOledServiceInterface {
  public:
    void Init();
    void Display(const char *state, uint16_t level);
    void Display(const char* hdr1, const char* detail1, const char* hdr2, const char* detail2);
    void Display(const char* hdr1, const char* detail1, const char* hdr2, int count);
+   void Update(const char *TrackerStateString, Sun* sun, LinearActuatorNoPot* horizontalActuator, LinearActuatorNoPot* verticalActuator);
 
  private:
    uint8_t xOffset(uint8_t textSize, uint8_t numberOfCharaters);
+   uint16_t _hSplit = 65;
 };
 
 } // namespace CLASSICDIY

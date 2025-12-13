@@ -4,6 +4,7 @@
 #include "GPIO_pins.h"
 #include "Enumerations.h"
 #include "Oled.h"
+#include "tft.h"
 #ifdef Lilygo_Relay_6CH
 #include <ShiftRegister74HC595.h>
 #endif
@@ -22,6 +23,9 @@ class Device {
 #endif
 #ifdef Has_OLED
    Oled _oled = Oled();
+#endif
+#ifdef Has_TFT
+   TFT _tft = TFT();
 #endif
    NetworkState _networkState = Boot;
    unsigned long _lastBlinkTime = 0;

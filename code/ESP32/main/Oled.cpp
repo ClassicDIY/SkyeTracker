@@ -16,7 +16,7 @@ void Oled::Init() {
    }
 }
 
-void Oled::update(uint16_t level, const char *pch) {
+void Oled::Display(const char *pch, uint16_t level) {
    oled_display.clearDisplay();
    oled_display.setTextSize(STATUS_FONT);
    oled_display.setTextColor(SSD1306_WHITE);
@@ -42,8 +42,8 @@ uint8_t Oled::xOffset(uint8_t textSize, uint8_t numberOfCharaters) {
    return rVal;
 }
 
-void Oled::update(const char *hdr, const char *mode, int count) {
-   logd("Oled update: %s,  %s, %d", hdr, mode, count);
+void Oled::Display(const char* hdr1, const char* detail1, const char* hdr2, int count) {
+   logv("Oled update: %s,  %s, %d", hdr, mode, count);
    oled_display.clearDisplay();
    oled_display.setTextSize(2);
    oled_display.clearDisplay();
@@ -52,16 +52,17 @@ void Oled::update(const char *hdr, const char *mode, int count) {
    oled_display.setCursor(0, 0);
    char buf[BUF_SIZE];
    memset(buf, 0, BUF_SIZE);
-   strncpy(buf, hdr, NumChar(HDR_FONT));
+   strncpy(buf, hdr1, NumChar(HDR_FONT));
    oled_display.println(buf); // limit hdr to 8 char for font size 2
-   logd("Oled buf1: %s", buf);
    oled_display.setTextSize(DETAIL_FONT);
    oled_display.setCursor(0, 18);
-   oled_display.println(APP_VERSION);
+   memset(buf, 0, BUF_SIZE);
+   strncpy(buf, detail1, NumChar(DETAIL_FONT));
+   oled_display.println(buf);
    oled_display.setTextSize(MODE_FONT);
    oled_display.setCursor(0, 36);
    memset(buf, 0, BUF_SIZE);
-   strncpy(buf, mode, NumChar(MODE_FONT));
+   strncpy(buf, hdr2, NumChar(MODE_FONT));
    oled_display.print(buf);
    if (count > 0) {
       oled_display.printf(":%d", count);
@@ -69,29 +70,30 @@ void Oled::update(const char *hdr, const char *mode, int count) {
    oled_display.display();
 }
 
-void Oled::update(const char *hdr, const char *mode, const char *detail) {
-   logd("Oled update: %s,  %s, %s", hdr, mode, detail);
+void Oled::Display(const char* hdr1, const char* detail1, const char* hdr2, const char* detail2) {
+   logv("Oled update: %s,  %s, %s", hdr, mode, detail);
    oled_display.clearDisplay();
    oled_display.setTextSize(HDR_FONT);
    oled_display.setTextColor(SSD1306_WHITE);
    oled_display.setCursor(0, 0);
    char buf[BUF_SIZE];
    memset(buf, 0, BUF_SIZE);
-   strncpy(buf, hdr, NumChar(HDR_FONT));
+   strncpy(buf, hdr1, NumChar(HDR_FONT));
    oled_display.println(buf); // limit hdr to 8 char for font size 2
-   logd("Oled buf1: %s", buf);
    oled_display.setTextSize(DETAIL_FONT);
    oled_display.setCursor(0, 18);
-   oled_display.println(APP_VERSION);
+   memset(buf, 0, BUF_SIZE);
+   strncpy(buf, detail1, NumChar(DETAIL_FONT));
+   oled_display.println(buf);
    oled_display.setTextSize(MODE_FONT);
    oled_display.setCursor(0, 36);
    memset(buf, 0, BUF_SIZE);
-   strncpy(buf, mode, NumChar(MODE_FONT));
+   strncpy(buf, hdr2, NumChar(MODE_FONT));
    oled_display.println(buf);
    oled_display.setTextSize(DETAIL_FONT);
    oled_display.setCursor(0, 54);
    memset(buf, 0, BUF_SIZE);
-   strncpy(buf, detail, NumChar(DETAIL_FONT));
+   strncpy(buf, detail2, NumChar(DETAIL_FONT));
    oled_display.println(buf);
    oled_display.display();
 }

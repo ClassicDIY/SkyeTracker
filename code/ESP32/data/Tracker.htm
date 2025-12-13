@@ -14,8 +14,8 @@ const char onLoadScript[] PROGMEM = R"rawliteral(
     const now = new Date();
     const _date = document.getElementById('_date');
     const _time = document.getElementById('_time');
-    _date.value = now.toISOString().split('T')[0];
-    _time.value = now.toTimeString().slice(0,5);
+    _date.value = now.toISOString().split('T')[0]; // UTC Date
+    _time.value = now.toISOString().split('T')[1].slice(0,5); // UTC time (HH:mm)
 )rawliteral";
 
 const char home_html[] PROGMEM = R"rawliteral(
@@ -24,7 +24,7 @@ const char home_html[] PROGMEM = R"rawliteral(
 
 <head>
   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\" />
-  <title>{n}</title>
+  <title>%title%</title>
   <link rel="stylesheet" href="/style.css">
   <script>
 
@@ -56,14 +56,13 @@ const char home_html[] PROGMEM = R"rawliteral(
     window.addEventListener('beforeunload', function() { if (socket) { socket.close(); } });
   }
   </script>
-  {style}
 </head>
 
 <body>
   <div id="home">
     <div id="hdr">
-      <h2>{n}</h2>
-      <div style='font-size: .6em;'>Firmware config version '{v}'</div>
+      <h2>%title%</h2>
+      <div style='font-size: .6em;'>Firmware config version '%version%'</div>
       <hr>
       <div class="controller">
         <button class="up"    onclick="sendCommand('up')">Up</button>
@@ -112,11 +111,11 @@ const char app_config[] PROGMEM = R"rawliteral(
 
     <!-- Date Time -->
     <div class="field">
-      <label for="_date">Date:</label>
+      <label for="_date">Date (UTC):</label>
       <input type="date" id="_date" name="_date">
     </div>
     <div class="field">
-      <label for="_time">Time:</label>
+      <label for="_time">Time (UTC):</label>
       <input type="time" id="_time" name="_time">
     </div>
 
