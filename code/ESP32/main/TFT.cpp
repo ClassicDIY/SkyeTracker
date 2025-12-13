@@ -47,17 +47,17 @@ void TFT::Display(const char *hdr1, const char *detail1, const char *hdr2, int c
    tft.setCursor(0, 0);
    char buf[BUF_SIZE];
    memset(buf, 0, BUF_SIZE);
-   strncpy(buf, hdr1, NumChar(HDR_FONT));
+   strncpy(buf, hdr1, BUF_SIZE);
    tft.println(buf); // limit hdr to 8 char for font size 2
    tft.setTextSize(DETAIL_FONT);
    tft.setCursor(0, 18);
    memset(buf, 0, BUF_SIZE);
-   strncpy(buf, detail1, NumChar(DETAIL_FONT));
+   strncpy(buf, detail1, BUF_SIZE);
    tft.println(buf);
    tft.setTextSize(MODE_FONT);
    tft.setCursor(0, 36);
    memset(buf, 0, BUF_SIZE);
-   strncpy(buf, hdr2, NumChar(MODE_FONT));
+   strncpy(buf, hdr2, BUF_SIZE);
    tft.print(buf);
    if (count > 0) {
       tft.printf(":%d", count);
@@ -71,22 +71,22 @@ void TFT::Display(const char *hdr1, const char *detail1, const char *hdr2, const
    tft.setCursor(0, 0);
    char buf[BUF_SIZE];
    memset(buf, 0, BUF_SIZE);
-   strncpy(buf, hdr1, NumChar(HDR_FONT));
+   strncpy(buf, hdr1, BUF_SIZE);
    tft.println(buf);
    tft.setTextSize(DETAIL_FONT);
    tft.setCursor(0, 18);
    memset(buf, 0, BUF_SIZE);
-   strncpy(buf, detail1, NumChar(DETAIL_FONT));
+   strncpy(buf, detail1, BUF_SIZE);
    tft.println(buf);
    tft.setTextSize(MODE_FONT);
    tft.setCursor(0, 36);
    memset(buf, 0, BUF_SIZE);
-   strncpy(buf, hdr2, NumChar(MODE_FONT));
+   strncpy(buf, hdr2, BUF_SIZE);
    tft.println(buf);
    tft.setTextSize(DETAIL_FONT);
    tft.setCursor(0, 54);
    memset(buf, 0, BUF_SIZE);
-   strncpy(buf, detail2, NumChar(DETAIL_FONT));
+   strncpy(buf, detail2, BUF_SIZE);
    tft.println(buf);
 }
 

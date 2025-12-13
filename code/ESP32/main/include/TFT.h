@@ -29,7 +29,7 @@ class TFT : public IOledServiceInterface {
 
  private:
    uint8_t xOffset(uint8_t textSize, uint8_t numberOfCharaters);
-   uint16_t _hSplit = 65;
+   uint16_t _hSplit = 70;
 };
 
 } // namespace CLASSICDIY
