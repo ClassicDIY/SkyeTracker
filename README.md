@@ -33,12 +33,18 @@ The SkyeTracker Android app APK is no longer in Google Play, please <a href='htt
 
 ## SkyeTracker Wiring (ESP32)
 
-### There are implementations for both Arduino and ESP32 devices.
-
 Check the [wiki](https://github.com/ClassicDIY/SkyeTracker/wiki/3---ESP32-wiring-diagram) for updated information on the ESP32 implementation.
 
 <p align="center">
   <img src="./Pictures/Prototype_ESP32.PNG" width="800">
+</p>
+
+## SkyeTracker Wiring (Lilygo T-Relay-S3)
+
+New version 3 for the <a href='https://lilygo.cc/products/t-relay-s3'>Lilygo T-Relay-S3</a>
+
+<p align="center">
+  <img src="./Pictures/Lilygo_T-Relay_S3.png" width="800">
 </p>
 
 ## Development tools:
