@@ -21,27 +21,12 @@ Here are some <a href='https://www.youtube.com/playlist?list=PLblHpNAh7b6LoXEqof
   <img src="./Pictures/AssembledWithAnemometer.jpg" width="400"/>
 </p>
 
-## SkyeTracker app
-
-The SkyeTracker Android app APK is no longer in Google Play, please <a href='https://www.howtogeek.com/313433/how-to-sideload-apps-on-android/'>sideload</a> the APK found in the latest release.
-<a href='https://github.com/ClassicDIY/SkyeTracker/releases'>APK File</a>
-
-<p align="center">
-  <img src="./Pictures/Info%20Tab.png" alt="SkyeTracker App" width="400">
-  <img src="./Pictures/Move%20Tab.png" alt="SkyeTracker App" width="400">
-</p>
-
-## SkyeTracker Wiring (ESP32)
-
-Check the [wiki](https://github.com/ClassicDIY/SkyeTracker/wiki/3---ESP32-wiring-diagram) for updated information on the ESP32 implementation.
-
-<p align="center">
-  <img src="./Pictures/Prototype_ESP32.PNG" width="800">
-</p>
-
-## SkyeTracker Wiring (Lilygo T-Relay-S3)
+## SkyeTracker Wiring (Lilygo-T-Relay-S3)
 
 New version 3 for the <a href='https://lilygo.cc/products/t-relay-s3'>Lilygo T-Relay-S3</a>
+
+Note: Bluetooth is no longer supported on the ESP32-S3, support for the Android app has been removed.
+The settings can be accessed via the Wifi Access Point, default AP: SkyeTracker default PW: 12345678
 
 <p align="center">
   <img src="./Pictures/Lilygo_T-Relay_S3.png" width="800">
@@ -59,11 +44,18 @@ New version 3 for the <a href='https://lilygo.cc/products/t-relay-s3'>Lilygo T-R
   <img src="./Pictures/V3_TFT_Display.png" width="800">
 </p>
 
+## SkyeTracker Wiring (ESP32)
+
+Check the [wiki](https://github.com/ClassicDIY/SkyeTracker/wiki/3---ESP32-wiring-diagram) for updated information on the ESP32 implementation.
+
+<p align="center">
+  <img src="./Pictures/Prototype_ESP32.PNG" width="800">
+</p>
+
 ## Development tools:
 
 <ul>
   <li>Visual Studio Code with PlatformIO IDE extension.</li>
-  <li>Android Studio for mobile app development.</li>
   <li>Diptrace for schematic & PCB (NANO version).</li>
   <li>Sketchup for mechanical drawings.</li>
 </ul>
