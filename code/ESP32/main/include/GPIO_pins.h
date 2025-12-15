@@ -147,12 +147,12 @@ void inline GPIO_Init() {
 #define I2C_SCL GPIO_NUM_48
 
 // Motor Controller
-#define PWMa_H GPIO_NUM_13
+#define PWMa_H GPIO_NUM_1
 #define ENABLE_H GPIO_NUM_12
-#define PWMb_H GPIO_NUM_14
-#define PWMa_V GPIO_NUM_27
-#define ENABLE_V GPIO_NUM_26
-#define PWMb_V GPIO_NUM_25
+#define PWMb_H GPIO_NUM_2
+#define PWMa_V GPIO_NUM_41
+#define ENABLE_V GPIO_NUM_11
+#define PWMb_V GPIO_NUM_42
 
 // Anemometer
 #define AnemometerPin A0
@@ -175,12 +175,12 @@ void inline GPIO_Init() {
 #define OLED_RESET -1       // Reset pin # (or -1 if sharing Arduino reset pin)
 
 // Motor Controller
-#define PWMa_H GPIO_NUM_13
-#define ENABLE_H GPIO_NUM_12
-#define PWMb_H GPIO_NUM_14
-#define PWMa_V GPIO_NUM_27
-#define ENABLE_V GPIO_NUM_26
-#define PWMb_V GPIO_NUM_25
+#define PWMa_H GPIO_NUM_21
+#define ENABLE_H GPIO_NUM_22
+#define PWMb_H GPIO_NUM_19
+#define PWMa_V GPIO_NUM_18
+#define ENABLE_V GPIO_NUM_23
+#define PWMb_V GPIO_NUM_5
 
 // Anemometer
 #define AnemometerPin A0
@@ -212,14 +212,6 @@ void inline GPIO_Init() {
 #define SCREEN_HEIGHT 64    // OLED display height, in pixels
 #define OLED_RESET -1       // Reset pin # (or -1 if sharing Arduino reset pin)
 #endif
-
-// Motor Controller
-// #define PWMa_H GPIO_NUM_13
-// #define ENABLE_H GPIO_NUM_12
-// #define PWMb_H GPIO_NUM_14
-// #define PWMa_V GPIO_NUM_27
-// #define ENABLE_V GPIO_NUM_26
-// #define PWMb_V GPIO_NUM_32
 
 // Anemometer
 #define AnemometerPin A0

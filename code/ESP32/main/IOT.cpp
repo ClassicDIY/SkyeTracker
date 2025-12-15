@@ -907,7 +907,7 @@ void IOT::HandleMQTT(int32_t event_id, void *event_data) {
       char buf[128];
       sprintf(buf, "%s/set/#", _rootTopicPrefix);
       esp_mqtt_client_subscribe(client, buf, 0);
-      _iotCB->onMqttConnect();
+      _iotCB->onMqttConnect(client);
       esp_mqtt_client_publish(client, _willTopic, "Online", 0, 1, 0);
       break;
    case MQTT_EVENT_DISCONNECTED:
@@ -1029,6 +1029,17 @@ boolean IOT::PublishMessage(const char *topic, JsonDocument &payload, boolean re
       rVal = (esp_mqtt_client_publish(_mqtt_client_handle, topic, s.c_str(), s.length(), 0, retained) != -1);
       if (!rVal) {
          loge("**** Configuration payload exceeds MAX MQTT Packet Size, %d [%s] topic: %s", s.length(), s.c_str(), topic);
+      }
+   }
+   return rVal;
+}
+
+boolean IOT::PublishMessage(const char *topic, const char *payload, boolean retained) {
+   boolean rVal = false;
+   if (_mqtt_client_handle != 0) {
+      rVal = (esp_mqtt_client_publish(_mqtt_client_handle, topic, payload, strlen(payload), 0, retained) != -1);
+      if (!rVal) {
+         loge("**** Configuration payload exceeds MAX MQTT Packet Size, %d [%s] topic: %s", strlen(payload), payload, topic);
       }
    }
    return rVal;

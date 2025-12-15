@@ -40,6 +40,7 @@ class IOT : public IOTServiceInterface {
    boolean Publish(const char *subtopic, JsonDocument &payload, boolean retained = false);
    boolean Publish(const char *subtopic, float value, boolean retained = false);
    boolean PublishMessage(const char *topic, JsonDocument &payload, boolean retained);
+   boolean PublishMessage(const char *topic, const char *payload, boolean retained);
 #endif
 
 #ifdef HasModbus

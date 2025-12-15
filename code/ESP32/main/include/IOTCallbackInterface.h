@@ -1,6 +1,7 @@
 #pragma once
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include "mqtt_client.h"
 #ifdef HasModbus
 #include <ModbusServerTCPasync.h>
 #endif
@@ -15,7 +16,7 @@ class IOTCallbackInterface {
    virtual void onSaveSetting(JsonDocument &doc) = 0;
    virtual void onLoadSetting(JsonDocument &doc) = 0;
 #ifdef HasMQTT
-   virtual void onMqttConnect() = 0;
+   virtual void onMqttConnect(esp_mqtt_client_handle_t& client) = 0;
    virtual void onMqttMessage(char *topic, char *payload) = 0;
 #endif
 #if defined(HasModbus) && defined(HasRS485)

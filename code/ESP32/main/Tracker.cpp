@@ -208,14 +208,16 @@ void Tracker::Process() {
    if (_trackerState == TrackerState_Off) {
       InitializeActuators();
    }
+   String s;
+   serializeJson(_ws_home_doc, s);
+   if (_lastMessagePublished != s) {
+      _lastMessagePublished = s;
 #ifdef HasMQTT
-   _iot.Publish("readings", s.c_str(), false);
+      String topic = _iot.getRootTopicPrefix() + "/state";
+      String state = _ws_home_doc["state"];
+      _iot.PublishMessage(topic.c_str(), state.c_str(), false);
 #endif
-   if (_webSocket.count() > 0) { // any clients?
-      String s;
-      serializeJson(_ws_home_doc, s);
-      if (_lastMessagePublished != s) {
-         _lastMessagePublished = s;
+      if (_webSocket.count() > 0) { // any clients?
          _webSocket.textAll(s);
          logd("_webSocket Sent %s", s.c_str());
       }
@@ -276,7 +278,7 @@ void Tracker::Track() {
       Park(true);
       enabled = false; // don't run worker thread when error exists
    } else if (getState() != TrackerState_Initializing && getState() != TrackerState_Off) {
-      if (getState() == TrackerState_Manual || getState() == TrackerState_Cycling || getState() == TrackerState_Parked) {
+      if (getState() == TrackerState_Manual || getState() == TrackerState_Cycling || getState() == TrackerState_Parked || getState() == TrackerState_Protect) {
          // re-initialize actuators if moved
          InitializeActuators();
       }
@@ -304,7 +306,7 @@ void Tracker::Park(bool protect = false) {
          }
          _elevation->MoveTo(elevation);
       }
-      setState(TrackerState_Parked);
+      setState(protect ? TrackerState_Protect : TrackerState_Parked);
    }
 }
 
@@ -365,16 +367,20 @@ void Tracker::setState(TrackerState state) {
          mode = "Manual";
          break;
       case TrackerState_Cycling:
-         mode = "Cycling";
+         mode = "Cycle";
          break;
       case TrackerState_Tracking:
          mode = "Tracking";
          break;
       case TrackerState_Parked:
-         mode = "Parked";
+         mode = "Park";
+         break;
+      case TrackerState_Protect:
+         mode = "Protect";
          break;
       }
-      _iot->Publish("mode", mode.c_str(), false);
+      String topic = _iot.getRootTopicPrefix() + "/mode";
+      _iot.PublishMessage(topic.c_str(), mode.c_str(), false);
 #endif
    }
    return;
@@ -443,138 +449,74 @@ void Tracker::run() {
             _ws_home_doc["state"] = "High winds detected";
          }
       }
-      if (getState() == TrackerState_Parked && --_protectCountdown <= 0) {
+      if (getState() == TrackerState_Protect && --_protectCountdown <= 0) {
          _protectCountdown = 0;
          Resume();
       }
    }
+#ifdef Has_TFT
    _tft.Update(TrackerStateStrings[getState()], _sun, _azimuth, _elevation);
+#endif
 };
-
-void Tracker::ProcessCommand(const char *input) {
-   boolean afterDelimiter = false;
-   char command[32];
-   char data[64];
-   unsigned int commandIndex = 0;
-   unsigned int dataIndex = 0;
-   JsonDocument doc;
-   for (unsigned int i = 0; i < strlen(input); i++) {
-      if (input[i] == '|') {
-         afterDelimiter = true;
-         continue;
-      }
-      if (input[i] == '\r' || input[i] == '\n') {
-         continue;
-      }
-      if (afterDelimiter == false) {
-         command[commandIndex++] = input[i];
-         if (commandIndex >= sizeof(command)) {
-            loge("Command overflow!");
-         }
-      } else {
-         data[dataIndex++] = input[i];
-         if (dataIndex >= sizeof(data)) {
-            loge("data overflow!");
-         }
-      }
-   }
-   command[commandIndex++] = 0;
-   data[dataIndex++] = 0;
-   logi("%s|%s", command, data);
-   if (strcmp(command, c_Track) == 0) {
-      Track();
-   } else if (strcmp(command, c_Cycle) == 0) {
-      Cycle();
-   } else if (strcmp(command, c_Park) == 0) {
-      Park(false);
-   } else if (strcmp(command, c_Protect) == 0) {
-      Park(true);
-   } else if (strcmp(command, c_Stop) == 0) {
-      setState(TrackerState_Manual);
-      Stop();
-   } else if (strcmp(command, c_SetC) == 0) // set configuration
-   {
-      DeserializationError error = deserializeJson(doc, data);
-      if (!error) {
-         _config.SetLocation(doc["a"], doc["o"]);
-         setInterval(PENDING_RESET);
-      }
-   } else if (strcmp(command, c_SetA) == 0) // set actuator size/speed
-   {
-      DeserializationError error = deserializeJson(doc, data);
-      if (!error) {
-         _config.SetActuatorParameters(doc["lh"], doc["lv"], doc["sh"], doc["sv"]);
-         setInterval(PENDING_RESET);
-      }
-   } else if (strcmp(command, c_SetL) == 0) // set limits
-   {
-      DeserializationError error = deserializeJson(doc, data);
-      if (!error) {
-         _config.SetLimits(doc["e"], doc["w"], doc["n"], doc["x"]);
-         setInterval(PENDING_RESET);
-      }
-   } else if (strcmp(command, c_SetO) == 0) // set options
-   {
-      DeserializationError error = deserializeJson(doc, data);
-      if (!error) {
-         _config.setDual(doc["d"]);
-         _config.setHasAnemometer(doc["an"]);
-         setInterval(PENDING_RESET);
-      }
-   } else if (strcmp(command, c_SetDateTime) == 0) {
-      timeval tv;
-      tv.tv_sec = atol(data);
-      tv.tv_usec = 0;
-      settimeofday(&tv, NULL);
-      _cycleTime = getTime();
-      printLocalTime();
-   } else if (strcmp(command, c_MoveTo) == 0) {
-      MoveTo(data);
-   }
-}
-
-void Tracker::MoveTo(char *arg) {
-   setState(TrackerState_Manual);
-   if (strcmp(arg, c_East) == 0) {
-      Move(Direction_East);
-   } else if (strcmp(arg, c_West) == 0) {
-      Move(Direction_West);
-   } else if (strcmp(arg, c_Up) == 0) {
-      Move(Direction_Up);
-   } else if (strcmp(arg, c_Down) == 0) {
-      Move(Direction_Down);
-   }
-}
 
 #ifdef HasMQTT
 
-void PLC::onMqttConnect() {
+void Tracker::onMqttConnect(esp_mqtt_client_handle_t &client) {
+   // Subscribe to command topics
+   esp_mqtt_client_subscribe(client, (_iot.getRootTopicPrefix() + "/state/set").c_str(), 0);
+   esp_mqtt_client_subscribe(client, (_iot.getRootTopicPrefix() + "/button/Up").c_str(), 0);
+   esp_mqtt_client_subscribe(client, (_iot.getRootTopicPrefix() + "/button/Down").c_str(), 0);
+   esp_mqtt_client_subscribe(client, (_iot.getRootTopicPrefix() + "/button/Left").c_str(), 0);
+   esp_mqtt_client_subscribe(client, (_iot.getRootTopicPrefix() + "/button/Right").c_str(), 0);
+   esp_mqtt_client_subscribe(client, (_iot.getRootTopicPrefix() + "/button/Stop").c_str(), 0);
+
    if (!_discoveryPublished) {
-      for (int i = 0; i < _digitalInputDiscretes.coils(); i++) {
-         std::stringstream ss;
-         ss << "DI" << i;
-         if (PublishDiscoverySub(DigitalInputs, ss.str().c_str(), nullptr, "mdi:switch") == false) {
-            return; // try later
-         }
+      String stateConfigTopic = HOME_ASSISTANT_PREFIX;
+      stateConfigTopic += "/sensor/";
+      stateConfigTopic += _iot.getRootTopicPrefix();
+      stateConfigTopic += "/state/config";
+      JsonDocument payload;
+      payload["name"] = "State";
+      payload["unique_id"] = String(_iot.getUniqueId()) + "_" + String("Tracker_State");
+      payload["state_topic"] = _iot.getRootTopicPrefix() + String("/state");
+      payload["icon"] = "mdi:solar-power";
+      if (PublishDiscoverySub(stateConfigTopic, payload) == false) {
+         return; // try later
       }
-      for (int i = 0; i < _digitalOutputCoils.coils(); i++) {
-         std::stringstream ss;
-         ss << "DO" << i;
-         if (PublishDiscoverySub(DigitalOutputs, ss.str().c_str(), nullptr, "mdi:valve") == false) {
-            return; // try later
-         }
+      // Discovery payload for tracker mode (select entity)
+      String modeConfigTopic = HOME_ASSISTANT_PREFIX;
+      modeConfigTopic += "/select/";
+      modeConfigTopic += _iot.getRootTopicPrefix();
+      modeConfigTopic += "/mode/config";
+      payload.clear();
+      payload["name"] = "Mode";
+      payload["unique_id"] = String(_iot.getUniqueId()) + "_" + String("Tracker_Mode");
+      payload["command_topic"] = _iot.getRootTopicPrefix() + String("/mode/set");
+      payload["state_topic"] = _iot.getRootTopicPrefix() + String("/mode");
+      JsonArray options = payload["options"].to<JsonArray>();
+      options.add("Off");
+      options.add("Manual");
+      options.add("Tracking");
+      options.add("Park");
+      options.add("Protect");
+      options.add("Cycle");
+      if (PublishDiscoverySub(modeConfigTopic, payload) == false) {
+         return; // try later
       }
-      for (int i = 0; i < _analogInputRegisters.size(); i++) {
-         std::stringstream ss;
-         ss << "AI" << i;
-         if (PublishDiscoverySub(AnalogInputs, ss.str().c_str(), "%", "mdi:lightning-bolt") == false) {
-            return; // try later
-         }
-      }
-      for (int i = 0; i < _analogOutputRegisters.size(); i++) {
-         std::stringstream ss;
-         ss << "AO" << i;
-         if (PublishDiscoverySub(AnalogOutputs, ss.str().c_str(), nullptr, nullptr) == false) {
+      // Discovery payloads for buttons
+      const char *buttons[5] = {"Up", "Down", "Left", "Right", "Stop"};
+      for (int i = 0; i < 5; i++) {
+         payload.clear();
+         String buttonTopic = HOME_ASSISTANT_PREFIX;
+         buttonTopic += "/button/";
+         buttonTopic += _iot.getRootTopicPrefix();
+         buttonTopic += "/";
+         buttonTopic += String(buttons[i]);
+         buttonTopic += "/config";
+         payload["name"] = String(buttons[i]);
+         payload["unique_id"] = String("Tracker_") + String(buttons[i]);
+         payload["command_topic"] = _iot.getRootTopicPrefix() + String("/button/") + String(buttons[i]);
+         if (PublishDiscoverySub(buttonTopic, payload) == false) {
             return; // try later
          }
       }
@@ -582,59 +524,13 @@ void PLC::onMqttConnect() {
    }
 }
 
-boolean PLC::PublishDiscoverySub(IOTypes type, const char *entityName, const char *unit_of_meas, const char *icon) {
-   String topic = HOME_ASSISTANT_PREFIX;
-   switch (type) {
-   case DigitalOutputs:
-      topic += "/switch/";
-      break;
-   case AnalogOutputs:
-      topic += "/number/";
-      break;
-   case DigitalInputs:
-      topic += "/sensor/";
-      break;
-   case AnalogInputs:
-      topic += "/sensor/";
-      break;
-   }
-   topic += String(_iot.getUniqueId());
-   topic += "/";
-   topic += entityName;
-   topic += "/config";
-
-   JsonDocument payload;
-   payload["platform"] = "mqtt";
-   payload["name"] = entityName;
-   payload["unique_id"] = String(_iot.getUniqueId()) + "_" + String(entityName);
-   payload["value_template"] = ("{{ value_json." + String(entityName) + " }}").c_str();
-   payload["state_topic"] = _iot.getRootTopicPrefix().c_str() + String("/stat/readings");
-   if (type == DigitalOutputs) {
-      payload["command_topic"] = _iot.getRootTopicPrefix().c_str() + String("/set/") + String(entityName);
-      payload["state_on"] = "On";
-      payload["state_off"] = "Off";
-   } else if (type == AnalogOutputs) {
-      payload["command_topic"] = _iot.getRootTopicPrefix().c_str() + String("/set/") + String(entityName);
-      payload["min"] = 0;
-      payload["max"] = 65535;
-      payload["step"] = 1;
-   } else if (type == DigitalInputs) {
-      payload["payload_off"] = "Low";
-      payload["payload_on"] = "High";
-   }
-   payload["availability_topic"] = _iot.getRootTopicPrefix().c_str() + String("/tele/LWT");
+boolean Tracker::PublishDiscoverySub(String &topic, JsonDocument &payload) {
+   payload["availability_topic"] = _iot.getRootTopicPrefix() + String("/tele/LWT");
    payload["payload_available"] = "Online";
    payload["payload_not_available"] = "Offline";
-   if (unit_of_meas) {
-      payload["unit_of_measurement"] = unit_of_meas;
-   }
-   if (icon) {
-      payload["icon"] = icon;
-   }
-
    char buffer[STR_LEN];
    JsonObject device = payload["device"].to<JsonObject>();
-   device["name"] = _iot.getThingName();
+   device["name"] = _iot.getThingName().c_str();
    device["sw_version"] = APP_VERSION;
    device["manufacturer"] = "ClassicDIY";
    sprintf(buffer, "%s (%X)", TAG, _iot.getUniqueId());
@@ -642,72 +538,48 @@ boolean PLC::PublishDiscoverySub(IOTypes type, const char *entityName, const cha
    JsonArray identifiers = device["identifiers"].to<JsonArray>();
    sprintf(buffer, "%X", _iot.getUniqueId());
    identifiers.add(buffer);
-
-   logd("Discovery => topic: %s", topic.c_str());
    return _iot.PublishMessage(topic.c_str(), payload, true);
 }
 
-void PLC::onMqttMessage(char *topic, char *payload) {
+void Tracker::onMqttMessage(char *topic, char *payload) {
    logd("onMqttMessage [%s] %s", topic, payload);
-   std::string cmnd = _iot.getRootTopicPrefix() + "/set/";
-   std::string fullPath = topic;
-   if (strncmp(topic, cmnd.c_str(), cmnd.length()) == 0) {
-      // Handle set commands
-      size_t lastSlash = fullPath.find_last_of('/');
-      std::string dout;
-      if (lastSlash != std::string::npos) {
-         dout = fullPath.substr(lastSlash + 1);
-         if (dout[0] == 'D') // coils?
-         {
-            logd("coil: %s: ", dout.c_str());
-            for (int i = 0; i < _digitalOutputCoils.coils(); i++) {
-               std::stringstream ss;
-               ss << "DO" << i;
-               if (dout == ss.str()) {
-                  String input = payload;
-                  input.toLowerCase();
-                  if (input == "on" || input == "high" || input == "1") {
-                     _digitalOutputCoils.set(i, true);
-                     logi("Write Coil %d HIGH", i);
-                  } else if (input == "off" || input == "low" || input == "0") {
-                     _digitalOutputCoils.set(i, false);
-                     logi("Write Coil %d LOW", i);
-                  } else {
-                     logw("Write Coil %d invalid state: %s", i, input.c_str());
-                  }
-                  break;
-               }
-            }
-#if DO_PINS > 0
-            // set native DO pins
-            for (int j = 0; j < DO_PINS; j++) {
-               SetRelay(j, _digitalOutputCoils[j] ? HIGH : LOW);
-            }
-#endif
-         } else if (dout[0] == 'A') // registers?
-         {
-            logd("gerister: %s: ", dout.c_str());
-            for (int i = 0; i < _analogOutputRegisters.size(); i++) {
-               std::stringstream ss;
-               ss << "AO" << i;
-               if (dout == ss.str()) {
-                  String input = payload;
-                  input.toLowerCase();
-                  logd("Analog output value: %s", input.c_str());
-                  _analogOutputRegisters.set(i, atoi(input.c_str()));
-                  break;
-               }
-            }
-#if AO_PINS > 0
-            // set native AO pins
-            for (int i = 0; i < AO_PINS; i++) {
-               _PWMOutputs[i].SetDutyCycle(_analogOutputRegisters[i]);
-            }
-#endif
-         }
+   // Handle state select
+   if (String(topic) == (_iot.getRootTopicPrefix() + "/mode/set")) {
+      logd("Mode command received: %s", payload);
+      if (payload == "Tracking") {
+         TrackToSun();
+      }
+      if (payload == "Park") {
+         Park(false);
+      }
+      if (payload == "Protect") {
+         Park(true);
+      }
+      if (payload == "Cycle") {
+         Cycle();
+      }
+      _iot.PublishMessage((_iot.getRootTopicPrefix() + String("/mode")).c_str(), payload, true);
+   }
+
+   // Handle buttons
+   if (String(topic).startsWith(_iot.getRootTopicPrefix() + "/button/")) {
+      String button = String(topic).substring(strlen((_iot.getRootTopicPrefix() + "/button/").c_str()));
+      Serial.print("Button pressed: ");
+      Serial.println(button);
+      if (button == "Up") {
+         Move(Direction_Up);
+      } else if (button == "Down") {
+         Move(Direction_Down);
+      } else if (button == "Left") {
+         Move(Direction_East);
+      } else if (button == "Right") {
+         Move(Direction_West);
+      } else if (button == "Stop") {
+         Stop();
       }
    }
 }
+
 #endif
 
 } // namespace CLASSICDIY

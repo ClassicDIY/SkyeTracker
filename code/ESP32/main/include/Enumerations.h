@@ -16,7 +16,8 @@ enum TrackerState {
    TrackerState_Manual,
    TrackerState_Cycling,
    TrackerState_Tracking,
-   TrackerState_Parked
+   TrackerState_Parked,
+   TrackerState_Protect
 };
 
 enum Direction { Direction_East, Direction_West, Direction_Up, Direction_Down };

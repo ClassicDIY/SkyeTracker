@@ -3,6 +3,7 @@
 #include <ArduinoJson.h>
 #include <ThreadController.h>
 #include <Thread.h>
+#include "mqtt_client.h"
 #include "Defines.h"
 #include "Device.h"
 #include "Sun.h"
@@ -24,22 +25,6 @@ extern CLASSICDIY::Configuration _config;
 // Used for testing the tracker. Sweep through the day one hour at this interval.
 #define CYCLE_POSITION_UPDATE_INTERVAL 5000
 
-const char c_Track[] = "Track";
-const char c_Cycle[] = "Cycle";
-const char c_Stop[] = "Stop";
-const char c_Park[] = "Park";
-const char c_Protect[] = "Protect";
-const char c_SetC[] = "SetC";
-const char c_SetL[] = "SetL";
-const char c_SetA[] = "SetA";
-const char c_SetO[] = "SetO";
-const char c_SetDateTime[] = "SetDateTime";
-const char c_MoveTo[] = "MoveTo";
-const char c_East[] = "East";
-const char c_West[] = "West";
-const char c_Up[] = "Up";
-const char c_Down[] = "Down";
-
 namespace CLASSICDIY {
 class Tracker : public Device, public Thread, public IOTCallbackInterface {
  public:
@@ -54,7 +39,6 @@ class Tracker : public Device, public Thread, public IOTCallbackInterface {
    void Park(bool protect);
    TrackerState getState();
    void setState(TrackerState state);
-   void ProcessCommand(const char *input);
 
    // IOTCallbackInterface
    void onNetworkState(NetworkState state);
@@ -62,7 +46,7 @@ class Tracker : public Device, public Thread, public IOTCallbackInterface {
    void onLoadSetting(JsonDocument &doc);
    String appTemplateProcessor(const String &var);
 #ifdef HasMQTT
-   void onMqttConnect();
+   void onMqttConnect(esp_mqtt_client_handle_t& client);
    void onMqttMessage(char *topic, char *payload);
 #endif
 #ifdef HasModbus
@@ -75,9 +59,14 @@ class Tracker : public Device, public Thread, public IOTCallbackInterface {
    IOledServiceInterface& getOledInterface() override {  return _tft; };
 #endif
  protected:
-   boolean PublishDiscoverySub(const char *component, const char *entityName, const char *jsonElement, const char *device_class,
-                               const char *unit_of_meas, const char *icon = "");
-   bool ReadyToPublish() { return (!_discoveryPublished); }
+#ifdef HasMQTT
+   boolean PublishDiscoverySub(IOTypes type, const char *entityName, const char *unit_of_meas = nullptr, const char *icon = nullptr);
+#endif
+
+ protected:
+#ifdef HasMQTT
+   boolean PublishDiscoverySub(String& topic, JsonDocument& payload);
+#endif
 
  private:
    void InitializeActuators();
@@ -99,7 +88,6 @@ class Tracker : public Device, public Thread, public IOTCallbackInterface {
    int cycleHour;
    void WaitForMorning();
    void TrackToSun();
-   void MoveTo(char *arg);
    int _protectCountdown = 0;
    float _recordedWindSpeedAtLastEvent = 0;
    time_t _lastWindEvent;
