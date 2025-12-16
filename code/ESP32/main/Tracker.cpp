@@ -15,7 +15,7 @@
 namespace CLASSICDIY {
 
 const char *TrackerModeStrings[] = {"Manual", "Cycle", "Track", "Park", "Protect"};
-const char *TrackerStateStrings[] = {"Off", "Initializing", "Standby", "Running"};
+const char *TrackerStateStrings[] = {"Off", "Initializing", "Standby", "Tracking"};
 static AsyncWebServer _asyncServer(ASYNC_WEBSERVER_PORT);
 static AsyncWebSocket _webSocket("/ws_home");
 IOT _iot = IOT();
@@ -281,12 +281,14 @@ void Tracker::Move(Direction dir) {
    default:
       break;
    }
+   setState(TrackerState::Stopped);
 }
 
 void Tracker::Stop() {
    setMode(Manual);
    _azimuth->Stop();
    _elevation->Stop();
+   setState(TrackerState::Stopped);
 }
 
 void Tracker::Cycle() {
@@ -295,6 +297,7 @@ void Tracker::Cycle() {
    setInterval(CYCLE_POSITION_UPDATE_INTERVAL);
    setMode(TrackerMode::Cycle);
    this->run();
+   setState(TrackerState::Stopped);
 }
 
 void Tracker::Track() {
@@ -334,6 +337,7 @@ void Tracker::Park(bool protect = false) {
          _elevation->MoveTo(elevation);
       }
       setMode(protect ? TrackerMode::Protect : TrackerMode::Park);
+      setState(TrackerState::Stopped);
    }
 }
 
@@ -344,14 +348,14 @@ void Tracker::WaitForMorning() {
          _elevation->Retract();
       }
       _waitingForMorning = true;
-      setState(TrackerState::Running);
+      setState(TrackerState::Tracking);
       logi("Waiting For Morning");
    }
 }
 
 void Tracker::TrackToSun() {
    logi("TrackToSun ");
-   setState(TrackerState::Running);
+   setState(TrackerState::Tracking);
    _azimuth->MoveTo(_sun->azimuth());
    if (_config.isDual()) {
       _elevation->MoveTo(_sun->elevation());
@@ -537,20 +541,20 @@ boolean Tracker::PublishDiscoverySub(String &topic, JsonDocument &payload) {
 }
 
 void Tracker::onMqttMessage(char *topic, char *payload) {
-   logd("onMqttMessage [%s] %s", topic, payload);
    // Handle state select
    if (String(topic) == (_iot.getRootTopicPrefix() + "/mode/set")) {
       logd("Mode command received: %s", payload);
-      if (payload == "Track") {
+      String cmd(payload);
+      if (cmd == "Track") {
          Track();
       }
-      if (payload == "Park") {
+      if (cmd == "Park") {
          Park(false);
       }
-      if (payload == "Protect") {
+      if (cmd == "Protect") {
          Park(true);
       }
-      if (payload == "Cycle") {
+      if (cmd == "Cycle") {
          Cycle();
       }
    }

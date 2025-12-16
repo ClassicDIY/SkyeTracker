@@ -287,7 +287,6 @@ const char iot_style[] PROGMEM = R"rawliteral(
     .protect { grid-column: 4; grid-row: 1; }
 
     .state_box {
-        margin-top: 10px;
         color: var(--status);
         display: inline-flex; /* Changed to inline-flex to allow the use of Flexbox */
         align-items: center;  /* Vertically center the content */

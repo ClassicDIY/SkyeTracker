@@ -21,7 +21,8 @@ enum TrackerState {
    Off,
    Initializing,
    Standby,
-   Running
+   Tracking,
+   Stopped
 };
 
 enum Direction { Direction_East, Direction_West, Direction_Up, Direction_Down };
