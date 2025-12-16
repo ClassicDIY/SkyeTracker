@@ -9,15 +9,19 @@ enum IOTypes { DigitalInputs, AnalogInputs, DigitalOutputs, AnalogOutputs };
 
 enum ModbusMode { TCP, RTU };
 
+enum TrackerMode {
+   Manual,
+   Cycle,
+   Track,
+   Park,
+   Protect
+};
+
 enum TrackerState {
-   TrackerState_Off,
-   TrackerState_Initializing,
-   TrackerState_Standby,
-   TrackerState_Manual,
-   TrackerState_Cycling,
-   TrackerState_Tracking,
-   TrackerState_Parked,
-   TrackerState_Protect
+   Off,
+   Initializing,
+   Standby,
+   Running
 };
 
 enum Direction { Direction_East, Direction_West, Direction_Up, Direction_Down };

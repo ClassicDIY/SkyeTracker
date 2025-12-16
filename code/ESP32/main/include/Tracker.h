@@ -38,7 +38,6 @@ class Tracker : public Device, public Thread, public IOTCallbackInterface {
    void Resume();
    void Park(bool protect);
    TrackerState getState();
-   void setState(TrackerState state);
 
    // IOTCallbackInterface
    void onNetworkState(NetworkState state);
@@ -46,26 +45,21 @@ class Tracker : public Device, public Thread, public IOTCallbackInterface {
    void onLoadSetting(JsonDocument &doc);
    String appTemplateProcessor(const String &var);
 #ifdef HasMQTT
-   void onMqttConnect(esp_mqtt_client_handle_t& client);
+   void onMqttConnect(esp_mqtt_client_handle_t &client);
    void onMqttMessage(char *topic, char *payload);
 #endif
 #ifdef HasModbus
    bool onModbusMessage(ModbusMessage &msg);
 #endif
 #ifdef Has_OLED
-   IOledServiceInterface& getOledInterface() override {  return _oled; };
+   IOledServiceInterface &getOledInterface() override { return _oled; };
 #endif
 #ifdef Has_TFT
-   IOledServiceInterface& getOledInterface() override {  return _tft; };
+   IOledServiceInterface &getOledInterface() override { return _tft; };
 #endif
  protected:
 #ifdef HasMQTT
-   boolean PublishDiscoverySub(IOTypes type, const char *entityName, const char *unit_of_meas = nullptr, const char *icon = nullptr);
-#endif
-
- protected:
-#ifdef HasMQTT
-   boolean PublishDiscoverySub(String& topic, JsonDocument& payload);
+   boolean PublishDiscoverySub(String &topic, JsonDocument &payload);
 #endif
 
  private:
@@ -75,6 +69,13 @@ class Tracker : public Device, public Thread, public IOTCallbackInterface {
    void Cycle();
    void run();
 
+   void setState(TrackerState state);
+   void setMode(TrackerMode mode);
+   TrackerMode _trackerMode = TrackerMode::Park;
+   TrackerState _trackerState = TrackerState::Off;
+   TrackerMode _lastMode = TrackerMode::Park;
+   TrackerState _lastState = TrackerState::Off;
+
    Configuration _config;
    boolean _discoveryPublished = false;
    String _lastMessagePublished;
@@ -83,7 +84,7 @@ class Tracker : public Device, public Thread, public IOTCallbackInterface {
    LinearActuatorNoPot *_azimuth;
    LinearActuatorNoPot *_elevation;
    Sun *_sun;
-   TrackerState _trackerState;
+
    bool _waitingForMorning;
    int cycleHour;
    void WaitForMorning();

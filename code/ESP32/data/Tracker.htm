@@ -48,7 +48,11 @@ const char home_html[] PROGMEM = R"rawliteral(
     const socket = new WebSocket('ws://' + window.location.hostname + '/ws_home');
     socket.onmessage = function(event) {
       const stateVal = JSON.parse(event.data);
+      document.getElementById('TrackerMode').innerHTML = stateVal.mode;
       document.getElementById('TrackerState').innerHTML = stateVal.state;
+      document.getElementById('Sun').innerHTML = stateVal.sun;
+      document.getElementById('Horizontal').innerHTML = stateVal.horizontal;
+      document.getElementById('Vertical').innerHTML = stateVal.vertical;
     };
     socket.onerror = function(error) {
       console.error('WebSocket error:', error);
@@ -78,7 +82,11 @@ const char home_html[] PROGMEM = R"rawliteral(
         <button class="park" onclick="sendCommand('park')">Park</button>
         <button class="protect" onclick="sendCommand('protect')">Protect</button>
       </div>
-      <div class="state_box" id="TrackerState">  </div>
+      <p></p><div class="state_box" id="TrackerMode"> </div></p>
+      <p></p><div class="state_box" id="TrackerState"> </div></p>
+      <p></p><div class="state_box" id="Sun"> </div></p>
+      <p></p><div class="state_box" id="Horizontal"> </div></p>
+      <p></p><div class="state_box" id="Vertical"> </div></p>
       <div class="link-row">
         <p><a href='settings'>Settings</a></p>
         <p><a href='/log' target='_blank'>Web Log</a></p>
@@ -161,11 +169,11 @@ const char app_config[] PROGMEM = R"rawliteral(
 
     <!-- Speeds -->
     <div class="field">
-      <label for="_horizontalSpeed">Horizontal speed (inches/s)</label>
+      <label for="_horizontalSpeed">Horizontal speed (inches/100s)</label>
       <input type="number" id="_horizontalSpeed" name="_horizontalSpeed" step="1" min="0" inputmode="numeric" />
     </div>
     <div class="field">
-      <label for="_verticalSpeed">Vertical speed (inches/s)</label>
+      <label for="_verticalSpeed">Vertical speed (inches/100s)</label>
       <input type="number" id="_verticalSpeed" name="_verticalSpeed" step="1" min="0" inputmode="numeric" />
     </div>
   </div>

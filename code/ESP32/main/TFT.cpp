@@ -16,6 +16,7 @@ void TFT::Init() {
 
 void TFT::Display(const char *pch, uint16_t level) {
    tft.fillRect(0, 0, tft.width(), _hSplit, TFT_BLACK);
+   tft.setTextFont(1);
    tft.setTextSize(STATUS_FONT);
    tft.setTextColor(TFT_GREEN);
    tft.setCursor(32, STATUS_Y);
@@ -41,7 +42,7 @@ uint8_t TFT::xOffset(uint8_t textSize, uint8_t numberOfCharaters) {
 
 void TFT::Display(const char *hdr1, const char *detail1, const char *hdr2, int count) {
    tft.fillRect(0, 0, tft.width(), _hSplit, TFT_BLACK);
-   tft.setTextSize(2);
+   tft.setTextFont(1);
    tft.setTextSize(HDR_FONT);
    tft.setTextColor(TFT_GREEN);
    tft.setCursor(0, 0);
@@ -66,6 +67,7 @@ void TFT::Display(const char *hdr1, const char *detail1, const char *hdr2, int c
 
 void TFT::Display(const char *hdr1, const char *detail1, const char *hdr2, const char *detail2) {
    tft.fillRect(0, 0, tft.width(), _hSplit, TFT_BLACK);
+   tft.setTextFont(1);
    tft.setTextSize(HDR_FONT);
    tft.setTextColor(TFT_GREEN);
    tft.setCursor(0, 0);
@@ -90,21 +92,24 @@ void TFT::Display(const char *hdr1, const char *detail1, const char *hdr2, const
    tft.println(buf);
 }
 
-void TFT::Update(const char *TrackerStateString, Sun *sun, LinearActuatorNoPot *horizontalActuator, LinearActuatorNoPot *verticalActuator) {
+void TFT::Update(const char *TrackerMode, const char *TrackerState, Sun *sun, LinearActuatorNoPot *horizontalActuator, LinearActuatorNoPot *verticalActuator) {
 
    tft.fillRect(0, _hSplit, tft.width(), tft.height(), TFT_BLACK);
-   tft.setTextSize(HDR_FONT);
+   tft.drawLine(0, _hSplit, tft.width(), _hSplit, TFT_YELLOW);
+   tft.setFreeFont(&FreeSerif9pt7b);
+   tft.setTextSize(DETAIL_FONT);
    tft.setTextColor(TFT_GREEN);
-   tft.setCursor(0, _hSplit);
-   tft.println(TrackerStateString);
+   tft.setCursor(0, _hSplit+20);
+   tft.println(TrackerMode);
+   tft.println(TrackerState);
    if (sun->ItsDark()) {
-      tft.println("It's Dark");
+      tft.println("Waiting for Morning");
    } else {
-      tft.printf("Azimuth %.2f\nElevation %.2f\n", sun->azimuth(), sun->elevation());
+      tft.printf("Azimuth %.2f°\n", sun->azimuth());
+      tft.printf("Elevation %.2f°\n", sun->elevation());
    }
-   tft.printf("\nHorizontal Actuator\n Position %.2f\"\n Angle %.2f\n", horizontalActuator->CurrentPosition(),
-              horizontalActuator->CurrentAngle());
-   tft.printf("Vertical Actuator\n Position %.2f\"\n Angle %.2f", verticalActuator->CurrentPosition(), verticalActuator->CurrentAngle());
+   tft.printf("Horizontal @ %.2f\" Angle %.2f°\n", horizontalActuator->CurrentPosition(), horizontalActuator->CurrentAngle());
+   tft.printf("Vertical @ %.2f\" Angle %.2f°\n", verticalActuator->CurrentPosition(), verticalActuator->CurrentAngle());
 }
 
 } // namespace CLASSICDIY

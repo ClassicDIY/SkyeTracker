@@ -14,7 +14,8 @@
 
 namespace CLASSICDIY {
 
-const char *TrackerStateStrings[] = {"Off", "Initializing", "Standby", "Manual", "Cycling", "Tracking", "Parked"};
+const char *TrackerModeStrings[] = {"Manual", "Cycle", "Track", "Park", "Protect"};
+const char *TrackerStateStrings[] = {"Off", "Initializing", "Standby", "Running"};
 static AsyncWebServer _asyncServer(ASYNC_WEBSERVER_PORT);
 static AsyncWebSocket _webSocket("/ws_home");
 IOT _iot = IOT();
@@ -24,7 +25,6 @@ Anemometer _anemometer(AnemometerPin);
 Tracker::Tracker() {
    _errorState = TrackerError_Ok;
    _waitingForMorning = false;
-   _trackerState = TrackerState_Off;
    _config = Configuration();
 }
 
@@ -38,7 +38,6 @@ Tracker::~Tracker() {
 void Tracker::Setup(ThreadController *controller) {
    Init();
    _iot.Init(this, &_asyncServer);
-   _trackerState = TrackerState_Off;
    _lastWindEvent = 0;
    _sun = new Sun(_config.getLat(), _config.getLon());
    _cycleTime = getTime();
@@ -121,7 +120,6 @@ void Tracker::Setup(ThreadController *controller) {
           } else if (command == "right") {
              Move(Direction_West);
           } else if (command == "stop") {
-             setState(TrackerState_Manual);
              Stop();
           } else if (command == "track") {
              Track();
@@ -205,22 +203,51 @@ String Tracker::appTemplateProcessor(const String &var) {
 void Tracker::Process() {
    _iot.Run();
    Run(); // base class
-   if (_trackerState == TrackerState_Off) {
+   if (_trackerState == Off) {
       InitializeActuators();
    }
-   String s;
-   serializeJson(_ws_home_doc, s);
-   if (_lastMessagePublished != s) {
-      _lastMessagePublished = s;
-#ifdef HasMQTT
-      String topic = _iot.getRootTopicPrefix() + "/state";
-      String state = _ws_home_doc["state"];
-      _iot.PublishMessage(topic.c_str(), state.c_str(), false);
-#endif
-      if (_webSocket.count() > 0) { // any clients?
-         _webSocket.textAll(s);
-         logd("_webSocket Sent %s", s.c_str());
+   uint32_t now = millis();
+   if ((now - _lastPublishTimeStamp) > PUBLISH_RATE_LIMIT) {
+      _lastPublishTimeStamp = now;
+      _ws_home_doc["state"] = TrackerStateStrings[getState()];
+      _ws_home_doc["mode"] = TrackerModeStrings[_trackerMode];
+      char buffer[STR_LEN];
+      if (_sun->ItsDark()) {
+         _ws_home_doc["sun"] = "Waiting for Morning";
+      } else {
+         sprintf(buffer, "Azimuth %.2f° Elevation %.2f°", _sun->azimuth(), _sun->elevation());
+         _ws_home_doc["sun"] = buffer;
       }
+      sprintf(buffer, "Horizontal @ %.2f\" Angle %.2f°", _azimuth->CurrentPosition(), _azimuth->CurrentAngle());
+      _ws_home_doc["horizontal"] = buffer;
+      sprintf(buffer, "Vertical @ %.2f\" Angle %.2f°", _elevation->CurrentPosition(), _elevation->CurrentAngle());
+      _ws_home_doc["vertical"] = buffer;
+      String s;
+      serializeJson(_ws_home_doc, s);
+      if (_lastMessagePublished != s) {
+         _lastMessagePublished = s;
+         if (_webSocket.count() > 0) { // any clients?
+            _webSocket.textAll(s);
+            logd("_webSocket Sent %s", s.c_str());
+         }
+#ifdef Has_TFT
+         _tft.Update(TrackerModeStrings[_trackerMode], TrackerStateStrings[getState()], _sun, _azimuth, _elevation);
+#endif
+      }
+#ifdef HasMQTT
+      if (_discoveryPublished) { // wait until MQTT is connected and discovery is published
+         if (_lastMode != _trackerMode) {
+            _lastMode = _trackerMode;
+            String topic = _iot.getRootTopicPrefix() + "/mode";
+            _iot.PublishMessage(topic.c_str(), TrackerModeStrings[_trackerMode], false);
+         }
+         if (_lastState != getState()) {
+            _lastState = getState();
+            String topic = _iot.getRootTopicPrefix() + "/state";
+            _iot.PublishMessage(topic.c_str(), TrackerStateStrings[getState()], false);
+         }
+      }
+#endif
    }
    return;
 }
@@ -257,6 +284,7 @@ void Tracker::Move(Direction dir) {
 }
 
 void Tracker::Stop() {
+   setMode(Manual);
    _azimuth->Stop();
    _elevation->Stop();
 }
@@ -265,7 +293,7 @@ void Tracker::Cycle() {
    cycleHour = 0;
    enabled = true;
    setInterval(CYCLE_POSITION_UPDATE_INTERVAL);
-   setState(TrackerState_Cycling);
+   setMode(TrackerMode::Cycle);
    this->run();
 }
 
@@ -277,15 +305,14 @@ void Tracker::Track() {
       // move array to face south as a default position when an error exists
       Park(true);
       enabled = false; // don't run worker thread when error exists
-   } else if (getState() != TrackerState_Initializing && getState() != TrackerState_Off) {
-      if (getState() == TrackerState_Manual || getState() == TrackerState_Cycling || getState() == TrackerState_Parked || getState() == TrackerState_Protect) {
+   } else if (getState() != TrackerState::Initializing && getState() != TrackerState::Off) {
+      if (_trackerMode != TrackerMode::Track) {
          // re-initialize actuators if moved
          InitializeActuators();
       }
       enabled = true;
       setInterval(POSITION_UPDATE_INTERVAL);
-      logd("Track setState");
-      setState(TrackerState_Tracking);
+      setMode(TrackerMode::Track);
       this->run();
    }
 }
@@ -297,7 +324,7 @@ void Tracker::Resume() {
 }
 
 void Tracker::Park(bool protect = false) {
-   if (getState() != TrackerState_Parked) {
+   if (_trackerMode != TrackerMode::Park && _trackerMode != TrackerMode::Protect) {
       _azimuth->MoveTo(180);
       if (_config.isDual()) {
          float elevation = 45;
@@ -306,7 +333,7 @@ void Tracker::Park(bool protect = false) {
          }
          _elevation->MoveTo(elevation);
       }
-      setState(protect ? TrackerState_Protect : TrackerState_Parked);
+      setMode(protect ? TrackerMode::Protect : TrackerMode::Park);
    }
 }
 
@@ -317,12 +344,14 @@ void Tracker::WaitForMorning() {
          _elevation->Retract();
       }
       _waitingForMorning = true;
+      setState(TrackerState::Running);
       logi("Waiting For Morning");
    }
 }
 
 void Tracker::TrackToSun() {
    logi("TrackToSun ");
+   setState(TrackerState::Running);
    _azimuth->MoveTo(_sun->azimuth());
    if (_config.isDual()) {
       _elevation->MoveTo(_sun->elevation());
@@ -330,58 +359,36 @@ void Tracker::TrackToSun() {
 }
 
 TrackerState Tracker::getState() {
+   // return initializing while actuators are initializing
    if (_azimuth->getState() == ActuatorState_Initializing) {
-      return TrackerState_Initializing;
+      return TrackerState::Initializing;
    }
    if (_config.isDual() && _elevation->getState() == ActuatorState_Initializing) {
-      return TrackerState_Initializing;
+      _trackerState = TrackerState::Initializing;
    }
    if (_azimuth->getState() == ActuatorState_Error) {
       _errorState = TrackerError_HorizontalActuator;
-      return TrackerState_Initializing;
+      return TrackerState::Initializing;
    }
    if (_config.isDual() && _elevation->getState() == ActuatorState_Error) {
       _errorState = TrackerError_VerticalActuator;
-      return TrackerState_Initializing;
+      return TrackerState::Initializing;
    }
    return _trackerState;
 }
 
 void Tracker::setState(TrackerState state) {
-   logd("setState: %d", state);
    if (_trackerState != state) {
+      logd("setState: %d", state);
       _trackerState = state;
-#ifdef HasMQTT
-      String mode;
-      switch (state) {
-      case TrackerState_Off:
-         mode = "Off";
-         break;
-      case TrackerState_Initializing:
-         mode = "Initializing";
-         break;
-      case TrackerState_Standby:
-         mode = "Standby";
-         break;
-      case TrackerState_Manual:
-         mode = "Manual";
-         break;
-      case TrackerState_Cycling:
-         mode = "Cycle";
-         break;
-      case TrackerState_Tracking:
-         mode = "Tracking";
-         break;
-      case TrackerState_Parked:
-         mode = "Park";
-         break;
-      case TrackerState_Protect:
-         mode = "Protect";
-         break;
-      }
-      String topic = _iot.getRootTopicPrefix() + "/mode";
-      _iot.PublishMessage(topic.c_str(), mode.c_str(), false);
-#endif
+   }
+   return;
+}
+
+void Tracker::setMode(TrackerMode mode) {
+   logd("setMode: %d", mode);
+   if (_trackerMode != mode) {
+      _trackerMode = mode;
    }
    return;
 }
@@ -395,16 +402,14 @@ void Tracker::InitializeActuators() {
                              _config.getVerticalSpeed());
    }
    setInterval(POSITION_UPDATE_INTERVAL);
-   setState(TrackerState_Standby);
-   _ws_home_doc["state"] = "Initializing Actuators";
+   setState(TrackerState::Standby);
 }
 
 void Tracker::run() {
    runned();
-   TrackerState state = getState();
    _cycleTime = getTime();
-   switch (state) {
-   case TrackerState_Cycling:
+   switch (_trackerMode) {
+   case TrackerMode::Cycle:
       if (_azimuth->getState() == ActuatorState_Stopped && _elevation->getState() == ActuatorState_Stopped) {
          cycleHour++;
          cycleHour %= 24;
@@ -415,22 +420,18 @@ void Tracker::run() {
          _cycleTime = mktime(ptm);
          _sun->calcSun(&_cycleTime);
       }
-      _ws_home_doc["state"] = "Cycling";
       break;
-   case TrackerState_Tracking:
+   case TrackerMode::Track:
       _sun->calcSun(&_cycleTime);
-      _ws_home_doc["state"] = "Tracking";
       break;
    default:
       break;
    }
    if (_sun->ItsDark()) {
       WaitForMorning();
-      _ws_home_doc["state"] = "Waiting for Morning";
    } else {
       _waitingForMorning = false;
       TrackToSun();
-      _ws_home_doc["state"] = "Track To Sun";
    }
    if (_config.hasAnemometer()) {
       float windSpeed = _anemometer.WindSpeed();
@@ -438,32 +439,27 @@ void Tracker::run() {
          _lastWindEvent = getTime();
          _recordedWindSpeedAtLastEvent = windSpeed;
       }
-      if (getState() == TrackerState_Tracking) {
+      if (_trackerMode == TrackerMode::Track) {
          if (windSpeed > (AnemometerWindSpeedProtection / 3.6)) // wind speed greater than 28.8 km/hour? (8 M/S *3600 S)
          {
             _lastWindEvent = getTime();
             _recordedWindSpeedAtLastEvent = windSpeed;
             Park(true);
             _protectCountdown = 300; // 10 minute countdown to resume tracking
-
-            _ws_home_doc["state"] = "High winds detected";
          }
       }
-      if (getState() == TrackerState_Protect && --_protectCountdown <= 0) {
+      if (_trackerMode == TrackerMode::Protect && --_protectCountdown <= 0) {
          _protectCountdown = 0;
          Resume();
       }
    }
-#ifdef Has_TFT
-   _tft.Update(TrackerStateStrings[getState()], _sun, _azimuth, _elevation);
-#endif
 };
 
 #ifdef HasMQTT
 
 void Tracker::onMqttConnect(esp_mqtt_client_handle_t &client) {
    // Subscribe to command topics
-   esp_mqtt_client_subscribe(client, (_iot.getRootTopicPrefix() + "/state/set").c_str(), 0);
+   esp_mqtt_client_subscribe(client, (_iot.getRootTopicPrefix() + "/mode/set").c_str(), 0);
    esp_mqtt_client_subscribe(client, (_iot.getRootTopicPrefix() + "/button/Up").c_str(), 0);
    esp_mqtt_client_subscribe(client, (_iot.getRootTopicPrefix() + "/button/Down").c_str(), 0);
    esp_mqtt_client_subscribe(client, (_iot.getRootTopicPrefix() + "/button/Left").c_str(), 0);
@@ -494,12 +490,11 @@ void Tracker::onMqttConnect(esp_mqtt_client_handle_t &client) {
       payload["command_topic"] = _iot.getRootTopicPrefix() + String("/mode/set");
       payload["state_topic"] = _iot.getRootTopicPrefix() + String("/mode");
       JsonArray options = payload["options"].to<JsonArray>();
-      options.add("Off");
       options.add("Manual");
-      options.add("Tracking");
+      options.add("Cycle");
+      options.add("Track");
       options.add("Park");
       options.add("Protect");
-      options.add("Cycle");
       if (PublishDiscoverySub(modeConfigTopic, payload) == false) {
          return; // try later
       }
@@ -546,8 +541,8 @@ void Tracker::onMqttMessage(char *topic, char *payload) {
    // Handle state select
    if (String(topic) == (_iot.getRootTopicPrefix() + "/mode/set")) {
       logd("Mode command received: %s", payload);
-      if (payload == "Tracking") {
-         TrackToSun();
+      if (payload == "Track") {
+         Track();
       }
       if (payload == "Park") {
          Park(false);
@@ -558,7 +553,6 @@ void Tracker::onMqttMessage(char *topic, char *payload) {
       if (payload == "Cycle") {
          Cycle();
       }
-      _iot.PublishMessage((_iot.getRootTopicPrefix() + String("/mode")).c_str(), payload, true);
    }
 
    // Handle buttons

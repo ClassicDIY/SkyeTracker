@@ -25,7 +25,7 @@ class TFT : public IOledServiceInterface {
    void Display(const char *state, uint16_t level);
    void Display(const char* hdr1, const char* detail1, const char* hdr2, const char* detail2);
    void Display(const char* hdr1, const char* detail1, const char* hdr2, int count);
-   void Update(const char *TrackerStateString, Sun* sun, LinearActuatorNoPot* horizontalActuator, LinearActuatorNoPot* verticalActuator);
+   void Update(const char *TrackerMode, const char *TrackerState, Sun* sun, LinearActuatorNoPot* horizontalActuator, LinearActuatorNoPot* verticalActuator);
 
  private:
    uint8_t xOffset(uint8_t textSize, uint8_t numberOfCharaters);
