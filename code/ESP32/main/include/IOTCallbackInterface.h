@@ -6,7 +6,7 @@
 #include <ModbusServerTCPasync.h>
 #endif
 #include "Enumerations.h"
-#include "IOledServiceInterface.h"
+#include "IDisplayServiceInterface.h"
 
 namespace CLASSICDIY {
 class IOTCallbackInterface {
@@ -23,7 +23,7 @@ class IOTCallbackInterface {
    virtual bool onModbusMessage(ModbusMessage &msg);
 #endif
 #if  defined(Has_OLED) || defined(Has_TFT)
-   virtual IOledServiceInterface& getOledInterface() = 0;
+   virtual IDisplayServiceInterface& getDisplayInterface() = 0;
 #endif
 };
 } // namespace CLASSICDIY

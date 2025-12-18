@@ -71,6 +71,7 @@ class IOT : public IOTServiceInterface {
    uint32_t _settingsChecksum = 0;
    bool _needToReboot = false;
    String _bodyBuffer;
+   int _lastCountdown;
 
 #ifdef HasMQTT
    bool _useMQTT = false;

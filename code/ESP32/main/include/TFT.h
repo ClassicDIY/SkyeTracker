@@ -2,7 +2,7 @@
 #pragma once
 #ifdef Has_TFT
 #include <TFT_eSPI.h> // Graphics library
-#include "IOledServiceInterface.h"
+#include "IDisplayServiceInterface.h"
 #include "Enumerations.h"
 #include "Sun.h"
 #include "LinearActuatorNoPot.h"
@@ -19,7 +19,7 @@ namespace CLASSICDIY {
 #define STATUS_Y 0
 #define BUF_SIZE 32
 
-class TFT : public IOledServiceInterface {
+class TFT : public IDisplayServiceInterface {
  public:
    void Init();
    void Display(const char *state, uint16_t level);
