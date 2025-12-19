@@ -53,7 +53,8 @@ const char home_html[] PROGMEM = R"rawliteral(
       document.getElementById('Sun').innerHTML = stateVal.sun;
       document.getElementById('Horizontal').innerHTML = stateVal.horizontal;
       document.getElementById('Vertical').innerHTML = stateVal.vertical;
-      document.getElementById('Wind').innerHTML = stateVal.wind;
+      if (stateVal.wind != null)
+        document.getElementById('Wind').innerHTML = stateVal.wind;
     };
     socket.onerror = function(error) {
       console.error('WebSocket error:', error);
