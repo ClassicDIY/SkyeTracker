@@ -10,28 +10,9 @@ namespace CLASSICDIY {
 void TFT::Init() {
    tft.init();
    tft.setRotation(1); // Landscape
-   tft.fillScreen(TFT_SKYBLUE);
+   tft.fillScreen(TFT_BLACK);
+   tft.drawLine(0, _hSplit, tft.width(), _hSplit, TFT_YELLOW);
    logd("Screen init: Width %d, Height %d", tft.width(), tft.height());
-}
-
-void TFT::Display(const char *pch, uint16_t level) {
-   tft.fillRect(0, 0, tft.width(), _hSplit, TFT_BLACK);
-   tft.setTextFont(1);
-   tft.setTextSize(STATUS_FONT);
-   tft.setTextColor(TFT_GREEN);
-   tft.setCursor(32, STATUS_Y);
-   String state = pch;
-   while (state.length() < 10) { // pad right to 10 characters to fill the display line
-      state += ' ';
-   }
-   tft.setCursor(xOffset(2, state.length()), STATUS_Y); // center it
-   tft.print(state.c_str());
-   char buffer[64];
-   sprintf(buffer, "%d%%", level);
-   tft.setCursor(xOffset(5, strlen(buffer)), LEVEL_Y);
-   tft.setTextSize(LEVEL_FONT);
-   tft.setTextColor(TFT_GREEN);
-   tft.print(buffer);
 }
 
 uint8_t TFT::xOffset(uint8_t textSize, uint8_t numberOfCharaters) {
@@ -40,76 +21,73 @@ uint8_t TFT::xOffset(uint8_t textSize, uint8_t numberOfCharaters) {
    return rVal;
 }
 
-void TFT::Display(const char *hdr1, const char *detail1, const char *hdr2, int count) {
-   tft.fillRect(0, 0, tft.width(), _hSplit, TFT_BLACK);
-   tft.setTextFont(1);
-   tft.setTextSize(HDR_FONT);
-   tft.setTextColor(TFT_GREEN);
-   tft.setCursor(0, 0);
-   char buf[BUF_SIZE];
-   memset(buf, 0, BUF_SIZE);
-   strncpy(buf, hdr1, BUF_SIZE);
-   tft.println(buf); // limit hdr to 8 char for font size 2
-   tft.setTextSize(DETAIL_FONT);
-   tft.setCursor(0, 18);
-   memset(buf, 0, BUF_SIZE);
-   strncpy(buf, detail1, BUF_SIZE);
-   tft.println(buf);
-   tft.setTextSize(MODE_FONT);
-   tft.setCursor(0, 36);
-   memset(buf, 0, BUF_SIZE);
-   strncpy(buf, hdr2, BUF_SIZE);
-   tft.print(buf);
-   if (count > 0) {
-      tft.printf(":%d", count);
-   }
+void TFT::Display(const char *hdr1, const char *detail1, const char *hdr2, int count)
+{
+    tft.setTextFont(1);
+    int y = 0;
+    // hdr1
+    tft.setTextSize(HDR_FONT);
+    drawIfChanged(String(hdr1), _headerCache.hdr1, 0, y, TFT_GREEN);
+    y += 18;
+    // detail1
+    tft.setTextSize(DETAIL_FONT);
+    drawIfChanged(String(detail1), _headerCache.detail1, 0, y, TFT_GREEN);
+    y += 18;
+    // hdr2 + count
+    tft.setTextSize(MODE_FONT);
+    String hdr2Full = String(hdr2);
+    if (count > 0) {
+        hdr2Full += ":" + String(count);
+    }
+    drawIfChanged(hdr2Full, _headerCache.hdr2, 0, y, TFT_GREEN);
+    _headerCache.count = count;
 }
 
-void TFT::Display(const char *hdr1, const char *detail1, const char *hdr2, const char *detail2) {
-   tft.fillRect(0, 0, tft.width(), _hSplit, TFT_BLACK);
-   tft.setTextFont(1);
-   tft.setTextSize(HDR_FONT);
-   tft.setTextColor(TFT_GREEN);
-   tft.setCursor(0, 0);
-   char buf[BUF_SIZE];
-   memset(buf, 0, BUF_SIZE);
-   strncpy(buf, hdr1, BUF_SIZE);
-   tft.println(buf);
-   tft.setTextSize(DETAIL_FONT);
-   tft.setCursor(0, 18);
-   memset(buf, 0, BUF_SIZE);
-   strncpy(buf, detail1, BUF_SIZE);
-   tft.println(buf);
-   tft.setTextSize(MODE_FONT);
-   tft.setCursor(0, 36);
-   memset(buf, 0, BUF_SIZE);
-   strncpy(buf, hdr2, BUF_SIZE);
-   tft.println(buf);
-   tft.setTextSize(DETAIL_FONT);
-   tft.setCursor(0, 54);
-   memset(buf, 0, BUF_SIZE);
-   strncpy(buf, detail2, BUF_SIZE);
-   tft.println(buf);
+void TFT::Display(const char *hdr1, const char *detail1, const char *hdr2, const char *detail2)
+{
+    tft.setTextFont(1);
+    int y = 0;
+    // hdr1
+    tft.setTextSize(HDR_FONT);
+    drawIfChanged(String(hdr1), _headerCache.hdr1, 0, y, TFT_GREEN);
+    y += 18;
+    // detail1
+    tft.setTextSize(DETAIL_FONT);
+    drawIfChanged(String(detail1), _headerCache.detail1, 0, y, TFT_GREEN);
+    y += 18;
+    // hdr2
+    tft.setTextSize(MODE_FONT);
+    drawIfChanged(String(hdr2), _headerCache.hdr2, 0, y, TFT_GREEN);
+    y += 18;
+    // detail2
+    tft.setTextSize(DETAIL_FONT);
+    drawIfChanged(String(detail2), _headerCache.detail2, 0, y, TFT_GREEN);
 }
 
-void TFT::Update(const char *TrackerMode, const char *TrackerState, Sun *sun, LinearActuatorNoPot *horizontalActuator, LinearActuatorNoPot *verticalActuator) {
+void TFT::Update(JsonDocument& doc)
+{
+    tft.setFreeFont(&FreeSerif9pt7b);
+    tft.setTextSize(DETAIL_FONT);
+    int y = _hSplit + 20;
+    drawIfChanged(doc["mode"].as<String>(),       _cache.mode,       0, y, TFT_GREEN); y += 20;
+    drawIfChanged(doc["state"].as<String>(),      _cache.state,      0, y, TFT_GREEN); y += 20;
+    drawIfChanged(doc["sun"].as<String>(),        _cache.sun,        0, y, TFT_GREEN); y += 20;
+    drawIfChanged(doc["horizontal"].as<String>(), _cache.horizontal, 0, y, TFT_GREEN); y += 20;
+    drawIfChanged(doc["vertical"].as<String>(),   _cache.vertical,   0, y, TFT_GREEN); y += 20;
+    if (!doc["wind"].isNull()) {
+        drawIfChanged(doc["wind"].as<String>(), _cache.wind, 0, y, TFT_GREEN);
+    }
+}
 
-   tft.fillRect(0, _hSplit, tft.width(), tft.height(), TFT_BLACK);
-   tft.drawLine(0, _hSplit, tft.width(), _hSplit, TFT_YELLOW);
-   tft.setFreeFont(&FreeSerif9pt7b);
-   tft.setTextSize(DETAIL_FONT);
-   tft.setTextColor(TFT_GREEN);
-   tft.setCursor(0, _hSplit+20);
-   tft.println(TrackerMode);
-   tft.println(TrackerState);
-   if (sun->ItsDark()) {
-      tft.println("Waiting for Morning");
-   } else {
-      tft.printf("Azimuth %.2f°\n", sun->azimuth());
-      tft.printf("Elevation %.2f°\n", sun->elevation());
-   }
-   tft.printf("Horizontal @ %.2f\" Angle %.2f°\n", horizontalActuator->CurrentPosition(), horizontalActuator->CurrentAngle());
-   tft.printf("Vertical @ %.2f\" Angle %.2f°\n", verticalActuator->CurrentPosition(), verticalActuator->CurrentAngle());
+void TFT::drawIfChanged(const String& newVal, String& oldVal, int x, int y, uint16_t color)
+{
+    if (newVal != oldVal) {
+        tft.setTextColor(TFT_BLACK, TFT_BLACK); // erases old text
+        tft.drawString(oldVal, x, y);
+        tft.setTextColor(color, TFT_BLACK); // new text
+        tft.drawString(newVal, x, y);
+        oldVal = newVal;
+    }
 }
 
 } // namespace CLASSICDIY

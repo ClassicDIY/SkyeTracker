@@ -209,29 +209,34 @@ void Tracker::Process() {
    uint32_t now = millis();
    if ((now - _lastPublishTimeStamp) > PUBLISH_RATE_LIMIT) {
       _lastPublishTimeStamp = now;
-      _ws_home_doc["state"] = TrackerStateStrings[getState()];
-      _ws_home_doc["mode"] = TrackerModeStrings[_trackerMode];
+      JsonDocument doc; 
+      doc["state"] = TrackerStateStrings[getState()];
+      doc["mode"] = TrackerModeStrings[_trackerMode];
       char buffer[STR_LEN];
       if (_sun->ItsDark()) {
-         _ws_home_doc["sun"] = "Waiting for Morning";
+         doc["sun"] = "Waiting for Morning";
       } else {
          sprintf(buffer, "Azimuth %.2f° Elevation %.2f°", _sun->azimuth(), _sun->elevation());
-         _ws_home_doc["sun"] = buffer;
+         doc["sun"] = buffer;
       }
       sprintf(buffer, "Horizontal @ %.2f\" Angle %.2f°", _azimuth->CurrentPosition(), _azimuth->CurrentAngle());
-      _ws_home_doc["horizontal"] = buffer;
+      doc["horizontal"] = buffer;
       sprintf(buffer, "Vertical @ %.2f\" Angle %.2f°", _elevation->CurrentPosition(), _elevation->CurrentAngle());
-      _ws_home_doc["vertical"] = buffer;
+      doc["vertical"] = buffer;
+      if (_config.hasAnemometer()) {
+         sprintf(buffer, "Wind speed %.2f", _anemometer.WindSpeed());
+         doc["wind"] = buffer;
+      }
       String s;
-      serializeJson(_ws_home_doc, s);
+      serializeJson(doc, s);
       if (_lastMessagePublished != s) {
          _lastMessagePublished = s;
          if (_webSocket.count() > 0) { // any clients?
             _webSocket.textAll(s);
-            logd("_webSocket Sent %s", s.c_str());
+            logv("_webSocket Sent %s", s.c_str());
          }
 #ifdef Has_TFT
-         _tft.Update(TrackerModeStrings[_trackerMode], TrackerStateStrings[getState()], _sun, _azimuth, _elevation);
+         _tft.Update(doc);
 #endif
       }
 #ifdef HasMQTT

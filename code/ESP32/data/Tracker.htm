@@ -53,6 +53,7 @@ const char home_html[] PROGMEM = R"rawliteral(
       document.getElementById('Sun').innerHTML = stateVal.sun;
       document.getElementById('Horizontal').innerHTML = stateVal.horizontal;
       document.getElementById('Vertical').innerHTML = stateVal.vertical;
+      document.getElementById('Wind').innerHTML = stateVal.wind;
     };
     socket.onerror = function(error) {
       console.error('WebSocket error:', error);
@@ -87,6 +88,7 @@ const char home_html[] PROGMEM = R"rawliteral(
       <p></p><div class="state_box" id="Sun"> </div></p>
       <p></p><div class="state_box" id="Horizontal"> </div></p>
       <p></p><div class="state_box" id="Vertical"> </div></p>
+      <p></p><div class="state_box" id="Wind"> </div></p>
       <div class="link-row">
         <p><a href='settings'>Settings</a></p>
         <p><a href='/log' target='_blank'>Web Log</a></p>

@@ -92,7 +92,6 @@ class Tracker : public Device, public Thread, public IOTCallbackInterface {
    int _protectCountdown = 0;
    float _recordedWindSpeedAtLastEvent = 0;
    time_t _lastWindEvent;
-   JsonDocument _ws_home_doc; // home page ws socket message
    String _bodyBuffer;
 };
 

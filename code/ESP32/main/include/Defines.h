@@ -23,7 +23,7 @@
 #define WS_CLIENT_CLEANUP 5000
 #define WIFI_CONNECTION_TIMEOUT 120000
 #define DEFAULT_AP_PASSWORD "12345678"
-#define SAMPLESIZE 5
+#define SAMPLESIZE 10
 #define PUBLISH_RATE_LIMIT 200 // delay between MQTT publishes
 #define MODBUS_POLL_RATE 1000
 #define MODBUS_RTU_TIMEOUT 2000
@@ -33,7 +33,7 @@
 
 // The following variables correspond to the anemometer sold by Adafruit, but could be modified to fit other anemometers.
 // Mininum output voltage from anemometer in mV.
-#define AnemometerVoltageMin .40
+#define AnemometerVoltageMin .5
 // Maximum output voltage from anemometer in mV.
 #define AnemometerVoltageMax 2.0
 // Wind speed in meters/sec corresponding to maximum voltage of anemometer.
