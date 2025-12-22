@@ -242,3 +242,25 @@ void inline GPIO_Init() {
 
 
 #endif
+
+#ifdef ESP32_S3
+
+#define FACTORY_RESET_PIN GPIO_NUM_14 // Clear NVRAM
+
+// I2C
+#define I2C_SDA GPIO_NUM_8
+#define I2C_SCL GPIO_NUM_9
+
+// Motor Controller
+#define PWMa_H GPIO_NUM_4
+#define ENABLE_H GPIO_NUM_5
+#define PWMb_H GPIO_NUM_6
+#define PWMa_V GPIO_NUM_7
+#define ENABLE_V GPIO_NUM_15
+#define PWMb_V GPIO_NUM_16
+
+// Anemometer
+#define AnemometerPin A0
+#define ADC_Resolution 4095.0
+
+#endif
