@@ -73,8 +73,6 @@ class Tracker : public Device, public Thread, public IOTCallbackInterface {
    void setMode(TrackerMode mode);
    TrackerMode _trackerMode = TrackerMode::Park;
    TrackerState _trackerState = TrackerState::Off;
-   TrackerMode _lastMode = TrackerMode::Park;
-   TrackerState _lastState = TrackerState::Off;
 
    Configuration _config;
    boolean _discoveryPublished = false;

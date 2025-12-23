@@ -23,7 +23,7 @@ const char home_html[] PROGMEM = R"rawliteral(
 <html lang=\"en\">
 
 <head>
-  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\" />
+  <meta name=\"viewport\" charset="UTF-8" content=\"width=device-width, initial-scale=1, user-scalable=no\" />
   <title>%title%</title>
   <link rel="stylesheet" href="/style.css">
   <script>
@@ -48,13 +48,13 @@ const char home_html[] PROGMEM = R"rawliteral(
     const socket = new WebSocket('ws://' + window.location.hostname + '/ws_home');
     socket.onmessage = function(event) {
       const stateVal = JSON.parse(event.data);
-      document.getElementById('TrackerMode').innerHTML = stateVal.mode;
-      document.getElementById('TrackerState').innerHTML = stateVal.state;
-      document.getElementById('Sun').innerHTML = stateVal.sun;
-      document.getElementById('Horizontal').innerHTML = stateVal.horizontal;
-      document.getElementById('Vertical').innerHTML = stateVal.vertical;
-      if (stateVal.wind != null)
-        document.getElementById('Wind').innerHTML = stateVal.wind;
+      document.getElementById('TrackerMode').innerHTML = "Mode: " + stateVal.mode;
+      document.getElementById('TrackerState').innerHTML = "State: " + stateVal.state;
+      document.getElementById('Sun').innerHTML = "Azimuth: " + stateVal.azimuth + "° Elevation: " + stateVal.elevation + "°";
+      document.getElementById('Horizontal').innerHTML = "Horizontal @: " + stateVal.horizontal_extent + "\" Angle: " + stateVal.horizontal_angle + "°";
+      document.getElementById('Vertical').innerHTML = "Vertical @: " + stateVal.vertical_extent + "\" Angle: " + stateVal.vertical_angle + "°";
+      if (stateVal.wind_speed != null)
+        document.getElementById('Wind').innerHTML = "Wind speed: " + stateVal.wind_speed + " km/hr";
     };
     socket.onerror = function(error) {
       console.error('WebSocket error:', error);
@@ -84,12 +84,12 @@ const char home_html[] PROGMEM = R"rawliteral(
         <button class="park" onclick="sendCommand('park')">Park</button>
         <button class="protect" onclick="sendCommand('protect')">Protect</button>
       </div>
-      <p></p><div class="state_box" id="TrackerMode"> </div></p>
-      <p></p><div class="state_box" id="TrackerState"> </div></p>
-      <p></p><div class="state_box" id="Sun"> </div></p>
-      <p></p><div class="state_box" id="Horizontal"> </div></p>
-      <p></p><div class="state_box" id="Vertical"> </div></p>
-      <p></p><div class="state_box" id="Wind"> </div></p>
+      <p><div class="state_box" id="TrackerMode"> </div></p>
+      <p><div class="state_box" id="TrackerState"> </div></p>
+      <p><div class="state_box" id="Sun"> </div></p>
+      <p><div class="state_box" id="Horizontal"> </div></p>
+      <p><div class="state_box" id="Vertical"> </div></p>
+      <p><div class="state_box" id="Wind"> </div></p>
       <div class="link-row">
         <p><a href='settings'>Settings</a></p>
         <p><a href='/log' target='_blank'>Web Log</a></p>

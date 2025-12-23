@@ -13,6 +13,7 @@
 #include "Defines.h"
 #include "Configuration.h"
 #include "Tracker.h"
+#include "GPIO_pins.h"
 
 
 using namespace CLASSICDIY;
@@ -21,6 +22,12 @@ ThreadController _controller = ThreadController();
 Tracker _tracker = Tracker();
 
 void setup() {
+#ifdef ENABLE_H // disable actuators during initialization
+   pinMode(ENABLE_H, OUTPUT);
+   digitalWrite(ENABLE_H, false);
+   pinMode(ENABLE_V, OUTPUT);
+   digitalWrite(ENABLE_V, false);
+#endif
    delay(3000);
    // wait for Serial to connect, give up after 5 seconds, USB may not be connected
    unsigned long start = millis();

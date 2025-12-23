@@ -209,23 +209,21 @@ void Tracker::Process() {
    uint32_t now = millis();
    if ((now - _lastPublishTimeStamp) > PUBLISH_RATE_LIMIT) {
       _lastPublishTimeStamp = now;
-      JsonDocument doc; 
-      doc["state"] = TrackerStateStrings[getState()];
+      JsonDocument doc;
       doc["mode"] = TrackerModeStrings[_trackerMode];
-      char buffer[STR_LEN];
       if (_sun->ItsDark()) {
-         doc["sun"] = "Waiting for Morning";
+         doc["state"] = "Waiting for Morning";
       } else {
-         sprintf(buffer, "Azimuth %.2f° Elevation %.2f°", _sun->azimuth(), _sun->elevation());
-         doc["sun"] = buffer;
+         doc["state"] = TrackerStateStrings[getState()];
       }
-      sprintf(buffer, "Horizontal @ %.2f\" Angle %.2f°", _azimuth->CurrentPosition(), _azimuth->CurrentAngle());
-      doc["horizontal"] = buffer;
-      sprintf(buffer, "Vertical @ %.2f\" Angle %.2f°", _elevation->CurrentPosition(), _elevation->CurrentAngle());
-      doc["vertical"] = buffer;
+      doc["azimuth"] = _sun->azimuth();
+      doc["elevation"] = _sun->elevation();
+      doc["horizontal_extent"] = std::round(_azimuth->CurrentPosition() * 10.0) / 10.0;
+      doc["horizontal_angle"] = std::round(_azimuth->CurrentAngle() * 10.0) / 10.0;
+      doc["vertical_extent"] = std::round(_elevation->CurrentPosition() * 10.0) / 10.0;
+      doc["vertical_angle"] = std::round(_elevation->CurrentAngle() * 10.0) / 10.0;
       if (_config.hasAnemometer()) {
-         sprintf(buffer, "Wind speed %.2f", _anemometer.WindSpeed());
-         doc["wind"] = buffer;
+         doc["wind_speed"] = _anemometer.WindSpeed();
       }
       String s;
       serializeJson(doc, s);
@@ -238,21 +236,13 @@ void Tracker::Process() {
 #ifdef Has_TFT
          _tft.Update(doc);
 #endif
-      }
 #ifdef HasMQTT
-      if (_discoveryPublished) { // wait until MQTT is connected and discovery is published
-         if (_lastMode != _trackerMode) {
-            _lastMode = _trackerMode;
-            String topic = _iot.getRootTopicPrefix() + "/mode";
-            _iot.PublishMessage(topic.c_str(), TrackerModeStrings[_trackerMode], false);
-         }
-         if (_lastState != getState()) {
-            _lastState = getState();
+         if (_discoveryPublished) { // wait until MQTT is connected and discovery is published
             String topic = _iot.getRootTopicPrefix() + "/state";
-            _iot.PublishMessage(topic.c_str(), TrackerStateStrings[getState()], false);
+            _iot.PublishMessage(topic.c_str(), s.c_str(), false);
          }
-      }
 #endif
+      }
    }
    return;
 }
@@ -525,6 +515,7 @@ void Tracker::onMqttConnect(esp_mqtt_client_handle_t &client) {
          }
       }
       _discoveryPublished = true;
+      _lastMessagePublished.clear(); // publish state after discovery 
    }
 }
 
