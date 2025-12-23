@@ -60,6 +60,7 @@ class Tracker : public Device, public Thread, public IOTCallbackInterface {
  protected:
 #ifdef HasMQTT
    boolean PublishDiscoverySub(String &topic, JsonDocument &payload);
+   boolean PublishSensorDiscoverySub(const char* name, const char* unitOfMeasure, const char* field, const char* icon);
 #endif
 
  private:

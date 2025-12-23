@@ -466,24 +466,23 @@ void Tracker::onMqttConnect(esp_mqtt_client_handle_t &client) {
    esp_mqtt_client_subscribe(client, (_iot.getRootTopicPrefix() + "/button/Stop").c_str(), 0);
 
    if (!_discoveryPublished) {
-      String stateConfigTopic = HOME_ASSISTANT_PREFIX;
-      stateConfigTopic += "/sensor/";
-      stateConfigTopic += _iot.getRootTopicPrefix();
-      stateConfigTopic += "/state/config";
-      JsonDocument payload;
-      payload["name"] = "State";
-      payload["unique_id"] = String(_iot.getUniqueId()) + "_" + String("Tracker_State");
-      payload["state_topic"] = _iot.getRootTopicPrefix() + String("/state");
-      payload["icon"] = "mdi:solar-power";
-      if (PublishDiscoverySub(stateConfigTopic, payload) == false) {
-         return; // try later
-      }
+      
+      if (PublishSensorDiscoverySub("Azimuth", "°", "azimuth", "mdi:sun-compass") == false) { return; } // try later
+      if (PublishSensorDiscoverySub("Elevation", "°", "elevation", "mdi:sun-compass") == false) { return; }
+      if (PublishSensorDiscoverySub("Horizontal_extent", "\"", "horizontal_extent", "mdi:ruler") == false) { return; }
+      if (PublishSensorDiscoverySub("Horizontal_angle", "°", "horizontal_angle", "mdi:sun-angle") == false) { return; }
+      if (PublishSensorDiscoverySub("Vertical_extent", "\"", "vertical_extent", "mdi:ruler") == false) { return; }
+      if (PublishSensorDiscoverySub("Vertical_angle", "°", "vertical_angle", "mdi:sun-angle") == false) { return; }
+      if (PublishSensorDiscoverySub("Wind_speed", "km/hr", "wind_speed", "mdi:weather-windy") == false) { return; }
+      if (PublishSensorDiscoverySub("State", "", "state", "mdi:state-machine") == false) { return; }
+      if (PublishSensorDiscoverySub("Mode", "", "mode", "mdi:wrench-cog-outline") == false) { return; }
+
       // Discovery payload for tracker mode (select entity)
       String modeConfigTopic = HOME_ASSISTANT_PREFIX;
       modeConfigTopic += "/select/";
       modeConfigTopic += _iot.getRootTopicPrefix();
       modeConfigTopic += "/mode/config";
-      payload.clear();
+      JsonDocument payload;
       payload["name"] = "Mode";
       payload["unique_id"] = String(_iot.getUniqueId()) + "_" + String("Tracker_Mode");
       payload["command_topic"] = _iot.getRootTopicPrefix() + String("/mode/set");
@@ -515,8 +514,27 @@ void Tracker::onMqttConnect(esp_mqtt_client_handle_t &client) {
          }
       }
       _discoveryPublished = true;
-      _lastMessagePublished.clear(); // publish state after discovery 
+      _lastMessagePublished.clear(); // publish state after discovery
    }
+}
+
+boolean Tracker::PublishSensorDiscoverySub(const char* name, const char* unitOfMeasure, const char* field, const char* icon) {
+   String stateConfigTopic = HOME_ASSISTANT_PREFIX;
+   stateConfigTopic += "/sensor/";
+   stateConfigTopic += _iot.getRootTopicPrefix();
+   stateConfigTopic += "/";
+   stateConfigTopic += name;
+   stateConfigTopic += "/config";
+   JsonDocument payload;
+   String text = name;
+   text.replace('_', ' ');
+   payload["name"] = text;
+   payload["unique_id"] = String(_iot.getUniqueId()) + "_" + name;
+   payload["state_topic"] = _iot.getRootTopicPrefix() + "/state";
+   payload["unit_of_measurement"] = unitOfMeasure;
+   payload["value_template"] = String("{{ value_json.") + field + String(" }}");
+   payload["icon"] = icon;
+   return PublishDiscoverySub(stateConfigTopic, payload);
 }
 
 boolean Tracker::PublishDiscoverySub(String &topic, JsonDocument &payload) {
