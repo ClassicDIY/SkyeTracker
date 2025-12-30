@@ -89,6 +89,7 @@ class IOT : public IOTServiceInterface {
       // Retrieve the instance of the class (stored as the timer's ID)
       IOT *instance = static_cast<IOT *>(pvTimerGetTimerID(xTimer));
       if (instance != nullptr) {
+         instance->StopMQTT();
          instance->ConnectToMQTTServer();
       }
    }
