@@ -70,6 +70,9 @@ void Device::SetRTC(struct tm *tm) { // stub, no rtc on this device
 void Device::Init() {
    InitCommon();
    pinMode(FACTORY_RESET_PIN, INPUT_PULLUP);
+   #ifndef HasRTC // try using wifi to get the time
+   configTime(0, 0, NTP_SERVER1, NTP_SERVER2);
+   #endif
 }
 
 void Device::Run() {

@@ -50,6 +50,7 @@ const char home_html[] PROGMEM = R"rawliteral(
       const stateVal = JSON.parse(event.data);
       document.getElementById('TrackerMode').innerHTML = "Mode: " + stateVal.mode;
       document.getElementById('TrackerState').innerHTML = "State: " + stateVal.state;
+      document.getElementById('UTC_DateTime').innerHTML = "UTC Date Time: " + stateVal.date_time_utc;
       document.getElementById('Sun').innerHTML = "Azimuth: " + stateVal.azimuth + "° Elevation: " + stateVal.elevation + "°";
       document.getElementById('Horizontal').innerHTML = "Horizontal @: " + stateVal.horizontal_extent + "\" Angle: " + stateVal.horizontal_angle + "°";
       document.getElementById('Vertical').innerHTML = "Vertical @: " + stateVal.vertical_extent + "\" Angle: " + stateVal.vertical_angle + "°";
@@ -86,6 +87,7 @@ const char home_html[] PROGMEM = R"rawliteral(
       </div>
       <p><div class="state_box" id="TrackerMode"> </div></p>
       <p><div class="state_box" id="TrackerState"> </div></p>
+      <p><div class="state_box" id="UTC_DateTime"> </div></p>
       <p><div class="state_box" id="Sun"> </div></p>
       <p><div class="state_box" id="Horizontal"> </div></p>
       <p><div class="state_box" id="Vertical"> </div></p>

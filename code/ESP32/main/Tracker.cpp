@@ -159,9 +159,13 @@ void Tracker::Setup(ThreadController *controller) {
    logd("Setup done!");
 }
 
-void Tracker::onSaveSetting(JsonDocument &doc) { _config.Save(doc); }
+void Tracker::onSaveSetting(JsonDocument &doc) { 
+   logd("Saving: %s", formattedJson(doc).c_str());
+   _config.Save(doc); 
+}
 
 void Tracker::onLoadSetting(JsonDocument &doc) {
+   logd("Loading: %s", formattedJson(doc).c_str());
    _config.Load(doc);
    if (doc["_date"].isNull() == false && doc["_time"].isNull() == false) {
       struct tm tm{};
@@ -216,6 +220,10 @@ void Tracker::Process() {
       } else {
          doc["state"] = TrackerStateStrings[getState()];
       }
+      char buf[64];
+      buf[0] = 0;
+      strftime(buf, 64, "%A, %B %d %Y %H:%M", gmtime(&_cycleTime));
+      doc["date_time_utc"] = buf;
       doc["azimuth"] = _sun->azimuth();
       doc["elevation"] = _sun->elevation();
       doc["horizontal_extent"] = std::round(_azimuth->CurrentPosition() * 10.0) / 10.0;
