@@ -13,8 +13,6 @@
 #define longCheckInterval 5000
 #define POSITIONINTERVAL 5 // Move array when sun moves 5 degrees past current position
 
-namespace CLASSICDIY {
-
 class LinearActuatorNoPot : public Thread {
 
 #ifdef Lilygo_Relay_6CH
@@ -62,4 +60,3 @@ std::shared_ptr<ShiftRegister74HC595<1>> _reg;
    void Stop();
 };
 
-} // namespace CLASSICDIY

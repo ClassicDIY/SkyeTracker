@@ -1,14 +1,5 @@
 #pragma once
 
-namespace CLASSICDIY {
-enum NetworkSelection { NotConnected, APMode, WiFiMode, EthernetMode, ModemMode };
-
-enum NetworkState { Boot, ApState, Connecting, OnLine, OffLine };
-
-enum IOTypes { DigitalInputs, AnalogInputs, DigitalOutputs, AnalogOutputs };
-
-enum ModbusMode { TCP, RTU };
-
 enum TrackerMode {
    Manual,
    Cycle,
@@ -52,5 +43,3 @@ inline const char *describeTrackerError(TrackerError val) {
    }
    return "Unknown";
 }
-
-} // namespace CLASSICDIY

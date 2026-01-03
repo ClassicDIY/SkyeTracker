@@ -15,7 +15,7 @@
 #include "IDisplayServiceInterface.h"
 #include "Enumerations.h"
 
-extern CLASSICDIY::Configuration _config;
+extern Configuration _config;
 
 // Rate (in ms) at which the tracker will update to the sun's position
 #define POSITION_UPDATE_INTERVAL 60000
@@ -25,7 +25,6 @@ extern CLASSICDIY::Configuration _config;
 // Used for testing the tracker. Sweep through the day one hour at this interval.
 #define CYCLE_POSITION_UPDATE_INTERVAL 5000
 
-namespace CLASSICDIY {
 class Tracker : public Device, public Thread, public IOTCallbackInterface {
  public:
    Tracker();
@@ -40,6 +39,7 @@ class Tracker : public Device, public Thread, public IOTCallbackInterface {
    TrackerState getState();
 
    // IOTCallbackInterface
+   void onSocketPong();
    void onNetworkState(NetworkState state);
    void onSaveSetting(JsonDocument &doc);
    void onLoadSetting(JsonDocument &doc);
@@ -94,4 +94,3 @@ class Tracker : public Device, public Thread, public IOTCallbackInterface {
    String _bodyBuffer;
 };
 
-} // namespace CLASSICDIY

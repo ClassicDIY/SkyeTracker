@@ -2,6 +2,7 @@
 #include "Wire.h"
 #include <ArduinoJson.h>
 #include "Log.h"
+#include "IOT_Defines.h"
 #include "Device.h"
 
 #ifdef HasRTC
@@ -14,7 +15,7 @@ RTC_PCF8563 rtc;
 Adafruit_ADS1115 ads; /* Use this for the 16-bit version */
 #endif
 
-namespace CLASSICDIY {
+
 
 void Device::InitCommon() {
    Wire.begin(I2C_SDA, I2C_SCL);
@@ -35,23 +36,9 @@ void Device::InitCommon() {
 
 void Device::Init() {
    InitCommon();
-   pinMode(FACTORY_RESET_PIN, INPUT_PULLUP);
-   pinMode(WIFI_STATUS_PIN, OUTPUT);
 }
 
 void Device::Run() {
-   // handle blink led, fast : NotConnected slow: AP connected On: Station connected
-   if (_networkState != OnLine) {
-      unsigned long binkRate = _networkState == ApState ? AP_BLINK_RATE : NC_BLINK_RATE;
-      unsigned long now = millis();
-      if (binkRate < now - _lastBlinkTime) {
-         _blinkStateOn = !_blinkStateOn;
-         _lastBlinkTime = now;
-         digitalWrite(WIFI_STATUS_PIN, _blinkStateOn ? HIGH : LOW);
-      }
-   } else {
-      digitalWrite(WIFI_STATUS_PIN, LOW);
-   }
 }
 
 void Device::SetRTC(struct tm *tm) { // stub, no rtc on this device
@@ -69,9 +56,8 @@ void Device::SetRTC(struct tm *tm) { // stub, no rtc on this device
 
 void Device::Init() {
    InitCommon();
-   pinMode(FACTORY_RESET_PIN, INPUT_PULLUP);
    #ifndef HasRTC // try using wifi to get the time
-   configTime(0, 0, NTP_SERVER1, NTP_SERVER2);
+   configTime(0, 0, NTP_SERVER, NTP_SERVER2);
    #endif
 }
 
@@ -189,23 +175,9 @@ boolean Device::GetRelay(const uint8_t index) { return _reg->get(index); }
 
 void Device::Init() {
    InitCommon();
-   pinMode(FACTORY_RESET_PIN, INPUT_PULLUP);
-   pinMode(WIFI_STATUS_PIN, OUTPUT);
 }
 
 void Device::Run() {
-   // handle blink led, fast : NotConnected slow: AP connected On: Station connected
-   if (_networkState != OnLine) {
-      unsigned long binkRate = _networkState == ApState ? AP_BLINK_RATE : NC_BLINK_RATE;
-      unsigned long now = millis();
-      if (binkRate < now - _lastBlinkTime) {
-         _blinkStateOn = !_blinkStateOn;
-         _lastBlinkTime = now;
-         digitalWrite(WIFI_STATUS_PIN, _blinkStateOn ? HIGH : LOW);
-      }
-   } else {
-      digitalWrite(WIFI_STATUS_PIN, LOW);
-   }
 }
 
 void Device::SetRTC(struct tm *tm) { // stub, no rtc on this device
@@ -213,4 +185,3 @@ void Device::SetRTC(struct tm *tm) { // stub, no rtc on this device
 
 #endif
 
-} // namespace CLASSICDIY

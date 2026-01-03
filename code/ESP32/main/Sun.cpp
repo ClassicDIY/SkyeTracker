@@ -1,8 +1,6 @@
 #include <math.h>
 #include "Sun.h"
 
-namespace CLASSICDIY
-{
 	float fltMins;
 	float fltHrs;
 	float fltDayDecimal;
@@ -383,4 +381,3 @@ namespace CLASSICDIY
 		return RadianToDegree(Etime)*4.0; // in minutes of time
 	}
 
-}

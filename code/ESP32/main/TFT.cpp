@@ -5,8 +5,6 @@
 
 TFT_eSPI tft = TFT_eSPI(); // Invoke library
 
-namespace CLASSICDIY {
-
 void TFT::Init() {
    tft.init();
    tft.setRotation(1); // Landscape
@@ -91,6 +89,6 @@ void TFT::drawIfChanged(const String &newVal, String &oldVal, int x, int y, uint
    }
 }
 
-} // namespace CLASSICDIY
+
 
 #endif

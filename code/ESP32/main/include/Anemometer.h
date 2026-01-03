@@ -1,6 +1,5 @@
 #pragma once
 
-namespace CLASSICDIY {
 class Anemometer {
    int _sensorPin; // Defines the pin that the anemometer output is connected to
 
@@ -17,4 +16,4 @@ class Anemometer {
     float _medianBuf[3] = {0, 0, 0};
     int _medianIndex = 0;
 };
-} // namespace CLASSICDIY
+

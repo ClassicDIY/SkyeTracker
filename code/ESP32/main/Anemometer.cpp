@@ -4,7 +4,6 @@
 #include "Log.h"
 #include "GPIO_pins.h"
 
-namespace CLASSICDIY {
 Anemometer::Anemometer(int sensorPin)
 {
 	_sensorPin = sensorPin;
@@ -69,4 +68,3 @@ float Anemometer::FilterMedian(float val)
     return max(min(a, b), min(max(a, b), c));
 }
 
-} // namespace CLASSICDIY

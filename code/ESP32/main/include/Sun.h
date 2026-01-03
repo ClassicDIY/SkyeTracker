@@ -2,7 +2,6 @@
 
 #include <Arduino.h>
 
-namespace CLASSICDIY {
 class Sun {
 
  public:
@@ -31,4 +30,3 @@ class Sun {
    void calcSun(time_t *unixTime);
 };
 
-} // namespace CLASSICDIY

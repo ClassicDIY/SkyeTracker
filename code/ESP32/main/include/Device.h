@@ -3,13 +3,15 @@
 #include <memory>
 #include "GPIO_pins.h"
 #include "Enumerations.h"
+#include "IOTEnumerations.h"
 #include "Oled.h"
 #include "tft.h"
 #ifdef Lilygo_Relay_6CH
 #include <ShiftRegister74HC595.h>
 #endif
 
-namespace CLASSICDIY {
+using namespace CLASSICDIY;
+
 class Device {
  protected:
    void Init();
@@ -33,4 +35,3 @@ class Device {
    bool _running = false;
 };
 
-} // namespace CLASSICDIY

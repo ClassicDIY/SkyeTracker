@@ -4,7 +4,6 @@
 #include "GPIO_pins.h"
 #include "Log.h"
 
-namespace CLASSICDIY {
 Configuration::Configuration() {
    _dualAxis = DualAxisEnabled;
    _hasAnemometer = AnemometerEnabled;
@@ -127,4 +126,3 @@ void Configuration::Save(JsonDocument &trk) {
    logi("Saved settings");
 }
 
-} // namespace CLASSICDIY

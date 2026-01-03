@@ -7,7 +7,6 @@
 #include "Sun.h"
 #include "LinearActuatorNoPot.h"
 
-namespace CLASSICDIY {
 #define LEVEL_FONT 5
 #define STATUS_FONT 2
 #define HDR_FONT 2
@@ -36,6 +35,8 @@ struct TFTHeaderCache {
    int count = -1; // use -1 to indicate “no previous count”
 };
 
+using namespace CLASSICDIY;
+
 class TFT : public IDisplayServiceInterface {
  public:
    void Init();
@@ -51,5 +52,5 @@ class TFT : public IDisplayServiceInterface {
    TFTHeaderCache _headerCache;
 };
 
-} // namespace CLASSICDIY
+
 #endif

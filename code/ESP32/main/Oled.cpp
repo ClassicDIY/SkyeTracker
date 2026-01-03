@@ -6,7 +6,7 @@
 
 Adafruit_SSD1306 oled_display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-namespace CLASSICDIY {
+using namespace CLASSICDIY;
 
 void Oled::Init() {
    if (!oled_display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
@@ -97,6 +97,6 @@ void Oled::Display(const char* hdr1, const char* detail1, const char* hdr2, cons
    oled_display.println(buf);
    oled_display.display();
 }
-} // namespace CLASSICDIY
+
 
 #endif

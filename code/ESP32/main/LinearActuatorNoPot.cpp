@@ -2,8 +2,6 @@
 #include "LinearActuatorNoPot.h"
 #include "Log.h"
 
-namespace CLASSICDIY {
-
 #ifdef Lilygo_Relay_6CH
 LinearActuatorNoPot::LinearActuatorNoPot(String name, int relayOne, int relayTwo, std::shared_ptr<ShiftRegister74HC595<1>> reg) {
    _reg = reg;
@@ -199,4 +197,3 @@ void LinearActuatorNoPot::MoveTo(float angle) {
    }
 }
 
-} // namespace CLASSICDIY

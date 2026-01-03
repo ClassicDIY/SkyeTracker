@@ -3,12 +3,6 @@
 
 #ifdef EDGEBOX
 
-#ifndef LOG_TO_SERIAL_PORT // disable logs to use LED wifi status
-// use LED if the log level is none (edgeBox shares the LED pin with the serial TX gpio)
-#define WIFI_STATUS_PIN 43 // LED Pin
-#endif
-#define FACTORY_RESET_PIN 2 // Clear NVRAM, shared with CAN_RXD
-
 void inline GPIO_Init() {}
 
 // Programming and Debugging Port
@@ -109,7 +103,6 @@ void inline GPIO_Init() { pinMode(GPIO_NUM_36, INPUT); }
 
 #define RGB_LED_PIN 38
 #define GPIO_PIN_Buzzer 21   // Buzzer Control GPIO
-#define FACTORY_RESET_PIN 12 // Clear NVRAM
 #define PWM_Channel 1        // PWM Channel
 #define Frequency 1000       // PWM frequencyconst
 #define Resolution 8
@@ -161,9 +154,6 @@ void inline GPIO_Init() {
 #endif
 #ifdef Lilygo_Relay_4CH
 
-#define FACTORY_RESET_PIN 4 // Clear NVRAM
-#define WIFI_STATUS_PIN 25  // LED Pin
-
 // I2C
 #define I2C_SDA GPIO_NUM_15
 #define I2C_SCL GPIO_NUM_14
@@ -189,9 +179,6 @@ void inline GPIO_Init() {
 #endif
 
 #ifdef Lilygo_Relay_6CH
-
-#define FACTORY_RESET_PIN GPIO_NUM_2 // Clear NVRAM
-#define NUM_RELAYS 6
 
 // HT74HC595
 #define HT74HC595_CLOCK GPIO_NUM_5
@@ -221,9 +208,6 @@ void inline GPIO_Init() {
 
 #ifdef ESP_32Dev
 
-#define WIFI_STATUS_PIN 2   // LED Pin
-#define FACTORY_RESET_PIN 4 // Clear NVRAM
-
 // I2C
 #define I2C_SDA GPIO_NUM_21
 #define I2C_SCL GPIO_NUM_22
@@ -244,8 +228,6 @@ void inline GPIO_Init() {
 #endif
 
 #ifdef ESP32_S3
-
-#define FACTORY_RESET_PIN GPIO_NUM_14 // Clear NVRAM
 
 // I2C
 #define I2C_SDA GPIO_NUM_8

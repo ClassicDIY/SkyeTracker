@@ -19,7 +19,6 @@
 #define ActuatorHorizontalSpeed 31
 #define ActuatorVerticalSpeed 31
 
-namespace CLASSICDIY {
 class Configuration {
  public:
    Configuration();
@@ -63,4 +62,3 @@ class Configuration {
    void GeoLocate();
 };
 
-} // namespace CLASSICDIY

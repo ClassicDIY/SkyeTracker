@@ -10,14 +10,12 @@
 #include <ESPAsyncWebServer.h>
 #include <AsyncTCP.h>
 #include "Tracker.htm"
-#include "app_script.js"
 
-namespace CLASSICDIY {
+using namespace CLASSICDIY;
 
+extern AsyncWebServer _asyncServer;
 const char *TrackerModeStrings[] = {"Manual", "Cycle", "Track", "Park", "Protect"};
 const char *TrackerStateStrings[] = {"Off", "Initializing", "Standby", "Tracking"};
-static AsyncWebServer _asyncServer(ASYNC_WEBSERVER_PORT);
-static AsyncWebSocket _webSocket("/ws_home");
 IOT _iot = IOT();
 Thread *_workerThread = new Thread();
 Anemometer _anemometer(AnemometerPin);
@@ -37,7 +35,7 @@ Tracker::~Tracker() {
 
 void Tracker::Setup(ThreadController *controller) {
    Init();
-   _iot.Init(this, &_asyncServer);
+   _iot.Init(this);
    _lastWindEvent = 0;
    _sun = new Sun(_config.getLat(), _config.getLon());
    _cycleTime = getTime();
@@ -52,47 +50,8 @@ void Tracker::Setup(ThreadController *controller) {
    controller->add(_azimuth);
    controller->add(_elevation);
    controller->add(this);
-   _asyncServer.on("/", HTTP_GET, [this](AsyncWebServerRequest *request) {
-      request->send(200, "text/html", home_html, [this](const String &var) { return appTemplateProcessor(var); });
-   });
-   _asyncServer.on("/appsettings", HTTP_GET, [this](AsyncWebServerRequest *request) {
-      JsonDocument app;
-      _config.Save(app);
-      String s;
-      serializeJson(app, s);
-      logd("/appsettings: %s", s.c_str());
-      request->send(200, "text/html", s);
-   });
-   _asyncServer.on(
-       "/app_fields", HTTP_POST,
-       [this](AsyncWebServerRequest *request) {
-          // Called after all chunks are received
-          logv("Full body received: %s", _bodyBuffer.c_str());
-          // Parse JSON safely
-          JsonDocument doc; // adjust size to expected payload
-          DeserializationError err = deserializeJson(doc, _bodyBuffer);
-          if (err) {
-             logd("JSON parse failed: %s", err.c_str());
-          } else {
-             logd("HTTP_POST /app_fields: %s", formattedJson(doc).c_str());
-             onLoadSetting(doc);
-          }
-          request->send(200, "application/json", "{\"status\":\"ok\"}");
-          _bodyBuffer = ""; // clear for next request
-       },
-       NULL, // file upload handler (not used here)
-       [this](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
-          logv("Chunk received: len=%d, index=%d, total=%d", len, index, total);
-          // Append chunk to buffer
-          _bodyBuffer.reserve(total); // reserve once for efficiency
-          for (size_t i = 0; i < len; i++) {
-             _bodyBuffer += (char)data[i];
-          }
-          if (index + len == total) {
-             logd("Upload complete!");
-          }
-       });
-   _asyncServer.on(
+   auto& server = _iot.getWebServer();
+   server.on(
        "/control", HTTP_POST,
        [this](AsyncWebServerRequest *request) {
           // This callback is called after the body is processed
@@ -131,31 +90,6 @@ void Tracker::Setup(ThreadController *controller) {
              Park(true);
           }
        });
-
-   _asyncServer.addHandler(&_webSocket).addMiddleware([this](AsyncWebServerRequest *request, ArMiddlewareNext next) {
-      // ws.count() is the current count of WS clients: this one is trying to upgrade its HTTP connection
-      if (_webSocket.count() > 1) {
-         // if we have 2 clients or more, prevent the next one to connect
-         request->send(503, "text/plain", "Server is busy");
-      } else {
-         // process next middleware and at the end the handler
-         next();
-      }
-   });
-   _webSocket.onEvent([this](AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
-      (void)len;
-      if (type == WS_EVT_CONNECT) {
-         client->setCloseClientOnQueueFull(false);
-         client->ping();
-      } else if (type == WS_EVT_DISCONNECT) {
-         logi("Home Page Disconnected!");
-      } else if (type == WS_EVT_ERROR) {
-         loge("ws error");
-      } else if (type == WS_EVT_PONG) {
-         logd("ws pong");
-         _lastMessagePublished.clear(); // force a broadcast
-      }
-   });
    logd("Setup done!");
 }
 
@@ -188,6 +122,12 @@ String Tracker::appTemplateProcessor(const String &var) {
    if (var == "version") {
       return String(APP_VERSION);
    }
+   if (var == "home_html") {
+      String home;
+      home.reserve(strlen(home_html));
+      home += home_html;
+      return home;
+   }
    if (var == "app_fields") {
       return String(app_config);
    }
@@ -196,9 +136,6 @@ String Tracker::appTemplateProcessor(const String &var) {
    }
    if (var == "validateInputs") {
       return String(validate_script);
-   }
-   if (var == "app_script_js") {
-      return String(app_script_js);
    }
    logd("Did not find app template for: %s", var.c_str());
    return String("");
@@ -237,10 +174,7 @@ void Tracker::Process() {
       serializeJson(doc, s);
       if (_lastMessagePublished != s) {
          _lastMessagePublished = s;
-         if (_webSocket.count() > 0) { // any clients?
-            _webSocket.textAll(s);
-            logv("_webSocket Sent %s", s.c_str());
-         }
+         _iot.PostWeb(s);
 #ifdef Has_TFT
          _tft.Update(doc);
 #endif
@@ -253,6 +187,11 @@ void Tracker::Process() {
       }
    }
    return;
+}
+
+void Tracker::onSocketPong() {
+   _lastPublishTimeStamp = 0;
+   _lastMessagePublished.clear(); // force a broadcast
 }
 
 void Tracker::onNetworkState(NetworkState state) {
@@ -554,7 +493,7 @@ boolean Tracker::PublishDiscoverySub(String &topic, JsonDocument &payload) {
    device["name"] = _iot.getThingName().c_str();
    device["sw_version"] = APP_VERSION;
    device["manufacturer"] = "ClassicDIY";
-   sprintf(buffer, "%s (%X)", TAG, _iot.getUniqueId());
+   sprintf(buffer, "%s (%X)", LOG_TAG, _iot.getUniqueId());
    device["model"] = buffer;
    JsonArray identifiers = device["identifiers"].to<JsonArray>();
    sprintf(buffer, "%X", _iot.getUniqueId());
@@ -602,4 +541,3 @@ void Tracker::onMqttMessage(char *topic, char *payload) {
 
 #endif
 
-} // namespace CLASSICDIY
