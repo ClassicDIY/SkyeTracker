@@ -33,6 +33,10 @@ The settings can be accessed via the Wifi Access Point, default AP: SkyeTracker 
 </p>
 
 <p align="center">
+  <img src="./Pictures/V3_TFT_Display.png" width="800">
+</p>
+
+<p align="center">
   <img src="./Pictures/V3_HomePage.png" width="800">
 </p>
 
