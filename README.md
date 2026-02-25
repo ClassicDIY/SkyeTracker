@@ -23,7 +23,7 @@ Here are some <a href='https://www.youtube.com/playlist?list=PLblHpNAh7b6LoXEqof
 
 New version 3 for the <a href='https://lilygo.cc/products/t-relay-s3'>Lilygo T-Relay-S3</a>
 
-Note: Bluetooth is no longer supported on the ESP32-S3 (now BLE), support for the Android app has been removed.
+Note: Classic Bluetooth is no longer supported on the ESP32-S3 (now BLE only), support for the Android app has been removed.
 The settings can be accessed via the Wifi Access Point, default AP: SkyeTracker default admin PW: 12345678
 
 <p align="center">
