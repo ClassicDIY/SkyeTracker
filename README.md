@@ -50,7 +50,7 @@ The settings can be accessed via the Wifi Access Point, default AP: SkyeTracker 
 
 ## SkyeTracker Wiring (ESP32 version 2)
 
-Check the [wiki](https://github.com/ClassicDIY/SkyeTracker/wiki/3---ESP32-wiring-diagram) for updated information on the ESP32 implementation.
+Check the [wiki](https://github.com/ClassicDIY/SkyeTracker/wiki/4---ESP32-wiring-diagram) for updated information on the ESP32 implementation.
 
 <p align="center">
   <img src="./Pictures/Prototype_ESP32.PNG" width="800">
